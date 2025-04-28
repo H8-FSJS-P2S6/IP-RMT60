@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "username": "Admin",
+    "email": "admin@gmail.com",
+    "password": "Admin123",
+    "role": "Admin",
+    "phoneNumber": "081234567890",
+    "address": "Jl. Raya No. 1, Jakarta"
+  },
+  {
+    "id": 2,
+    "username": "User",
+    "email": "user@gmail.com",
+    "password": "User123",
+    "role": "User",
+    "phoneNumber": "081234567891",
+    "address": "Jl. Raya No. 2, Jakarta"
+  }
+]
