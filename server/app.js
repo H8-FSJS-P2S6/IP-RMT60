@@ -1,19 +1,31 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const cors = require("cors");
+const routes = require("./routes");
+const errorHandler = require("./middlewares/errorHandler");
 
 app.use(cors());
 //middleware body-parser
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-
 app.get("/", (req, res) => {
-  res.send("Welcome to SAR NDT SERVICES");
+  res.send("SNS NDT Learning Platform API");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// API routes
+app.use("/api", routes);
+
+// Error handler middleware
+app.use(errorHandler);
+
+// Only listen if directly running this file (not in test environment)
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`SNS NDT Learning Platform API listening on port ${port}`);
+  });
+}
+
+module.exports = app;

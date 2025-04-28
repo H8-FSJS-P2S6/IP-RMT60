@@ -1,13 +1,12 @@
-Controller.js
 const { Category } = require("../models");
 
 class CategoryController {
   static async getAllCategories(req, res, next) {
     try {
       const categories = await Category.findAll({
-        order: [["id", "ASC"]]
+        order: [["id", "ASC"]],
       });
-      
+
       res.status(200).json(categories);
     } catch (err) {
       next(err);
@@ -18,11 +17,11 @@ class CategoryController {
     try {
       const { id } = req.params;
       const category = await Category.findByPk(id);
-      
+
       if (!category) {
         throw { name: "NotFound", message: "Category not found" };
       }
-      
+
       res.status(200).json(category);
     } catch (err) {
       next(err);
@@ -32,13 +31,13 @@ class CategoryController {
   static async createCategory(req, res, next) {
     try {
       const { name, description, techniques } = req.body;
-      
+
       const newCategory = await Category.create({
         name,
         description,
-        techniques
+        techniques,
       });
-      
+
       res.status(201).json(newCategory);
     } catch (err) {
       next(err);
@@ -49,19 +48,19 @@ class CategoryController {
     try {
       const { id } = req.params;
       const { name, description, techniques } = req.body;
-      
+
       const category = await Category.findByPk(id);
-      
+
       if (!category) {
         throw { name: "NotFound", message: "Category not found" };
       }
-      
+
       await category.update({
         name,
         description,
-        techniques
+        techniques,
       });
-      
+
       res.status(200).json(category);
     } catch (err) {
       next(err);
@@ -72,13 +71,13 @@ class CategoryController {
     try {
       const { id } = req.params;
       const category = await Category.findByPk(id);
-      
+
       if (!category) {
         throw { name: "NotFound", message: "Category not found" };
       }
-      
+
       await category.destroy();
-      
+
       res.status(200).json({ message: "Category deleted successfully" });
     } catch (err) {
       next(err);
