@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router"; // PERBAIKAN: react-router-dom
 import axios from "axios";
 
 export default function Login() {
@@ -10,7 +10,7 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -18,31 +18,36 @@ export default function Login() {
       [name]: value,
     });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
-      const response = await axios.post("http://localhost:3000/api/users/login", formData);
-      
+      const response = await axios.post(
+        "http://localhost:3000/api/users/login",
+        formData
+      );
+
       // Simpan token dan data user ke localStorage
       localStorage.setItem("access_token", response.data.access_token);
-      localStorage.setItem("user", JSON.stringify({
-        id: response.data.id,
-        username: response.data.username,
-        email: response.data.email,
-        role: response.data.role
-      }));
-      
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: response.data.id,
+          username: response.data.username,
+          email: response.data.email,
+          role: response.data.role,
+        })
+      );
+
       // Redirect berdasarkan role
       if (response.data.role === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
-      
     } catch (error) {
       console.error("Login error:", error);
       setError(error.response?.data?.message || "Invalid email or password");
@@ -50,7 +55,62 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
+
+  async function handleCredentialResponse(response) {
+    try {
+      console.log("Encoded JWT ID token: " + response.credential);
+      
+      const { data } = await axios.post(
+        "http://localhost:3000/api/users/login/google",
+        { id_token: response.credential }
+      );
+      
+      // Simpan token dan data user ke localStorage (PERBAIKAN)
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          role: data.role,
+        })
+      );
+      
+      // Redirect berdasarkan role
+      if (data.role === "Admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      setError(error.response?.data?.message || "Google login failed");
+    }
+  }
+
+  useEffect(() => {
+    // Pastikan window.google tersedia
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_CLIENT_ID,
+        callback: handleCredentialResponse,
+      });
+      
+      // Pastikan elemen buttonDiv sudah ada di DOM
+      const buttonDiv = document.getElementById("buttonDiv");
+      if (buttonDiv) {
+        window.google.accounts.id.renderButton(
+          buttonDiv,
+          { theme: "outline", size: "large" }
+        );
+        window.google.accounts.id.prompt();
+      }
+    } else {
+      console.error("Google API belum tersedia");
+    }
+  }, []);
+
   return (
     <div className="container py-5">
       <div className="row justify-content-center">
@@ -58,16 +118,18 @@ export default function Login() {
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="text-center mb-4 fw-bold text-primary">Login</h2>
-              
+
               {error && (
                 <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
-              
+
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label htmlFor="email" className="form-label">Email address</label>
+                  <label htmlFor="email" className="form-label">
+                    Email address
+                  </label>
                   <input
                     type="email"
                     className="form-control"
@@ -75,12 +137,15 @@ export default function Login() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    required
                     placeholder="Enter your email"
                   />
                 </div>
-                
+
                 <div className="mb-4">
-                  <label htmlFor="password" className="form-label">Password</label>
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
                   <input
                     type="password"
                     className="form-control"
@@ -88,10 +153,11 @@ export default function Login() {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    required
                     placeholder="Enter your password"
                   />
                 </div>
-                
+
                 <button
                   type="submit"
                   className="btn btn-primary w-100 py-2"
@@ -99,7 +165,11 @@ export default function Login() {
                 >
                   {loading ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
                       Logging in...
                     </>
                   ) : (
@@ -107,7 +177,11 @@ export default function Login() {
                   )}
                 </button>
               </form>
-              
+
+              <div className="d-flex justify-content-center mt-4">
+                <div id="buttonDiv"></div>
+              </div>
+
               <div className="text-center mt-4">
                 <p className="mb-0">
                   Don't have an account?{" "}
@@ -118,7 +192,7 @@ export default function Login() {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center mt-4">
             <Link to="/" className="text-decoration-none">
               <i className="bi bi-arrow-left"></i> Back to Home

@@ -1,27 +1,65 @@
 const { User } = require("../models");
 const { comparePassword } = require("../helpers/bcrypt");
 const { generateToken } = require("../helpers/jwt");
-
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client();
 class UserController {
+  static async googleLogin(req, res, next) {
+    try {
+      const { id_token } = req.body;
+      const ticket = await client.verifyIdToken({
+        idToken: id_token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+
+      console.log(payload);
+
+      let user = await User.findOne({ where: { email: payload.email } });
+      if (!user) {
+        user = await User.create({
+          username: payload.name,
+          email: payload.email,
+          password: Math.random().toString(),
+          role: "User",
+          phoneNumber: payload.phoneNumber || "0808080808",
+          address: payload.address || "unknown",
+        });
+      }
+      const access_token = generateToken({ id: user.id });
+      res.status(200).json({
+        access_token,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async register(req, res, next) {
     try {
       const { username, email, password, phoneNumber, address } = req.body;
-      
+
       // Default role for new registrations is "User"
       const newUser = await User.create({
         username,
         email,
         password, // Will be hashed by beforeCreate hook in model
-        role: "User", 
+        role: "User",
         phoneNumber,
-        address
+        address,
       });
 
       res.status(201).json({
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
       });
     } catch (err) {
       next(err);
@@ -31,9 +69,12 @@ class UserController {
   static async login(req, res, next) {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
-        throw { name: "BadRequest", message: "Email and password are required" };
+        throw {
+          name: "BadRequest",
+          message: "Email and password are required",
+        };
       }
 
       const user = await User.findOne({ where: { email } });
@@ -49,7 +90,7 @@ class UserController {
       const payload = {
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
       };
 
       const access_token = generateToken(payload);
@@ -59,7 +100,7 @@ class UserController {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
       });
     } catch (err) {
       next(err);
@@ -70,9 +111,9 @@ class UserController {
     try {
       const userId = req.user.id;
       const user = await User.findByPk(userId, {
-        attributes: { exclude: ['password'] }
+        attributes: { exclude: ["password"] },
       });
-      
+
       res.status(200).json(user);
     } catch (err) {
       next(err);
