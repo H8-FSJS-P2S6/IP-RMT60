@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect jika pengguna sudah login
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
@@ -34,8 +34,8 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/users/login",
+      const response = await api.post(
+        "/users/login",
         formData
       );
 
@@ -67,8 +67,8 @@ export default function Login() {
     try {
       console.log("Encoded JWT ID token: " + response.credential);
 
-      const { data } = await axios.post(
-        "http://localhost:3000/api/users/login/google",
+      const { data } = await api.post(
+        "/users/login/google",
         { id_token: response.credential }
       );
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router"; // Perbaikan import
+import api from "../utils/api";
+import { Link } from "react-router"; 
 
 export default function Home() {
   // Helper function untuk format IDR
@@ -18,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/api/public/homepage-bundle");
+        const { data } = await api.get("/public/homepage-bundle");
         setHomeData(data);
       } catch (error) {
         console.error("Error fetching homepage data:", error);
@@ -52,7 +52,7 @@ export default function Home() {
             </div>
             <div className="col-lg-6 d-none d-lg-block">
               <img 
-                src="https://via.placeholder.com/600x400?text=NDT+Learning" 
+                src="https://mitech-ndt.co.id/wp-content/uploads/2021/02/Jenis-Pengujian-Non-Destructive-Test.jpg" 
                 alt="NDT Learning" 
                 className="img-fluid rounded shadow"
               />

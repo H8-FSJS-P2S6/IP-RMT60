@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
-import axios from "axios";
+import api from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -38,7 +38,7 @@ export default function Register() {
     setError("");
     
     try {
-      await axios.post("http://localhost:3000/api/users/register", formData);
+      await api.post("/users/register", formData);
       
       // Redirect ke halaman login setelah berhasil register
       navigate("/login", { 
