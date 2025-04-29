@@ -21,11 +21,20 @@ app.use("/api", routes);
 // Error handler middleware
 app.use(errorHandler);
 
+// Add more detailed error logging
+app.use((err, req, res, next) => {
+  console.error("Error details:", err);
+  next(err);
+});
+
 // Only listen if directly running this file (not in test environment)
 if (process.env.NODE_ENV !== "test") {
   app.listen(port, () => {
     console.log(`SNS NDT Learning Platform API listening on port ${port}`);
   });
 }
+
+// Di bagian akhir sebelum module.exports
+app.use(require("./middlewares/errorHandler"));
 
 module.exports = app;

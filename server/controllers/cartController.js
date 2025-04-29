@@ -1,4 +1,4 @@
-const { Cart, Lecture, User } = require("../models");
+const { Cart, Lecture, Category, User } = require("../models");
 
 class CartController {
   static async getUserCart(req, res, next) {
@@ -10,7 +10,12 @@ class CartController {
         include: [
           {
             model: Lecture,
-            include: ["category"]
+            include: [
+              {
+                model: Category,
+                as: 'category'
+              }
+            ]
           }
         ]
       });
@@ -24,17 +29,20 @@ class CartController {
   static async addToCart(req, res, next) {
     try {
       const UserId = req.user.id;
-      const { LectureId } = req.body;
+      const { lectureId } = req.body;
       
       // Check if lecture exists
-      const lecture = await Lecture.findByPk(LectureId);
+      const lecture = await Lecture.findByPk(lectureId);
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
       }
       
       // Check if already in cart
       const existingCart = await Cart.findOne({
-        where: { UserId, LectureId }
+        where: { 
+          UserId, 
+          LectureId: lectureId 
+        }
       });
       
       if (existingCart) {
@@ -43,7 +51,7 @@ class CartController {
       
       const newCart = await Cart.create({
         UserId,
-        LectureId
+        LectureId: lectureId
       });
       
       res.status(201).json(newCart);

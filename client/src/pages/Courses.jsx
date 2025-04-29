@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router"; 
 import api from "../utils/api";
 
 export default function Courses() {
@@ -25,6 +25,17 @@ export default function Courses() {
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(price);
+  };
+
+  const addToCart = async (courseId) => {
+    try {
+      await api.post("/carts/add", { lectureId: courseId });
+      // Tampilkan notifikasi sukses (bisa menggunakan toast notification atau alert)
+      alert("Kursus berhasil ditambahkan ke keranjang");
+    } catch (error) {
+      console.error("Error adding course to cart:", error);
+      alert("Gagal menambahkan kursus ke keranjang");
+    }
   };
 
   useEffect(() => {
@@ -54,7 +65,7 @@ export default function Courses() {
         if (filters.search) queryParams.append("search", filters.search);
         if (filters.categoryId) queryParams.append("categoryId", filters.categoryId);
         if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
-        if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice);
+        if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice); // Perbaikan kondisi yang tidak lengkap
         
         // Handle sorting
         if (sort === "price_asc") {
@@ -259,7 +270,17 @@ export default function Courses() {
                     <h5 className="card-title">{course.name}</h5>
                     <p className="card-text text-muted mb-4">{course.technique}</p>
                     <div className="mt-auto">
-                      <Link to={`/lectures/${course.id}`} className="btn btn-primary d-block">View Details</Link>
+                      <div className="d-flex gap-2">
+                        <Link to={`/courses/${course.id}`} className="btn btn-outline-primary flex-grow-1">
+                          Detail
+                        </Link>
+                        <button 
+                          className="btn btn-primary" 
+                          onClick={() => addToCart(course.id)}
+                        >
+                          <i className="bi bi-cart-plus"></i> Tambah
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

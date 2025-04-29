@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router"; 
 import api from "../utils/api";
 
 export default function Cart() {
@@ -43,19 +43,8 @@ export default function Cart() {
     }
   };
 
-  const handleCheckout = async () => {
-    setProcessing(true);
-    try {
-      // Placeholder for checkout logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert("Checkout successful! Redirecting to payment page.");
-      navigate("/checkout");
-    } catch (error) {
-      console.error("Error checking out:", error);
-      alert("Failed to process checkout");
-    } finally {
-      setProcessing(false);
-    }
+  const handleCheckout = () => {
+    navigate("/checkout");
   };
 
   const calculateTotal = () => {

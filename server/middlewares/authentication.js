@@ -1,38 +1,44 @@
-const { verifyToken } = require("../helpers/jwt");
 const { User } = require("../models");
+const { verifyToken } = require("../helpers/jwt");
 
-const authentication = async (req, res, next) => {
+async function authentication(req, res, next) {
   try {
-    // Check if token exists
-    const { access_token } = req.headers;
-    if (!access_token) {
-      throw { name: "Unauthorized", message: "Please login first" };
+    // Get token from request header
+    const { authorization } = req.headers;
+    
+    if (!authorization) {
+      throw { name: "Unauthorized", message: "Authentication token required" };
     }
-
+    
+    // Format: "Bearer token"
+    const token = authorization.split(" ")[1];
+    if (!token) {
+      throw { name: "Unauthorized", message: "Invalid token format" };
+    }
+    
     // Verify token
-    const payload = verifyToken(access_token);
+    const payload = verifyToken(token);
     if (!payload) {
-      throw { name: "JsonWebTokenError", message: "Invalid token" };
+      throw { name: "Unauthorized", message: "Invalid token" };
     }
-
-    // Find user by id
+    
+    // Find user based on token
     const user = await User.findByPk(payload.id);
     if (!user) {
       throw { name: "Unauthorized", message: "User not found" };
     }
-
-    // Add user to request
+    
+    // Set req.user to be used in controller
     req.user = {
       id: user.id,
       email: user.email,
-      role: user.role,
-      username: user.username,
+      role: user.role
     };
-
+    
     next();
   } catch (err) {
     next(err);
   }
-};
+}
 
 module.exports = authentication;

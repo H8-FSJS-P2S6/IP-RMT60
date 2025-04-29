@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated} = useAuth();
+  const { isAuthenticated } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +44,7 @@ export default function CourseDetail() {
 
     setAddingToCart(true);
     try {
-      await api.post("/carts", { LectureId: id });
+      await api.post("/carts/add", { lectureId: id }); // Perbaikan API endpoint untuk cart
       // Show success message
       alert("Course added to cart successfully!");
     } catch (error) {

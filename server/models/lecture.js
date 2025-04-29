@@ -3,14 +3,11 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Lecture extends Model {
     static associate(models) {
-      // Relasi Lecture → Category (Many-to-One)
       Lecture.belongsTo(models.Category, {
         foreignKey: "CategoryId",
         as: "category",
       });
-      // Relasi Lecture → User (Many-to-One, untuk pengelola lecture)
       Lecture.belongsTo(models.User);
-      // Relasi Lecture ↔ User (Many-to-Many melalui Cart)
       Lecture.belongsToMany(models.User, {
         through: models.Cart,
       });
@@ -90,6 +87,14 @@ module.exports = (sequelize, DataTypes) => {
           isUrl: { msg: "Invalid image URL format" },
         },
       },
+      UserId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "Users",
+          key: "id",
+        },
+      }
     },
     {
       sequelize,

@@ -14,14 +14,28 @@ export default function Home() {
 
   const [homeData, setHomeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
         const { data } = await api.get("/public/homepage-bundle");
         setHomeData(data);
+        setError(null);
       } catch (error) {
         console.error("Error fetching homepage data:", error);
+        setError("Failed to load homepage data. Please try again later.");
+        // Set default data structure to prevent rendering errors
+        setHomeData({
+          featuredLectures: [],
+          latestLectures: [],
+          popularCategories: [],
+          statistics: {
+            totalLectures: 0,
+            totalCategories: 0,
+            totalUsers: 0
+          }
+        });
       } finally {
         setLoading(false);
       }
@@ -29,6 +43,12 @@ export default function Home() {
 
     fetchHomeData();
   }, []);
+
+  if (error) return (
+    <div className="alert alert-danger m-5" role="alert">
+      {error}
+    </div>
+  );
 
   if (loading) return (
     <div className="d-flex justify-content-center align-items-center vh-100">
@@ -134,7 +154,7 @@ export default function Home() {
                     <h5 className="card-title">{lecture.name}</h5>
                     <p className="card-text text-muted mb-4">{lecture.technique}</p>
                     <div className="mt-auto">
-                      <Link to={`/lectures/${lecture.id}`} className="btn btn-primary d-block">View Details</Link>
+                      <Link to={`/courses/${lecture.id}`} className="btn btn-primary d-block">View Details</Link>
                     </div>
                   </div>
                 </div>
@@ -178,7 +198,7 @@ export default function Home() {
                     <h5 className="card-title">{lecture.name}</h5>
                     <p className="card-text text-muted mb-4">{lecture.technique}</p>
                     <div className="mt-auto">
-                      <Link to={`/lectures/${lecture.id}`} className="btn btn-outline-primary d-block">View Details</Link>
+                      <Link to={`/courses/${lecture.id}`} className="btn btn-outline-primary d-block">View Details</Link>
                     </div>
                   </div>
                 </div>

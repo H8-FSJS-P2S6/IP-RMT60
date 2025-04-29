@@ -10,7 +10,8 @@
     "description": "Expert in ultrasonic testing for weld imperfections and material thickness evaluation.",
     "price": 7990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_ut.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_ut.jpg",
+    "UserId": 1
   },
   {
     "id": 2,
@@ -23,7 +24,8 @@
     "description": "Specializes in phased array ultrasonic testing for advanced inspections.",
     "price": 8500000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_paut.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_paut.jpg",
+    "UserId": 1
   },
   {
     "id": 3,
@@ -36,7 +38,8 @@
     "description": "Provides comprehensive radiographic testing training for pipelines.",
     "price": 8990000,
     "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_rt.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_rt.jpg",
+    "UserId": 1
   },
   {
     "id": 4,
@@ -49,7 +52,8 @@
     "description": "Expert in eddy current testing for conductive materials.",
     "price": 7500000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_ect.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_ect.jpg",
+    "UserId": 1
   },
   {
     "id": 5,
@@ -62,7 +66,8 @@
     "description": "Specializes in magnetic particle testing for surface defect detection.",
     "price": 5990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_mt.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_mt.jpg",
+    "UserId": 1
   },
   {
     "id": 6,
@@ -75,7 +80,8 @@
     "description": "Experienced in penetrant testing for non-porous materials.",
     "price": 4990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_pt.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_pt.jpg",
+    "UserId": 1
   },
   {
     "id": 7,
@@ -88,7 +94,8 @@
     "description": "Delivers visual testing courses for surface inspections.",
     "price": 5490000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_vt.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_vt.jpg",
+    "UserId": 1
   },
   {
     "id": 8,
@@ -101,7 +108,8 @@
     "description": "Expert in acoustic emission testing for structural health monitoring.",
     "price": 8200000,
     "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_aet.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_aet.jpg",
+    "UserId": 1
   },
   {
     "id": 9,
@@ -114,7 +122,8 @@
     "description": "Specializes in infrared thermography for heat leak detection.",
     "price": 7800000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_irt.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_irt.jpg",
+    "UserId": 1
   },
   {
     "id": 10,
@@ -127,7 +136,8 @@
     "description": "Provides digital radiography training for enhanced imaging.",
     "price": 9200000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_dr.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_dr.jpg",
+    "UserId": 1
   },
   {
     "id": 11,
@@ -140,6 +150,7 @@
     "description": "Expert in computed tomography for 3D internal inspections.",
     "price": 9500000,
     "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_ct.jpg"
+    "image": "https://example.com/saenal_aladin_rapi_ct.jpg",
+    "UserId": 1
   }
 ]

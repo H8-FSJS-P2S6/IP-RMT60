@@ -4,7 +4,9 @@ module.exports = (sequelize, DataTypes) => {
   class Category extends Model {
     static associate(models) {
       // Relasi Category → Lecture (One-to-Many)
-      Category.hasMany(models.Lecture);
+      Category.hasMany(models.Lecture, {
+        foreignKey: "CategoryId",
+      });
     }
   }
   Category.init(

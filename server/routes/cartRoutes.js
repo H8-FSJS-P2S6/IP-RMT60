@@ -6,7 +6,7 @@ const authentication = require("../middlewares/authentication");
 // All cart routes require authentication
 router.use(authentication);
 router.get("/", CartController.getUserCart);
-router.post("/", CartController.addToCart);
+router.post("/add", CartController.addToCart);
 router.delete("/:id", CartController.removeFromCart);
 
 module.exports = router;

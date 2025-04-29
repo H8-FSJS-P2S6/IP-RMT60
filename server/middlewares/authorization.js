@@ -1,12 +1,12 @@
-const adminAuthorization = async (req, res, next) => {
+function adminAuthorization(req, res, next) {
   try {
-    if (req.user.role !== "Admin") {
-      throw { name: "Forbidden", message: "You are not authorized" };
+    if (req.user.role !== "admin") {
+      throw { name: "Forbidden", message: "Admin access required" };
     }
     next();
   } catch (err) {
     next(err);
   }
-};
+}
 
 module.exports = { adminAuthorization };
