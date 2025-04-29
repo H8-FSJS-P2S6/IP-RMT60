@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-router"; 
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
@@ -7,13 +7,13 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     // Optional: redirect to home page
-    window.location.href = "/";
+    window.location.href = "/login";
   };
   
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">SNS NDT Learning</Link>
+        <Link className="navbar-brand fw-bold" to="/">SAR NDT SERVICES</Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -65,7 +65,7 @@ export default function Navbar() {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    {user.username}
+                    {user?.username || "User"}
                   </a>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>

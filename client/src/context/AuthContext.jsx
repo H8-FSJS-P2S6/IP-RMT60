@@ -7,21 +7,34 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Check if user is logged in on component mount
   useEffect(() => {
-    // Check if user is logged in from localStorage
+    // Check localStorage on initial load
+    checkAuthStatus();
+  }, []);
+
+  // Function to check auth status that can be reused
+  const checkAuthStatus = () => {
     const token = localStorage.getItem("access_token");
     const userData = localStorage.getItem("user");
     
     if (token && userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      
-      // Set authorization header for all future requests
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        
+        // Set authorization header for all future requests
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        logout(); // Clear invalid data
+      }
+    } else {
+      setUser(null);
     }
     
     setLoading(false);
-  }, []);
+  };
 
   const login = (userData, token) => {
     localStorage.setItem("access_token", token);
@@ -30,6 +43,27 @@ export function AuthProvider({ children }) {
     
     // Set authorization header
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  };
+
+  const googleLogin = (data) => {
+    if (!data || !data.access_token) {
+      console.error("Invalid Google login data");
+      return;
+    }
+    
+    const userData = {
+      id: data.id,
+      username: data.username || data.name,
+      email: data.email,
+      role: data.role
+    };
+    
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+    
+    // Set authorization header
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
   };
 
   const logout = () => {
@@ -50,9 +84,11 @@ export function AuthProvider({ children }) {
         user,
         loading,
         login,
+        googleLogin,
         logout,
         isAuthenticated,
-        isAdmin
+        isAdmin,
+        checkAuthStatus
       }}
     >
       {children}

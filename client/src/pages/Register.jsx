@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -14,6 +16,13 @@ export default function Register() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect jika pengguna sudah login
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,6 +62,12 @@ export default function Register() {
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-md-8 col-lg-6">
+          <div className="text-center mb-4">
+            <Link to="/" className="text-decoration-none">
+              <h1 className="text-primary fw-bold">SNS NDT Learning</h1>
+            </Link>
+          </div>
+          
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="text-center mb-4 fw-bold text-primary">Create an Account</h2>

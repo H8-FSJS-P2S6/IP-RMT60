@@ -1,15 +1,24 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router"; // PERBAIKAN: react-router-dom
+import { Link, useNavigate } from "react-router";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, googleLogin, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect jika pengguna sudah login
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,16 +39,14 @@ export default function Login() {
         formData
       );
 
-      // Simpan token dan data user ke localStorage
-      localStorage.setItem("access_token", response.data.access_token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
+      login(
+        {
           id: response.data.id,
           username: response.data.username,
           email: response.data.email,
           role: response.data.role,
-        })
+        },
+        response.data.access_token
       );
 
       // Redirect berdasarkan role
@@ -59,24 +66,15 @@ export default function Login() {
   async function handleCredentialResponse(response) {
     try {
       console.log("Encoded JWT ID token: " + response.credential);
-      
+
       const { data } = await axios.post(
         "http://localhost:3000/api/users/login/google",
         { id_token: response.credential }
       );
-      
-      // Simpan token dan data user ke localStorage (PERBAIKAN)
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: data.id,
-          username: data.username,
-          email: data.email,
-          role: data.role,
-        })
-      );
-      
+
+      // Gunakan fungsi googleLogin dari AuthContext
+      googleLogin(data);
+
       // Redirect berdasarkan role
       if (data.role === "Admin") {
         navigate("/admin/dashboard");
@@ -96,14 +94,14 @@ export default function Login() {
         client_id: import.meta.env.VITE_CLIENT_ID,
         callback: handleCredentialResponse,
       });
-      
+
       // Pastikan elemen buttonDiv sudah ada di DOM
       const buttonDiv = document.getElementById("buttonDiv");
       if (buttonDiv) {
-        window.google.accounts.id.renderButton(
-          buttonDiv,
-          { theme: "outline", size: "large" }
-        );
+        window.google.accounts.id.renderButton(buttonDiv, {
+          theme: "outline",
+          size: "large",
+        });
         window.google.accounts.id.prompt();
       }
     } else {
@@ -115,6 +113,12 @@ export default function Login() {
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-md-6 col-lg-5">
+          <div className="text-center mb-4">
+            <Link to="/" className="text-decoration-none">
+              <h1 className="text-primary fw-bold">SNS NDT Learning</h1>
+            </Link>
+          </div>
+
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="text-center mb-4 fw-bold text-primary">Login</h2>
