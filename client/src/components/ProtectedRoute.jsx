@@ -1,0 +1,38 @@
+import { Navigate, Outlet } from "react-router";
+import { useAuth } from "../context/AuthContext";
+
+export function ProtectedRoute() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+}
+
+export function AdminRoute() {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return isAuthenticated && isAdmin ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/login" />
+  );
+}
