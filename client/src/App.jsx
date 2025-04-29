@@ -1,112 +1,106 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router";
-import { AuthProvider } from "./context/AuthContext";
-import Navbar from "./components/Navbar";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Suspense, lazy } from "react";
+
+// Layouts
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
+import AdminLayout from "./layouts/AdminLayout";
+
+// Regular Pages
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import { useAuth } from "./context/AuthContext";
-import { useEffect } from "react";
+import NotFound from "./pages/NotFound";
 
-// Layout dengan Navbar
-function MainLayout({ children }) {
-  return (
-    <>
-      <Navbar />
-      <main>{children}</main>
-    </>
-  );
-}
+// Lazy-loaded pages
+const Courses = lazy(() => import("./pages/Courses"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const Categories = lazy(() => import("./pages/Categories"));
+const CategoryDetail = lazy(() => import("./pages/CategoryDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
 
-// Layout tanpa Navbar untuk halaman auth
-function AuthLayout({ children }) {
-  return <main className="auth-layout">{children}</main>;
-}
+// Admin Pages
+const AdminDashboard = lazy(() => import("./pages/Admin/Dashboard"));
+const AdminUsers = lazy(() => import("./pages/Admin/Users"));
+const AdminCourses = lazy(() => import("./pages/Admin/Courses"));
+const AdminCategories = lazy(() => import("./pages/Admin/Categories"));
 
-// Protected Route component untuk mengalihkan pengguna yang sudah login
-function GuestRoute({ children }) {
+// Route Guards
+const GuestRoute = () => {
   const { isAuthenticated } = useAuth();
-  
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return children;
-}
+  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
+};
+
+const ProtectedRoute = () => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+const AdminRoute = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
+  return isAuthenticated && isAdmin ? <Outlet /> : <Navigate to="/" replace />;
+};
+
+// Loading Fallback
+const LoadingFallback = () => (
+  <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+);
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
-  
-  // Debug untuk melihat status autentikasi
-  useEffect(() => {
-    console.log("Authentication status:", isAuthenticated);
-  }, [isAuthenticated]);
-  
   return (
-    <Routes>
-      {/* Halaman dengan Navbar */}
-      <Route 
-        path="/" 
-        element={
-          <MainLayout>
-            <Home />
-          </MainLayout>
-        } 
-      />
-      
-      {/* Halaman auth tanpa Navbar dan dengan pengalihan untuk pengguna yang sudah login */}
-      <Route 
-        path="/login" 
-        element={
-          <GuestRoute>
-            <AuthLayout>
-              <Login />
-            </AuthLayout>
-          </GuestRoute>
-        } 
-      />
-      <Route 
-        path="/register" 
-        element={
-          <GuestRoute>
-            <AuthLayout>
-              <Register />
-            </AuthLayout>
-          </GuestRoute>
-        } 
-      />
-      
-      {/* Rute lain (dengan Navbar) */}
-      <Route 
-        path="/courses" 
-        element={
-          <MainLayout>
-            <h1>Courses Page</h1>
-          </MainLayout>
-        } 
-      />
-      <Route 
-        path="/categories" 
-        element={
-          <MainLayout>
-            <h1>Categories Page</h1>
-          </MainLayout>
-        } 
-      />
-      
-      {/* Rute 404 */}
-      <Route 
-        path="*" 
-        element={
-          <MainLayout>
-            <h1 className="text-center mt-5">Page Not Found</h1>
-          </MainLayout>
-        } 
-      />
-    </Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        {/* Public Routes with MainLayout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:id" element={<CourseDetail />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/categories/:id" element={<CategoryDetail />} />
+        </Route>
+
+        {/* Auth Routes (Login/Register) */}
+        <Route element={<GuestRoute />}>
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+        </Route>
+
+        {/* Protected Routes for logged-in users */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Route>
+        </Route>
+
+        {/* Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/courses" element={<AdminCourses />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+          </Route>
+        </Route>
+
+        {/* 404 Not Found */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -115,5 +109,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;
