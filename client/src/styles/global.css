@@ -1,0 +1,34 @@
+/* Hover effects for cards */
+.hover-shadow {
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Auth layout styling */
+.auth-layout {
+  background-color: #f8f9fa;
+}
+
+/* Admin layout */
+.admin-main {
+  background-color: #f8f9fa;
+}
+
+/* Active nav items */
+.nav-link.active {
+  font-weight: 600;
+}
+
+/* Breadcrumb styling */
+.breadcrumb a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
