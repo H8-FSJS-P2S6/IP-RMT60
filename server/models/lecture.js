@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       Lecture.belongsToMany(models.User, {
         through: models.Cart,
       });
+      Lecture.hasMany(models.TransactionDetail, { foreignKey: "LectureId" });
+      Lecture.belongsToMany(models.Transaction, {
+        through: models.TransactionDetail,
+        foreignKey: "LectureId",
+        otherKey: "TransactionId",
+      });
     }
   }
   Lecture.init(
@@ -94,7 +100,7 @@ module.exports = (sequelize, DataTypes) => {
           model: "Users",
           key: "id",
         },
-      }
+      },
     },
     {
       sequelize,

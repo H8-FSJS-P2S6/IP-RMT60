@@ -1,11 +1,28 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import api from "../../utils/api";
-import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Pie, Bar } from "react-chartjs-2";
 
 // Register ChartJS components
-ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -20,17 +37,26 @@ export default function Dashboard() {
   const [coursesPerCategory, setCoursesPerCategory] = useState([]);
   const [monthlySales, setMonthlySales] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // In a real app, this might be a single endpoint that returns all dashboard data
-        const [statsResponse, usersResponse, ordersResponse, categoriesResponse, salesResponse] = await Promise.all([
+        setLoading(true);
+        setError(null);
+
+        const [
+          statsResponse,
+          usersResponse,
+          ordersResponse,
+          categoriesResponse,
+          salesResponse,
+        ] = await Promise.all([
           api.get("/admin/statistics"),
-          api.get("/admin/users?limit=5"),
+          api.get("/admin/recent-users?limit=5"), // Sesuaikan dengan route baru
           api.get("/admin/orders?limit=5"),
           api.get("/admin/categories/stats"),
-          api.get("/admin/orders/monthly")
+          api.get("/admin/orders/monthly"),
         ]);
 
         setStats(statsResponse.data);
@@ -40,6 +66,9 @@ export default function Dashboard() {
         setMonthlySales(salesResponse.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        setError(
+          "Failed to load dashboard data. Please check the server connection."
+        );
       } finally {
         setLoading(false);
       }
@@ -49,49 +78,55 @@ export default function Dashboard() {
   }, []);
 
   const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(price);
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  // Prepare data for pie chart
   const categoryChartData = {
-    labels: coursesPerCategory.map(item => item.name),
+    labels: coursesPerCategory.map((item) => item.name),
     datasets: [
       {
-        data: coursesPerCategory.map(item => item.courseCount),
+        data: coursesPerCategory.map((item) => item.courseCount),
         backgroundColor: [
-          '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-          '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#f8f9fc'
+          "#4e73df",
+          "#1cc88a",
+          "#36b9cc",
+          "#f6c23e",
+          "#e74a3b",
+          "#5a5c69",
+          "#858796",
+          "#6f42c1",
+          "#20c9a6",
+          "#f8f9fc",
         ],
         borderWidth: 1,
       },
     ],
   };
 
-  // Prepare data for bar chart
   const salesChartData = {
-    labels: monthlySales.map(item => item.month),
+    labels: monthlySales.map((item) => item.month),
     datasets: [
       {
-        label: 'Revenue',
-        data: monthlySales.map(item => item.revenue),
-        backgroundColor: '#4e73df',
+        label: "Revenue",
+        data: monthlySales.map((item) => item.revenue),
+        backgroundColor: "#4e73df",
       },
       {
-        label: 'Orders',
-        data: monthlySales.map(item => item.orderCount),
-        backgroundColor: '#1cc88a',
+        label: "Orders",
+        data: monthlySales.map((item) => item.orderCount),
+        backgroundColor: "#1cc88a",
       },
     ],
   };
@@ -100,18 +135,43 @@ export default function Dashboard() {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
       },
       title: {
         display: true,
-        text: 'Monthly Sales Performance',
+        text: "Monthly Sales Performance",
       },
     },
   };
 
+  if (error) {
+    return (
+      <div className="container-fluid px-4">
+        <h1 className="mt-4 mb-4">Dashboard</h1>
+        <div className="alert alert-danger">
+          <h4 className="alert-heading">Error Loading Dashboard!</h4>
+          <p>{error}</p>
+          <hr />
+          <p className="mb-0">
+            Please check server connection or contact the administrator.
+          </p>
+          <button
+            className="btn btn-primary mt-3"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: "80vh" }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "80vh" }}
+      >
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -122,8 +182,7 @@ export default function Dashboard() {
   return (
     <div className="container-fluid px-4">
       <h1 className="mt-4 mb-4">Dashboard</h1>
-      
-      {/* Stats Cards */}
+
       <div className="row g-4 mb-4">
         <div className="col-xl-3 col-md-6">
           <div className="card bg-primary text-white h-100">
@@ -139,14 +198,19 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <Link to="/admin/users" className="small text-white text-decoration-none">
+              <Link
+                to="/admin/users"
+                className="small text-white text-decoration-none"
+              >
                 View Details
               </Link>
-              <div className="small text-white"><i className="bi bi-chevron-right"></i></div>
+              <div className="small text-white">
+                <i className="bi bi-chevron-right"></i>
+              </div>
             </div>
           </div>
         </div>
-        
+
         <div className="col-xl-3 col-md-6">
           <div className="card bg-success text-white h-100">
             <div className="card-body">
@@ -161,14 +225,19 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <Link to="/admin/courses" className="small text-white text-decoration-none">
+              <Link
+                to="/admin/courses"
+                className="small text-white text-decoration-none"
+              >
                 View Details
               </Link>
-              <div className="small text-white"><i className="bi bi-chevron-right"></i></div>
+              <div className="small text-white">
+                <i className="bi bi-chevron-right"></i>
+              </div>
             </div>
           </div>
         </div>
-        
+
         <div className="col-xl-3 col-md-6">
           <div className="card bg-info text-white h-100">
             <div className="card-body">
@@ -183,21 +252,28 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <Link to="/admin/orders" className="small text-white text-decoration-none">
+              <Link
+                to="/admin/orders"
+                className="small text-white text-decoration-none"
+              >
                 View Details
               </Link>
-              <div className="small text-white"><i className="bi bi-chevron-right"></i></div>
+              <div className="small text-white">
+                <i className="bi bi-chevron-right"></i>
+              </div>
             </div>
           </div>
         </div>
-        
+
         <div className="col-xl-3 col-md-6">
           <div className="card bg-warning text-white h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
                   <div className="small text-white-50">Total Revenue</div>
-                  <div className="fs-5 fw-bold">{formatToIDR(stats.revenue)}</div>
+                  <div className="fs-5 fw-bold">
+                    {formatToIDR(stats.revenue)}
+                  </div>
                 </div>
                 <div>
                   <i className="bi bi-currency-dollar fs-1"></i>
@@ -205,16 +281,20 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <Link to="/admin/reports" className="small text-white text-decoration-none">
+              <Link
+                to="/admin/reports"
+                className="small text-white text-decoration-none"
+              >
                 View Reports
               </Link>
-              <div className="small text-white"><i className="bi bi-chevron-right"></i></div>
+              <div className="small text-white">
+                <i className="bi bi-chevron-right"></i>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts Row */}
       <div className="row mb-4">
         <div className="col-lg-8">
           <div className="card mb-4">
@@ -223,7 +303,11 @@ export default function Dashboard() {
               Monthly Sales
             </div>
             <div className="card-body">
-              <Bar data={salesChartData} options={salesChartOptions} height={300} />
+              <Bar
+                data={salesChartData}
+                options={salesChartOptions}
+                height={300}
+              />
             </div>
           </div>
         </div>
@@ -240,7 +324,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tables Row */}
       <div className="row">
         <div className="col-lg-6">
           <div className="card mb-4">
@@ -260,13 +343,17 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentUsers.map(user => (
+                    {recentUsers.map((user) => (
                       <tr key={user.id}>
                         <td>{user.username}</td>
                         <td>{user.email}</td>
                         <td>{formatDate(user.createdAt)}</td>
                         <td>
-                          <span className={`badge ${user.role === "Admin" ? "bg-danger" : "bg-primary"}`}>
+                          <span
+                            className={`badge ${
+                              user.role === "Admin" ? "bg-danger" : "bg-primary"
+                            }`}
+                          >
                             {user.role}
                           </span>
                         </td>
@@ -302,18 +389,22 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map(order => (
+                    {recentOrders.map((order) => (
                       <tr key={order.id}>
                         <td>#{order.id}</td>
                         <td>{order.User.username}</td>
                         <td>{formatDate(order.createdAt)}</td>
                         <td>{formatToIDR(order.totalAmount)}</td>
                         <td>
-                          <span className={`badge ${
-                            order.status === "Completed" ? "bg-success" :
-                            order.status === "Processing" ? "bg-warning" :
-                            "bg-info"
-                          }`}>
+                          <span
+                            className={`badge ${
+                              order.status === "Completed"
+                                ? "bg-success"
+                                : order.status === "Processing"
+                                ? "bg-warning"
+                                : "bg-info"
+                            }`}
+                          >
                             {order.status}
                           </span>
                         </td>

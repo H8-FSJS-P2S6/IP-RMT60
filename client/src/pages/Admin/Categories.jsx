@@ -65,7 +65,10 @@ export default function Categories() {
       // Close modal and reset form
       document.getElementById('categoryFormModal').querySelector('[data-bs-dismiss="modal"]').click();
       setSelectedCategory(null);
-      resetForm();
+      setFormData({
+        name: "",
+        description: ""
+      });
     } catch (error) {
       console.error("Error saving category:", error);
       alert(error.response?.data?.message || "Failed to save category");
@@ -84,7 +87,7 @@ export default function Categories() {
       setCategoryToDelete(null);
     } catch (error) {
       console.error("Error deleting category:", error);
-      alert(error.response?.data?.message || "Failed to delete category. Make sure no courses are using this category.");
+      alert(error.response?.data?.message || "Failed to delete category");
     }
   };
 

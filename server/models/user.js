@@ -4,12 +4,11 @@ const { hashPassword } = require("../helpers/bcrypt");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // Relasi User → Lecture (One-to-Many, untuk pengelola lecture)
       User.hasMany(models.Lecture);
-      // Relasi User ↔ Lecture (Many-to-Many melalui Cart)
       User.belongsToMany(models.Lecture, {
         through: models.Cart,
       });
+      User.hasMany(models.Transaction, { foreignKey: 'UserId' });
     }
   }
   User.init(

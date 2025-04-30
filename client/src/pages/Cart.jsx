@@ -7,7 +7,7 @@ export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [processing, setProcessing] = useState(false);
+  const [processing] = useState(false);
 
   useEffect(() => {
     const fetchCartItems = async () => {

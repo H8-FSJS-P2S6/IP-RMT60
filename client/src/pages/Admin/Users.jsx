@@ -20,18 +20,16 @@ export default function Users() {
 
   // Fetch users with pagination and optional search
   const fetchUsers = async (page = 1, search = "") => {
-    setLoading(true);
     try {
+      setLoading(true);
       const params = new URLSearchParams();
       params.append("page", page);
-      params.append("limit", 10);
       if (search) params.append("search", search);
-
-      const response = await api.get(`/admin/users?${params.toString()}`);
       
-      setUsers(response.data.users);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
+      const response = await api.get(`/admin/users?${params}`);
+      setUsers(response.data.users || response.data);
+      setTotalPages(response.data.totalPages || 1);
+      setCurrentPage(response.data.currentPage || 1);
     } catch (error) {
       console.error("Error fetching users:", error);
       setError("Failed to load users. Please try again.");

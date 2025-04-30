@@ -34,7 +34,6 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-// Di bagian akhir sebelum module.exports
 app.use(require("./middlewares/errorHandler"));
 
 module.exports = app;
