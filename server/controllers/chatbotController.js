@@ -2,7 +2,7 @@ const { sendMessageToDialogflow } = require('../helpers/dialogflow');
 const { Lecture, Category } = require('../models');
 
 class ChatbotController {
-  // Handle user messages
+
   static async sendMessage(req, res, next) {
     try {
       const { message, sessionId } = req.body;

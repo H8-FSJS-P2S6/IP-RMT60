@@ -1,12 +1,28 @@
-import { useState, useEffect } from "react";
-import api from "../../utils/api";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  fetchUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  setUserPage,
+  setUserSearch,
+  selectUsers,
+  selectUserLoading,
+  selectUserError,
+  selectUserPagination,
+  selectUserSuccess
+} from "../../store/slices/adminSlice";
+
 
 export default function Users() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const dispatch = useAppDispatch();
+  const users = useAppSelector(selectUsers);
+  const loading = useAppSelector(selectUserLoading);
+  const error = useAppSelector(selectUserError);
+  const { currentPage, totalPages } = useAppSelector(selectUserPagination);
+  const success = useAppSelector(selectUserSuccess);
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [userToDelete, setUserToDelete] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -18,38 +34,45 @@ export default function Users() {
     address: ""
   });
 
-  // Fetch users with pagination and optional search
-  const fetchUsers = async (page = 1, search = "") => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      params.append("page", page);
-      if (search) params.append("search", search);
-      
-      const response = await api.get(`/admin/users?${params}`);
-      setUsers(response.data.users || response.data);
-      setTotalPages(response.data.totalPages || 1);
-      setCurrentPage(response.data.currentPage || 1);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setError("Failed to load users. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    dispatch(fetchUsers({
+      page: currentPage,
+      search: searchTerm
+    }));
+  }, [dispatch, currentPage]);
 
   useEffect(() => {
-    fetchUsers(currentPage, searchTerm);
-  }, [currentPage]);
+    if (success) {
+      // Close modals on success
+      if (userToDelete) {
+        document.getElementById('deleteConfirmModal').querySelector('[data-bs-dismiss="modal"]').click();
+        setUserToDelete(null);
+      }
+      if (selectedUser !== null) {
+        document.getElementById('userFormModal').querySelector('[data-bs-dismiss="modal"]').click();
+        setSelectedUser(null);
+        setFormData({
+          username: "",
+          email: "",
+          role: "User",
+          phoneNumber: "",
+          address: ""
+        });
+      }
+    }
+  }, [success, userToDelete, selectedUser]);
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    dispatch(setUserPage(page));
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchUsers(1, searchTerm);
+    dispatch(setUserSearch(searchTerm));
+    dispatch(fetchUsers({
+      page: 1,
+      search: searchTerm
+    }));
   };
 
   const handleEditClick = (user) => {
@@ -75,47 +98,21 @@ export default function Users() {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (selectedUser) {
-        await api.put(`/admin/users/${selectedUser.id}`, formData);
-      } else {
-        await api.post("/admin/users", formData);
-      }
-      
-      // Refresh the user list
-      fetchUsers(currentPage, searchTerm);
-      
-      // Close modal and reset form
-      document.getElementById('userFormModal').querySelector('[data-bs-dismiss="modal"]').click();
-      setSelectedUser(null);
-      setFormData({
-        username: "",
-        email: "",
-        role: "User",
-        phoneNumber: "",
-        address: ""
-      });
-    } catch (error) {
-      console.error("Error saving user:", error);
-      alert(error.response?.data?.message || "Failed to save user");
+    if (selectedUser) {
+      dispatch(updateUser({ 
+        id: selectedUser.id, 
+        userData: formData 
+      }));
+    } else {
+      dispatch(createUser(formData));
     }
   };
 
-  const confirmDelete = async () => {
-    try {
-      await api.delete(`/admin/users/${userToDelete.id}`);
-      
-      // Remove user from list
-      setUsers(users.filter(user => user.id !== userToDelete.id));
-      
-      // Close modal
-      document.getElementById('deleteConfirmModal').querySelector('[data-bs-dismiss="modal"]').click();
-      setUserToDelete(null);
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert(error.response?.data?.message || "Failed to delete user");
+  const confirmDelete = () => {
+    if (userToDelete) {
+      dispatch(deleteUser(userToDelete.id));
     }
   };
 

@@ -1,79 +1,73 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import api from '../utils/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import {
+  fetchCart,
+  selectCartItems,
+  selectCartLoading,
+  selectCartError,
+  selectCartTotal,
+} from '../store/slices/cartSlice';
+import {
+  createPayment,
+  selectTransactionLoading,
+  selectTransactionError,
+  selectPaymentRedirect,
+  resetPaymentStatus,
+} from '../store/slices/transactionSlice';
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
-  
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector(selectCartItems);
+  const cartLoading = useAppSelector(selectCartLoading);
+  const cartError = useAppSelector(selectCartError);
+  const totalAmount = useAppSelector(selectCartTotal);
+  const transactionLoading = useAppSelector(selectTransactionLoading);
+  const transactionError = useAppSelector(selectTransactionError);
+  const paymentRedirect = useAppSelector(selectPaymentRedirect);
+
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await api.get('/carts');
-        setCartItems(response.data);
-      } catch (error) {
-        console.error('Error fetching cart:', error);
-        setError('Failed to load your cart. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchCart();
-  }, []);
-  
+    dispatch(fetchCart());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (paymentRedirect) {
+      window.location.href = paymentRedirect;
+      dispatch(resetPaymentStatus());
+    }
+  }, [paymentRedirect, dispatch]);
+
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(price);
   };
-  
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.Lecture.price, 0);
-  };
-  
+
   const handlePayment = async () => {
     try {
-      setProcessing(true);
-      
-      const response = await api.post('/payments/create');
-      
-      // Handle client-side Midtrans configuration
-      const { token, redirect_url } = response.data.payment;
-      
-      if (redirect_url) {
-        // Redirect to Midtrans payment page
-        window.location.href = redirect_url;
-      } else if (token) {
-        // Use Snap.js to show popup payment
-        window.snap.pay(token, {
-          onSuccess: function(result) {
-            navigate(`/payment/success?order_id=${response.data.transaction.invoice_number}`);
-          },
-          onPending: function(result) {
-            navigate(`/payment/pending?order_id=${response.data.transaction.invoice_number}`);
-          },
-          onError: function(result) {
-            navigate(`/payment/failed?order_id=${response.data.transaction.invoice_number}`);
-          },
-          onClose: function() {
+      const response = await dispatch(createPayment()).unwrap();
+      if (response.payment.token) {
+        window.snap.pay(response.payment.token, {
+          onSuccess: (result) =>
+            navigate(`/payment/success?order_id=${response.transaction.invoice_number}`),
+          onPending: (result) =>
+            navigate(`/payment/pending?order_id=${response.transaction.invoice_number}`),
+          onError: (result) =>
+            navigate(`/payment/failed?order_id=${response.transaction.invoice_number}`),
+          onClose: () => {
             alert('You closed the payment window. Please complete your payment to access the courses.');
-          }
+          },
         });
       }
     } catch (error) {
       console.error('Payment error:', error);
-      setError('Failed to process payment. Please try again.');
-      setProcessing(false);
     }
   };
-  
-  if (loading) {
+
+  if (cartLoading) {
     return (
       <div className="container py-5">
         <div className="d-flex justify-content-center">
@@ -84,7 +78,7 @@ export default function Checkout() {
       </div>
     );
   }
-  
+
   if (cartItems.length === 0) {
     return (
       <div className="container py-5">
@@ -92,10 +86,7 @@ export default function Checkout() {
           <div className="card-body text-center">
             <h2>Your cart is empty</h2>
             <p>Please add courses to your cart before checkout</p>
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate('/courses')}
-            >
+            <button className="btn btn-primary" onClick={() => navigate('/courses')}>
               Browse Courses
             </button>
           </div>
@@ -103,7 +94,7 @@ export default function Checkout() {
       </div>
     );
   }
-  
+
   return (
     <div className="container py-5">
       <div className="row">
@@ -121,7 +112,7 @@ export default function Checkout() {
                   </tr>
                 </thead>
                 <tbody>
-                  {cartItems.map(item => (
+                  {cartItems.map((item) => (
                     <tr key={item.id}>
                       <td>
                         <div>
@@ -137,14 +128,14 @@ export default function Checkout() {
                 <tfoot>
                   <tr>
                     <th>Total</th>
-                    <th className="text-end">{formatToIDR(calculateTotal())}</th>
+                    <th className="text-end">{formatToIDR(totalAmount)}</th>
                   </tr>
                 </tfoot>
               </table>
             </div>
           </div>
         </div>
-        
+
         <div className="col-lg-4">
           <div className="card">
             <div className="card-header bg-primary text-white">
@@ -152,16 +143,19 @@ export default function Checkout() {
             </div>
             <div className="card-body">
               <p>Click the button below to proceed with payment through Midtrans secure payment gateway.</p>
-              
               <div className="d-grid gap-2">
-                <button 
+                <button
                   className="btn btn-primary btn-lg"
                   onClick={handlePayment}
-                  disabled={processing}
+                  disabled={transactionLoading}
                 >
-                  {processing ? (
+                  {transactionLoading ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
                       Processing...
                     </>
                   ) : (
@@ -169,13 +163,11 @@ export default function Checkout() {
                   )}
                 </button>
               </div>
-              
-              {error && (
+              {(cartError || transactionError) && (
                 <div className="alert alert-danger mt-3">
-                  {error}
+                  {cartError || transactionError}
                 </div>
               )}
-              
               <div className="mt-3">
                 <small className="text-muted">
                   By clicking "Pay Now", you will be redirected to Midtrans secure payment page.
@@ -183,7 +175,6 @@ export default function Checkout() {
               </div>
             </div>
           </div>
-          
           <div className="card mt-3">
             <div className="card-body">
               <h6>Accepted Payment Methods</h6>

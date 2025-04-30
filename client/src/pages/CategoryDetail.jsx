@@ -1,14 +1,46 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import api from "../utils/api";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import {
+  fetchCategoryById,
+  selectCurrentCategory,
+  selectCategoriesLoading,
+  selectCategoriesError
+} from "../store/slices/categorySlice";
+import {
+  fetchCourses,
+  setSort,
+  selectCourses,
+  selectCoursesLoading
+} from "../store/slices/courseSlice";
 
 export default function CategoryDetail() {
   const { id } = useParams();
-  const [category, setCategory] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [sort, setSort] = useState("newest");
+  const dispatch = useAppDispatch();
+  const category = useAppSelector(selectCurrentCategory);
+  const categoryLoading = useAppSelector(selectCategoriesLoading);
+  const categoryError = useAppSelector(selectCategoriesError);
+  const courses = useAppSelector(selectCourses);
+  const coursesLoading = useAppSelector(selectCoursesLoading);
+  
+  const [sort, setLocalSort] = useState("newest");
+
+  useEffect(() => {
+    dispatch(fetchCategoryById(id));
+  }, [dispatch, id]);
+  
+  useEffect(() => {
+    dispatch(fetchCourses({
+      categoryId: id,
+      sort
+    }));
+  }, [dispatch, id, sort]);
+  
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    setLocalSort(value);
+    dispatch(setSort(value));
+  };
   
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
@@ -18,45 +50,7 @@ export default function CategoryDetail() {
     }).format(price);
   };
 
-  useEffect(() => {
-    const fetchCategoryDetails = async () => {
-      try {
-        // Get category details
-        const categoryResponse = await api.get(`/public/categories/${id}`);
-        setCategory(categoryResponse.data);
-        
-        // Get courses in this category
-        const coursesResponse = await api.get(`/public/lectures?categoryId=${id}`);
-        setCourses(coursesResponse.data.lectures || []);
-      } catch (error) {
-        console.error("Error fetching category details:", error);
-        setError("Failed to load category details. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategoryDetails();
-  }, [id]);
-
-  const handleSortChange = (e) => {
-    setSort(e.target.value);
-    
-    // Sort courses based on selected option
-    let sortedCourses = [...courses];
-    
-    if (e.target.value === "price_asc") {
-      sortedCourses.sort((a, b) => a.price - b.price);
-    } else if (e.target.value === "price_desc") {
-      sortedCourses.sort((a, b) => b.price - a.price);
-    } else if (e.target.value === "newest") {
-      sortedCourses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    
-    setCourses(sortedCourses);
-  };
-
-  if (loading) {
+  if (categoryLoading || coursesLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary" role="status">
@@ -66,11 +60,11 @@ export default function CategoryDetail() {
     );
   }
 
-  if (error) {
+  if (categoryError) {
     return (
       <div className="container py-5">
         <div className="alert alert-danger" role="alert">
-          {error}
+          {categoryError}
         </div>
         <Link to="/categories" className="btn btn-primary">
           Back to Categories

@@ -1,48 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import api from '../utils/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import {
+  fetchTransactionStatus,
+  selectCurrentTransaction,
+  selectTransactionLoading,
+  selectTransactionError,
+} from '../store/slices/transactionSlice';
 
 export default function PaymentResult() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [transaction, setTransaction] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
+  const dispatch = useAppDispatch();
+  const transaction = useAppSelector(selectCurrentTransaction);
+  const loading = useAppSelector(selectTransactionLoading);
+  const error = useAppSelector(selectTransactionError);
+
   // Get query params
   const params = new URLSearchParams(location.search);
   const orderId = params.get('order_id');
   const status = location.pathname.split('/').pop(); // success, failed, or pending
-  
+
   useEffect(() => {
     if (!orderId) {
       navigate('/');
       return;
     }
-    
-    const fetchTransactionStatus = async () => {
-      try {
-        const response = await api.get(`/payments/status/${orderId}`);
-        setTransaction(response.data);
-      } catch (error) {
-        console.error('Error fetching transaction:', error);
-        setError('Failed to load transaction details.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchTransactionStatus();
-  }, [orderId, navigate]);
-  
+    dispatch(fetchTransactionStatus(orderId));
+  }, [orderId, navigate, dispatch]);
+
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(price);
   };
-  
+
   const getStatusDetails = () => {
     switch (status) {
       case 'success':
@@ -50,34 +44,34 @@ export default function PaymentResult() {
           title: 'Payment Successful!',
           message: 'Thank you for your purchase. You can now access your courses.',
           icon: 'bi-check-circle-fill text-success',
-          variant: 'success'
+          variant: 'success',
         };
       case 'pending':
         return {
           title: 'Payment is Processing',
-          message: 'Your payment is being processed. We\'ll notify you once it\'s complete.',
+          message: "Your payment is being processed. We'll notify you once it's complete.",
           icon: 'bi-hourglass-split text-warning',
-          variant: 'warning'
+          variant: 'warning',
         };
       case 'failed':
         return {
           title: 'Payment Failed',
           message: 'Sorry, your payment could not be processed. Please try again.',
           icon: 'bi-x-circle-fill text-danger',
-          variant: 'danger'
+          variant: 'danger',
         };
       default:
         return {
           title: 'Payment Status',
-          message: 'Here\'s the status of your payment.',
+          message: "Here's the status of your payment.",
           icon: 'bi-info-circle-fill text-info',
-          variant: 'info'
+          variant: 'info',
         };
     }
   };
-  
+
   const statusDetails = getStatusDetails();
-  
+
   if (loading) {
     return (
       <div className="container py-5 text-center">
@@ -88,7 +82,7 @@ export default function PaymentResult() {
       </div>
     );
   }
-  
+
   return (
     <div className="container py-5">
       <div className={`card border-${statusDetails.variant} mb-4`}>
@@ -99,7 +93,7 @@ export default function PaymentResult() {
             <p className="card-text mb-0">{statusDetails.message}</p>
           </div>
         </div>
-        
+
         {transaction && (
           <div className="card-body">
             <div className="row mb-4">
@@ -126,11 +120,18 @@ export default function PaymentResult() {
                     <tr>
                       <td>Status</td>
                       <td>
-                        : <span className={`badge bg-${
-                          transaction.status === 'Completed' ? 'success' :
-                          transaction.status === 'Pending' ? 'warning' :
-                          transaction.status === 'Cancelled' ? 'danger' : 'secondary'
-                        }`}>
+                        :{' '}
+                        <span
+                          className={`badge bg-${
+                            transaction.status === 'Completed'
+                              ? 'success'
+                              : transaction.status === 'Pending'
+                              ? 'warning'
+                              : transaction.status === 'Cancelled'
+                              ? 'danger'
+                              : 'secondary'
+                          }`}
+                        >
                           {transaction.status}
                         </span>
                       </td>
@@ -138,12 +139,12 @@ export default function PaymentResult() {
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="col-md-6">
                 <h5>Purchased Courses</h5>
                 {transaction.TransactionDetails?.length > 0 ? (
                   <div className="list-group">
-                    {transaction.TransactionDetails.map(detail => (
+                    {transaction.TransactionDetails.map((detail) => (
                       <div key={detail.id} className="list-group-item list-group-item-action">
                         <div className="d-flex w-100 justify-content-between">
                           <h6 className="mb-1">{detail.Lecture?.name}</h6>
@@ -152,9 +153,7 @@ export default function PaymentResult() {
                         <p className="mb-1">{detail.Lecture?.technique}</p>
                         {transaction.status === 'Completed' && (
                           <small>
-                            <Link to={`/courses/${detail.LectureId}`}>
-                              View Course
-                            </Link>
+                            <Link to={`/courses/${detail.LectureId}`}>View Course</Link>
                           </small>
                         )}
                       </div>
@@ -165,21 +164,19 @@ export default function PaymentResult() {
                 )}
               </div>
             </div>
-            
+
             <div className="d-flex justify-content-center gap-3">
               <Link to="/" className="btn btn-outline-primary">
                 <i className="bi bi-house-door me-1"></i> Go to Home
               </Link>
-              
               <Link to="/courses" className="btn btn-primary">
                 <i className="bi bi-book me-1"></i> Browse More Courses
               </Link>
-              
               {transaction.status === 'Pending' && (
-                <a 
-                  href={`https://dashboard.sandbox.midtrans.com/payments/search?search=${transaction.invoice_number}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={`https://dashboard.sandbox.midtrans.com/payments/search?search=${transaction.invoice_number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn btn-warning"
                 >
                   <i className="bi bi-credit-card me-1"></i> Complete Payment
@@ -188,14 +185,14 @@ export default function PaymentResult() {
             </div>
           </div>
         )}
-        
+
         {error && (
           <div className="card-body">
-            <div className="alert alert-danger">
-              {error}
-            </div>
+            <div className="alert alert-danger">{error}</div>
             <div className="d-flex justify-content-center">
-              <Link to="/" className="btn btn-primary">Back to Home</Link>
+              <Link to="/" className="btn btn-primary">
+                Back to Home
+              </Link>
             </div>
           </div>
         )}

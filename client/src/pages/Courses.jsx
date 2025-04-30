@@ -1,132 +1,92 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router"; 
-import api from "../utils/api";
+import { useEffect } from "react";
+import { Link } from "react-router";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import {
+  fetchCourses,
+  setFilters,
+  setSort,
+  setPage,
+  selectCourses,
+  selectCoursesLoading,
+  selectCoursesError,
+  selectCoursesPagination,
+  selectCoursesFilters,
+  selectCoursesSort,
+} from "../store/slices/courseSlice";
+import {
+  fetchCategories,
+  selectCategories,
+} from "../store/slices/categorySlice";
+import { addToCart } from "../store/slices/cartSlice";
 
 export default function Courses() {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState([]);
-  const [filters, setFilters] = useState({
-    categoryId: "",
-    minPrice: "",
-    maxPrice: "",
-    search: ""
-  });
-  const [sort, setSort] = useState("newest");
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0
-  });
-  
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const dispatch = useAppDispatch();
+  const courses = useAppSelector(selectCourses);
+  const loading = useAppSelector(selectCoursesLoading);
+  const error = useAppSelector(selectCoursesError);
+  console.log(error);
 
-  const addToCart = async (courseId) => {
-    try {
-      await api.post("/carts/add", { lectureId: courseId });
-      // Tampilkan notifikasi sukses (bisa menggunakan toast notification atau alert)
-      alert("Kursus berhasil ditambahkan ke keranjang");
-    } catch (error) {
-      console.error("Error adding course to cart:", error);
-      alert("Gagal menambahkan kursus ke keranjang");
-    }
-  };
+  const pagination = useAppSelector(selectCoursesPagination);
+  const filters = useAppSelector(selectCoursesFilters);
+  const sort = useAppSelector(selectCoursesSort);
+  const categories = useAppSelector(selectCategories);
 
   useEffect(() => {
-    // Fetch categories
-    const fetchCategories = async () => {
-      try {
-        const { data } = await api.get("/public/categories");
-        setCategories(data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
-    fetchCategories();
-  }, []);
-  
   useEffect(() => {
-    // Fetch courses with filters, sorting and pagination
-    const fetchCourses = async () => {
-      setLoading(true);
-      try {
-        // Build query params
-        const queryParams = new URLSearchParams();
-        queryParams.append("page", pagination.currentPage);
-        queryParams.append("limit", 9);
-        
-        if (filters.search) queryParams.append("search", filters.search);
-        if (filters.categoryId) queryParams.append("categoryId", filters.categoryId);
-        if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
-        if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice); // Perbaikan kondisi yang tidak lengkap
-        
-        // Handle sorting
-        if (sort === "price_asc") {
-          queryParams.append("sortBy", "price");
-          queryParams.append("sortDirection", "ASC");
-        } else if (sort === "price_desc") {
-          queryParams.append("sortBy", "price");
-          queryParams.append("sortDirection", "DESC");
-        } else if (sort === "newest") {
-          queryParams.append("sortBy", "createdAt");
-          queryParams.append("sortDirection", "DESC");
-        }
-        
-        const { data } = await api.get(`/public/lectures?${queryParams.toString()}`);
-        setCourses(data.lectures);
-        setPagination({
-          currentPage: data.currentPage,
-          totalPages: data.totalPages,
-          totalItems: data.totalItems
-        });
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, [filters, sort, pagination.currentPage]);
+    dispatch(
+      fetchCourses({
+        page: pagination.currentPage,
+        ...filters,
+        sort,
+      })
+    );
+  }, [dispatch, pagination.currentPage, filters, sort]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters({
-      ...filters,
-      [name]: value
-    });
-    // Reset to first page when filter changes
-    setPagination({...pagination, currentPage: 1});
+    dispatch(
+      setFilters({
+        ...filters,
+        [name]: value,
+      })
+    );
   };
-  
+
   const handleSortChange = (e) => {
-    setSort(e.target.value);
+    dispatch(setSort(e.target.value));
   };
-  
+
   const handlePageChange = (page) => {
-    setPagination({...pagination, currentPage: page});
-    // Scroll to top when changing page
-    window.scrollTo(0, 0);
+    dispatch(setPage(page));
+  };
+
+  const handleAddToCart = (courseId) => {
+    dispatch(addToCart(courseId));
+    alert("Kursus berhasil ditambahkan ke keranjang");
+  };
+
+  const formatToIDR = (price) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
   };
 
   return (
     <div className="container py-5">
       <h1 className="mb-4">All Courses</h1>
-      
+
       {/* Search & Filters */}
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
             <div className="col-md-4">
               <div className="input-group">
-                <input 
+                <input
                   type="text"
                   className="form-control"
                   placeholder="Search courses..."
@@ -139,25 +99,25 @@ export default function Courses() {
                 </button>
               </div>
             </div>
-            
+
             <div className="col-md-3">
-              <select 
+              <select
                 className="form-select"
                 name="categoryId"
                 value={filters.categoryId}
                 onChange={handleFilterChange}
               >
                 <option value="">All Categories</option>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             <div className="col-md-3">
-              <select 
+              <select
                 className="form-select"
                 value={sort}
                 onChange={handleSortChange}
@@ -167,10 +127,10 @@ export default function Courses() {
                 <option value="price_desc">Price: High to Low</option>
               </select>
             </div>
-            
+
             <div className="col-md-2">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-outline-secondary w-100"
                 data-bs-toggle="collapse"
                 data-bs-target="#advancedFilters"
@@ -179,7 +139,7 @@ export default function Courses() {
               </button>
             </div>
           </div>
-          
+
           {/* Advanced Filters */}
           <div className="collapse mt-3" id="advancedFilters">
             <div className="row g-3">
@@ -210,16 +170,20 @@ export default function Courses() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="col-md-6 d-flex align-items-end">
-                <button 
+                <button
                   className="btn btn-secondary me-2"
-                  onClick={() => setFilters({
-                    categoryId: "",
-                    minPrice: "",
-                    maxPrice: "",
-                    search: ""
-                  })}
+                  onClick={() =>
+                    dispatch(
+                      setFilters({
+                        categoryId: "",
+                        minPrice: "",
+                        maxPrice: "",
+                        search: "",
+                      })
+                    )
+                  }
                 >
                   Reset Filters
                 </button>
@@ -229,7 +193,7 @@ export default function Courses() {
           </div>
         </div>
       </div>
-      
+
       {/* Course Results */}
       {loading ? (
         <div className="text-center py-5">
@@ -250,13 +214,16 @@ export default function Courses() {
           <p className="text-muted mb-4">
             Showing {courses.length} of {pagination.totalItems} courses
           </p>
-          
+
           <div className="row g-4 mb-4">
             {courses.map((course) => (
               <div key={course.id} className="col-md-6 col-lg-4">
                 <div className="card h-100 shadow-sm hover-shadow">
                   <img
-                    src={course.image || "https://via.placeholder.com/300x200?text=NDT+Course"}
+                    src={
+                      course.image ||
+                      "https://via.placeholder.com/300x200?text=NDT+Course"
+                    }
                     className="card-img-top"
                     alt={course.name}
                     height="200"
@@ -264,19 +231,28 @@ export default function Courses() {
                   />
                   <div className="card-body d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-secondary">{course.category?.name || "General"}</span>
-                      <span className="text-primary fw-bold">{formatToIDR(course.price)}</span>
+                      <span className="badge bg-secondary">
+                        {course.category?.name || "General"}
+                      </span>
+                      <span className="text-primary fw-bold">
+                        {formatToIDR(course.price)}
+                      </span>
                     </div>
                     <h5 className="card-title">{course.name}</h5>
-                    <p className="card-text text-muted mb-4">{course.technique}</p>
+                    <p className="card-text text-muted mb-4">
+                      {course.technique}
+                    </p>
                     <div className="mt-auto">
                       <div className="d-flex gap-2">
-                        <Link to={`/courses/${course.id}`} className="btn btn-outline-primary flex-grow-1">
+                        <Link
+                          to={`/courses/${course.id}`}
+                          className="btn btn-outline-primary flex-grow-1"
+                        >
                           Detail
                         </Link>
-                        <button 
-                          className="btn btn-primary" 
-                          onClick={() => addToCart(course.id)}
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleAddToCart(course.id)}
                         >
                           <i className="bi bi-cart-plus"></i> Tambah
                         </button>
@@ -287,24 +263,30 @@ export default function Courses() {
               </div>
             ))}
           </div>
-          
+
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <nav aria-label="Course pagination">
               <ul className="pagination justify-content-center">
-                <li className={`page-item ${pagination.currentPage === 1 ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link" 
+                <li
+                  className={`page-item ${
+                    pagination.currentPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
                     onClick={() => handlePageChange(pagination.currentPage - 1)}
                   >
                     Previous
                   </button>
                 </li>
-                
-                {[...Array(pagination.totalPages).keys()].map(page => (
-                  <li 
-                    key={page + 1} 
-                    className={`page-item ${pagination.currentPage === page + 1 ? 'active' : ''}`}
+
+                {[...Array(pagination.totalPages).keys()].map((page) => (
+                  <li
+                    key={page + 1}
+                    className={`page-item ${
+                      pagination.currentPage === page + 1 ? "active" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -314,10 +296,16 @@ export default function Courses() {
                     </button>
                   </li>
                 ))}
-                
-                <li className={`page-item ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link" 
+
+                <li
+                  className={`page-item ${
+                    pagination.currentPage === pagination.totalPages
+                      ? "disabled"
+                      : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
                     onClick={() => handlePageChange(pagination.currentPage + 1)}
                   >
                     Next

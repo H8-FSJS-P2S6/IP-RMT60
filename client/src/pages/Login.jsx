@@ -1,24 +1,42 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import api from "../utils/api";
+import { Link, useNavigate, useLocation } from "react-router";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import {
+  login,
+  googleLogin,
+  selectAuthLoading,
+  selectAuthError,
+  selectIsAuthenticated,
+  selectIsAdmin,
+  clearAuthError
+} from "../store/slices/authSlice";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, googleLogin, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const loading = useAppSelector(selectAuthLoading);
+  const error = useAppSelector(selectAuthError);
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
+  useEffect(() => {
+    // Clear any previous errors when mounting component
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      const from = location.state?.from?.pathname || (isAdmin ? "/admin/dashboard" : "/");
+      navigate(from);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate, location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,72 +48,22 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.post(
-        "/users/login",
-        formData
-      );
-
-      login(
-        {
-          id: response.data.id,
-          username: response.data.username,
-          email: response.data.email,
-          role: response.data.role,
-        },
-        response.data.access_token
-      );
-
-      // Admin selalu ke dashboard admin, user biasa ke homepage
-      if (response.data.role === "Admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError(error.response?.data?.message || "Invalid email or password");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(login(formData));
   };
 
   async function handleCredentialResponse(response) {
-    try {
-      console.log("Encoded JWT ID token: " + response.credential);
-
-      const { data } = await api.post(
-        "/users/login/google",
-        { id_token: response.credential }
-      );
-
-      // Gunakan fungsi googleLogin dari AuthContext
-      googleLogin(data);
-
-      // Admin selalu ke dashboard admin, user biasa ke homepage
-      if (data.role === "Admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      setError(error.response?.data?.message || "Google login failed");
-    }
+    dispatch(googleLogin({ id_token: response.credential }));
   }
 
   useEffect(() => {
-    // Pastikan window.google tersedia
+    // Ensure window.google is available
     if (window.google && window.google.accounts) {
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_CLIENT_ID,
         callback: handleCredentialResponse,
       });
 
-      // Pastikan elemen buttonDiv sudah ada di DOM
+      // Ensure buttonDiv element exists in DOM
       const buttonDiv = document.getElementById("buttonDiv");
       if (buttonDiv) {
         window.google.accounts.id.renderButton(buttonDiv, {
@@ -105,7 +73,7 @@ export default function Login() {
         window.google.accounts.id.prompt();
       }
     } else {
-      console.error("Google API belum tersedia");
+      console.error("Google API is not available");
     }
   }, []);
 

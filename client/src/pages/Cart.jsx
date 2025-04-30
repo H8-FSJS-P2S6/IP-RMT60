@@ -1,29 +1,34 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router"; 
-import api from "../utils/api";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { 
+  fetchCart, 
+  removeFromCart, 
+  selectCartItems, 
+  selectCartLoading, 
+  selectCartError,
+  selectCartTotal
+} from "../store/slices/cartSlice";
 
 export default function Cart() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [processing] = useState(false);
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector(selectCartItems);
+  const loading = useAppSelector(selectCartLoading);
+  const error = useAppSelector(selectCartError);
+  const totalAmount = useAppSelector(selectCartTotal);
 
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const { data } = await api.get("/carts");
-        setCartItems(data);
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-        setError("Failed to load your cart. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    dispatch(fetchCart());
+  }, [dispatch]);
 
-    fetchCartItems();
-  }, []);
+  const handleRemoveItem = (id) => {
+    dispatch(removeFromCart(id));
+  };
+
+  const handleCheckout = () => {
+    navigate("/checkout");
+  };
 
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
@@ -31,24 +36,6 @@ export default function Cart() {
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(price);
-  };
-
-  const handleRemoveItem = async (id) => {
-    try {
-      await api.delete(`/carts/${id}`);
-      setCartItems(cartItems.filter(item => item.id !== id));
-    } catch (error) {
-      console.error("Error removing item:", error);
-      alert("Failed to remove item from cart");
-    }
-  };
-
-  const handleCheckout = () => {
-    navigate("/checkout");
-  };
-
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.Lecture.price, 0);
   };
 
   if (loading) {
@@ -158,7 +145,7 @@ export default function Cart() {
               
               <div className="d-flex justify-content-between mb-2">
                 <span>Subtotal:</span>
-                <span className="fw-bold">{formatToIDR(calculateTotal())}</span>
+                <span className="fw-bold">{formatToIDR(totalAmount)}</span>
               </div>
               
               <div className="d-flex justify-content-between mb-2">
@@ -170,22 +157,14 @@ export default function Cart() {
               
               <div className="d-flex justify-content-between mb-4">
                 <span className="fw-bold">Total:</span>
-                <span className="fw-bold text-primary">{formatToIDR(calculateTotal())}</span>
+                <span className="fw-bold text-primary">{formatToIDR(totalAmount)}</span>
               </div>
               
               <button 
                 className="btn btn-primary w-100 py-2"
                 onClick={handleCheckout}
-                disabled={processing}
               >
-                {processing ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Processing...
-                  </>
-                ) : (
-                  "Proceed to Checkout"
-                )}
+                Proceed to Checkout
               </button>
               
               <hr className="my-4" />

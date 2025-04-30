@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Provider } from 'react-redux';
+import store from './store';
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -92,10 +94,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </Provider>
   );
 }

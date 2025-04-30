@@ -1,6 +1,21 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router";
-import api from "../../utils/api";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  fetchDashboardStats,
+  fetchRecentUsers,
+  fetchRecentOrders,
+  fetchCategoryStats,
+  fetchMonthlySales,
+  selectDashboardStats,
+  selectRecentUsers,
+  selectRecentOrders,
+  selectCategoryStats,
+  selectMonthlySales,
+  selectDashboardLoading,
+  selectDashboardError
+} from "../../store/slices/adminSlice";
+import DashboardSkeleton from "../../components/DashboardSkeleton";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -25,57 +40,22 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalCourses: 0,
-    totalCategories: 0,
-    totalOrders: 0,
-    revenue: 0,
-  });
-  const [recentUsers, setRecentUsers] = useState([]);
-  const [recentOrders, setRecentOrders] = useState([]);
-  const [coursesPerCategory, setCoursesPerCategory] = useState([]);
-  const [monthlySales, setMonthlySales] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useAppDispatch();
+  const stats = useAppSelector(selectDashboardStats);
+  const recentUsers = useAppSelector(selectRecentUsers);
+  const recentOrders = useAppSelector(selectRecentOrders);
+  const coursesPerCategory = useAppSelector(selectCategoryStats);
+  const monthlySales = useAppSelector(selectMonthlySales);
+  const loading = useAppSelector(selectDashboardLoading);
+  const error = useAppSelector(selectDashboardError);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [
-          statsResponse,
-          usersResponse,
-          ordersResponse,
-          categoriesResponse,
-          salesResponse,
-        ] = await Promise.all([
-          api.get("/admin/statistics"),
-          api.get("/admin/recent-users?limit=5"), // Sesuaikan dengan route baru
-          api.get("/admin/orders?limit=5"),
-          api.get("/admin/categories/stats"),
-          api.get("/admin/orders/monthly"),
-        ]);
-
-        setStats(statsResponse.data);
-        setRecentUsers(usersResponse.data);
-        setRecentOrders(ordersResponse.data);
-        setCoursesPerCategory(categoriesResponse.data);
-        setMonthlySales(salesResponse.data);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setError(
-          "Failed to load dashboard data. Please check the server connection."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+    dispatch(fetchDashboardStats());
+    dispatch(fetchRecentUsers());
+    dispatch(fetchRecentOrders());
+    dispatch(fetchCategoryStats());
+    dispatch(fetchMonthlySales());
+  }, [dispatch]);
 
   const formatToIDR = (price) => {
     return new Intl.NumberFormat("id-ID", {
@@ -167,16 +147,7 @@ export default function Dashboard() {
   }
 
   if (loading) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "80vh" }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
