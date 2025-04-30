@@ -130,7 +130,7 @@ export default function Categories() {
                 <div className="card-body">
                   <div className="mb-3">
                     <img 
-                      src="https://via.placeholder.com/80?text=RT" 
+                      src="https://www.mme-group.com/fileadmin/_processed_/8/4/csm_MME_RT_Heerenveen-4_533d4bb7aa.jpg" 
                       alt="Radiography Testing"
                       className="rounded-circle bg-primary p-2"
                       width="80"
@@ -151,7 +151,7 @@ export default function Categories() {
                 <div className="card-body">
                   <div className="mb-3">
                     <img 
-                      src="https://via.placeholder.com/80?text=UT" 
+                      src="https://gammabuana.com/wp-content/uploads/2024/10/ultrasonic-testing-non-destructive-test.jpg" 
                       alt="Ultrasonic Testing"
                       className="rounded-circle bg-primary p-2"
                       width="80"
@@ -172,7 +172,7 @@ export default function Categories() {
                 <div className="card-body">
                   <div className="mb-3">
                     <img 
-                      src="https://via.placeholder.com/80?text=MT" 
+                      src="https://hsseworld.com/wp-content/uploads/2021/08/magnetic-particle-testing.jpg" 
                       alt="Magnetic Testing"
                       className="rounded-circle bg-primary p-2"
                       width="80"

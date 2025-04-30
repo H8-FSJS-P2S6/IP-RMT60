@@ -34,6 +34,5 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-app.use(require("./middlewares/errorHandler"));
 
 module.exports = app;

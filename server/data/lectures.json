@@ -10,7 +10,7 @@
     "description": "Expert in ultrasonic testing for weld imperfections and material thickness evaluation.",
     "price": 7990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_ut.jpg",
+    "image": "https://gammabuana.com/wp-content/uploads/2024/10/ultrasonic-testing-non-destructive-test.jpg",
     "UserId": 1
   },
   {
@@ -24,7 +24,7 @@
     "description": "Specializes in phased array ultrasonic testing for advanced inspections.",
     "price": 8500000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_paut.jpg",
+    "image": "https://www.lavender-ndt.com/wp-content/uploads/2015/01/Lavender-Alex-Wilkinson-Media-22-of-175.jpg",
     "UserId": 1
   },
   {
@@ -38,7 +38,7 @@
     "description": "Provides comprehensive radiographic testing training for pipelines.",
     "price": 8990000,
     "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_rt.jpg",
+    "image": "https://www.mme-group.com/fileadmin/_processed_/8/4/csm_MME_RT_Heerenveen-4_533d4bb7aa.jpg",
     "UserId": 1
   },
   {
@@ -52,7 +52,7 @@
     "description": "Expert in eddy current testing for conductive materials.",
     "price": 7500000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_ect.jpg",
+    "image": "https://www.qualitymag.com/ext/resources/Issues/2016/November/eddy/QM1116-FT7-EddyCurrent-p5FT_conductivity.jpg",
     "UserId": 1
   },
   {
@@ -66,7 +66,7 @@
     "description": "Specializes in magnetic particle testing for surface defect detection.",
     "price": 5990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_mt.jpg",
+    "image": "https://hsseworld.com/wp-content/uploads/2021/08/magnetic-particle-testing.jpg",
     "UserId": 1
   },
   {
@@ -80,7 +80,7 @@
     "description": "Experienced in penetrant testing for non-porous materials.",
     "price": 4990000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_pt.jpg",
+    "image": "https://3.imimg.com/data3/BK/MH/MY-9211796/liquid-penetrant-testing-500x500.jpg",
     "UserId": 1
   },
   {
@@ -94,7 +94,7 @@
     "description": "Delivers visual testing courses for surface inspections.",
     "price": 5490000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_vt.jpg",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzQacV6P7E4WvUnFoW-pMsRRil0pmlj4Yrgg&s",
     "UserId": 1
   },
   {
@@ -108,7 +108,7 @@
     "description": "Expert in acoustic emission testing for structural health monitoring.",
     "price": 8200000,
     "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_aet.jpg",
+    "image": "https://www.twi-global.com/image-library/hero/acoustic-emission-testing.jpg",
     "UserId": 1
   },
   {
@@ -122,7 +122,7 @@
     "description": "Specializes in infrared thermography for heat leak detection.",
     "price": 7800000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_irt.jpg",
+    "image": "https://www.advancedtech.com/wp-content/uploads/2022/04/thermography-header.jpg",
     "UserId": 1
   },
   {
@@ -136,21 +136,7 @@
     "description": "Provides digital radiography training for enhanced imaging.",
     "price": 9200000,
     "availability": "Available",
-    "image": "https://example.com/saenal_aladin_rapi_dr.jpg",
-    "UserId": 1
-  },
-  {
-    "id": 11,
-    "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
-    "technique": "Computed Tomography (CT)",
-    "CategoryId": 5,
-    "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 653"],
-    "description": "Expert in computed tomography for 3D internal inspections.",
-    "price": 9500000,
-    "availability": "Limited",
-    "image": "https://example.com/saenal_aladin_rapi_ct.jpg",
+    "image": "https://www.applus.com/.imaging/focalpoint/753x530/dam/jcr:f5fe1422-c43a-409b-b637-55b1d617748e/1340262324830-Subsheet_Radiographic_Testing_%28RT%29_EN_desktop.jpg",
     "UserId": 1
   }
 ]
