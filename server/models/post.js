@@ -3,50 +3,47 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Post extends Model {
     static associate(models) {
-      Post.belongsTo(models.User, { foreignKey: 'driverId', as: 'driver' });
+      Post.belongsTo(models.User, { foreignKey: 'driverId' });
     }
   }
   Post.init({
-    driverId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
     },
-    truckType: {
-      type: DataTypes.STRING,
+    departureDate: {
+      type: DataTypes.DATE,
       allowNull: false,
-      validate: { notEmpty: true }
-    },
-    maxWeight: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { min: 1 }
     },
     origin: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notEmpty: true }
     },
     destination: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notEmpty: true }
     },
-    availableDate: {
-      type: DataTypes.DATE,
+    truckType: {
+      type: DataTypes.ENUM('pickup', 'box', 'flatbed', 'refrigerated'),
       allowNull: false,
-      validate: { isDate: true }
     },
-    availableTime: {
+    maxWeight: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    phoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notEmpty: true }
     },
-    shippingCost: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { min: 0 }
-    }
+    imageUrl: DataTypes.STRING,
+    driverId: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
   }, {
     sequelize,
     modelName: 'Post',

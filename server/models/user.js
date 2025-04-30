@@ -3,35 +3,27 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      User.hasMany(models.Post, { foreignKey: 'driverId', as: 'posts' });
+      User.hasMany(models.Post, { foreignKey: 'driverId' });
     }
   }
   User.init({
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: true }
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: { isEmail: true }
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: true // Allow null for Google OAuth users
-    },
+    password: DataTypes.STRING,
     role: {
       type: DataTypes.ENUM('driver', 'user'),
       allowNull: false,
-      validate: { notEmpty: true }
     },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: { is: /^\+?[1-9]\d{1,14}$/ }
-    }
+    name: DataTypes.STRING,
+    googleId: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

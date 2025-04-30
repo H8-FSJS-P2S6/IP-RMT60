@@ -1,24 +1,35 @@
 const express = require('express');
 const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const routes = require('./routes/index');
-const { errorHandler } = require('./middlewares/errorHandler');
+const { sequelize } = require('./models');
+const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
-const swaggerDocument = YAML.load('./swagger.yaml'); 
 
 app.use(cors());
 app.use(express.json());
-app.use('/api', routes);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(express.urlencoded({ extended: true }));
+
+// Routes (CRUD implementation)
+app.use('/api/auth', authRoutes); // Create, Read for users
+app.use('/api/posts', postRoutes); // Create, Read, Update, Delete for posts
+app.use('/api/ai', aiRoutes); // AI recommendation endpoint
+
+// Error Handler
 app.use(errorHandler);
 
-// Jika bukan dalam mode testing, jalankan server
-if (process.env.NODE_ENV !== 'test') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+// Database Connection and Server Start
+const PORT = process.env.PORT || 3000;
 
-// Export aplikasi untuk keperluan testing
+sequelize.authenticate().then(() => {
+  console.log('Database connected');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch((error) => {
+  console.error('Unable to connect to the database:', error);
+});
+
 module.exports = app;
