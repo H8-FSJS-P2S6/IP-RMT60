@@ -21,6 +21,10 @@ app.use('/api/ai', aiRoutes); // AI recommendation endpoint
 // Error Handler
 app.use(errorHandler);
 
+if (process.env.NODE_ENV !== '!production') {
+require ("dotenv").config();
+}
+
 // Database Connection and Server Start
 const PORT = process.env.PORT || 3000;
 

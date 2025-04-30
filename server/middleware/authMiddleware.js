@@ -15,8 +15,10 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'User not found' });
     }
     
+    console.log('User role:', req.user.role); // Tambahkan log untuk debugging
     next();
   } catch (error) {
+    console.error('Auth error:', error.message); // Tambahkan log error
     res.status(401).json({ message: 'Not authorized' });
   }
 };

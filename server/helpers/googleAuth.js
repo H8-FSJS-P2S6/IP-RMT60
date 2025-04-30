@@ -9,6 +9,7 @@ const verifyGoogleToken = async (token) => {
     });
     return ticket.getPayload();
   } catch (error) {
+    console.log('Google Token Verification Error:', error.message);
     throw new Error('Invalid Google token');
   }
 };
