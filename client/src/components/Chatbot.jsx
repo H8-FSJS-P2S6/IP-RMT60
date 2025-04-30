@@ -16,12 +16,10 @@ export default function Chatbot() {
   const [sessionId, setSessionId] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Generate session ID saat komponen dimount
   useEffect(() => {
     setSessionId(`user-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
   }, []);
 
-  // Auto-scroll ke pesan terbaru
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,7 +55,6 @@ export default function Chatbot() {
         sessionId
       });
       
-      // Tambahkan respons bot
       setMessages(prev => [
         ...prev,
         {
