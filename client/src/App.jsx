@@ -18,6 +18,7 @@ import Checkout from "./pages/Checkout";
 import UserProfile from "./pages/UserProfile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PaymentResult from "./pages/PaymentResult"; // Tambahkan import
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/Dashboard";
@@ -79,6 +80,11 @@ function AppRoutes() {
           <Route path="/admin/categories" element={<AdminCategories />} />
         </Route>
       </Route>
+
+      {/* Payment Result Routes */}
+      <Route path="/payment/success" element={<PaymentResult />} />
+      <Route path="/payment/failed" element={<PaymentResult />} />
+      <Route path="/payment/pending" element={<PaymentResult />} />
 
       {/* 404 Not Found */}
       <Route path="*" element={<NotFound />} />

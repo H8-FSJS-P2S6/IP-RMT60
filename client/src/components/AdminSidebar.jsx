@@ -74,6 +74,15 @@ export default function AdminSidebar() {
               Categories
             </Link>
           </li>
+          <li className="nav-item mb-2">
+            <Link 
+              className={`nav-link ${isActive("/admin/payments")} d-flex align-items-center px-3 py-2 rounded ${isActive("/admin/payments") ? "bg-primary" : "text-white"}`} 
+              to="/admin/payments"
+            >
+              <i className="bi bi-credit-card me-3"></i>
+              Payments
+            </Link>
+          </li>
         </ul>
       </div>
       

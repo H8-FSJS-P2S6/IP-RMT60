@@ -4,7 +4,7 @@ class CartController {
   static async getUserCart(req, res, next) {
     try {
       const userId = req.user.id;
-      
+
       const carts = await Cart.findAll({
         where: { UserId: userId },
         include: [
@@ -13,13 +13,13 @@ class CartController {
             include: [
               {
                 model: Category,
-                as: 'category'
-              }
-            ]
-          }
-        ]
+                as: "category",
+              },
+            ],
+          },
+        ],
       });
-      
+
       res.status(200).json(carts);
     } catch (err) {
       next(err);
@@ -30,30 +30,30 @@ class CartController {
     try {
       const UserId = req.user.id;
       const { lectureId } = req.body;
-      
+
       // Check if lecture exists
       const lecture = await Lecture.findByPk(lectureId);
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
       }
-      
+
       // Check if already in cart
       const existingCart = await Cart.findOne({
-        where: { 
-          UserId, 
-          LectureId: lectureId 
-        }
+        where: {
+          UserId,
+          LectureId: lectureId,
+        },
       });
-      
+
       if (existingCart) {
         throw { name: "BadRequest", message: "Lecture already in cart" };
       }
-      
+
       const newCart = await Cart.create({
         UserId,
-        LectureId: lectureId
+        LectureId: lectureId,
       });
-      
+
       res.status(201).json(newCart);
     } catch (err) {
       next(err);
@@ -64,18 +64,20 @@ class CartController {
     try {
       const UserId = req.user.id;
       const { id } = req.params;
-      
+
       const cart = await Cart.findOne({
-        where: { id, UserId }
+        where: { id, UserId },
       });
-      
+
       if (!cart) {
         throw { name: "NotFound", message: "Cart item not found" };
       }
-      
+
       await cart.destroy();
-      
-      res.status(200).json({ message: "Lecture removed from cart successfully" });
+
+      res
+        .status(200)
+        .json({ message: "Lecture removed from cart successfully" });
     } catch (err) {
       next(err);
     }

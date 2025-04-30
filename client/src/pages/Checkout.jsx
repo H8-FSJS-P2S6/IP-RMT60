@@ -1,72 +1,30 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
-import api from "../utils/api";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import api from '../utils/api';
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-    fullName: user?.username || "",
-    email: user?.email || "",
-    phone: user?.phoneNumber || "",
-    address: user?.address || "",
-    paymentMethod: "bank_transfer"
-  });
-
+  
   useEffect(() => {
-    const fetchCartItems = async () => {
+    const fetchCart = async () => {
       try {
-        const { data } = await api.get("/carts");
-        setCartItems(data);
+        const response = await api.get('/carts');
+        setCartItems(response.data);
       } catch (error) {
-        console.error("Error fetching cart:", error);
-        setError("Failed to load your cart items. Please try again.");
+        console.error('Error fetching cart:', error);
+        setError('Failed to load your cart. Please try again.');
       } finally {
         setLoading(false);
       }
     };
-
-    fetchCartItems();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setProcessing(true);
     
-    try {
-      // Create order from cart
-      const response = await api.post("/orders", {
-        ...formData,
-        items: cartItems.map(item => ({
-          lectureId: item.LectureId,
-          price: item.Lecture.price
-        }))
-      });
-      
-      // Redirect to success page with order ID
-      navigate(`/checkout/success?orderId=${response.data.id}`);
-      
-    } catch (error) {
-      console.error("Checkout error:", error);
-      setError(error.response?.data?.message || "Failed to process your order. Please try again.");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
+    fetchCart();
+  }, []);
+  
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -74,249 +32,168 @@ export default function Checkout() {
       minimumFractionDigits: 0
     }).format(price);
   };
-
+  
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => sum + item.Lecture.price, 0);
   };
-
+  
+  const handlePayment = async () => {
+    try {
+      setProcessing(true);
+      
+      const response = await api.post('/payments/create');
+      
+      // Handle client-side Midtrans configuration
+      const { token, redirect_url } = response.data.payment;
+      
+      if (redirect_url) {
+        // Redirect to Midtrans payment page
+        window.location.href = redirect_url;
+      } else if (token) {
+        // Use Snap.js to show popup payment
+        window.snap.pay(token, {
+          onSuccess: function(result) {
+            navigate(`/payment/success?order_id=${response.data.transaction.invoice_number}`);
+          },
+          onPending: function(result) {
+            navigate(`/payment/pending?order_id=${response.data.transaction.invoice_number}`);
+          },
+          onError: function(result) {
+            navigate(`/payment/failed?order_id=${response.data.transaction.invoice_number}`);
+          },
+          onClose: function() {
+            alert('You closed the payment window. Please complete your payment to access the courses.');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setError('Failed to process payment. Please try again.');
+      setProcessing(false);
+    }
+  };
+  
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="container py-5">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
       </div>
     );
   }
-
+  
   if (cartItems.length === 0) {
     return (
       <div className="container py-5">
-        <div className="text-center py-5">
-          <i className="bi bi-cart-x fs-1 text-secondary mb-3"></i>
-          <h3>Your cart is empty</h3>
-          <p className="text-muted mb-4">You need to add courses to your cart before checkout.</p>
-          <Link to="/courses" className="btn btn-primary">Explore Courses</Link>
+        <div className="card">
+          <div className="card-body text-center">
+            <h2>Your cart is empty</h2>
+            <p>Please add courses to your cart before checkout</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate('/courses')}
+            >
+              Browse Courses
+            </button>
+          </div>
         </div>
       </div>
     );
   }
-
+  
   return (
     <div className="container py-5">
-      <h1 className="mb-4">Checkout</h1>
-      
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-      
-      <div className="row g-5">
-        <div className="col-md-7 col-lg-8">
-          <h4 className="mb-3">Billing Details</h4>
-          <form className="needs-validation" onSubmit={handleSubmit}>
-            <div className="row g-3">
-              <div className="col-12">
-                <label htmlFor="fullName" className="form-label">Full name</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  id="fullName" 
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="col-12">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input 
-                  type="email" 
-                  className="form-control" 
-                  id="email" 
-                  name="email"
-                  placeholder="you@example.com" 
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="col-12">
-                <label htmlFor="phone" className="form-label">Phone</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  id="phone" 
-                  name="phone"
-                  placeholder="0812xxxxx" 
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="col-12">
-                <label htmlFor="address" className="form-label">Address</label>
-                <textarea 
-                  className="form-control" 
-                  id="address" 
-                  name="address"
-                  rows="3" 
-                  placeholder="1234 Main St, Apartment, Suite, etc."
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
-                ></textarea>
-              </div>
-            </div>
-
-            <hr className="my-4" />
-
-            <h4 className="mb-3">Payment Method</h4>
-
-            <div className="my-3">
-              <div className="form-check">
-                <input 
-                  id="bank_transfer" 
-                  name="paymentMethod" 
-                  type="radio" 
-                  className="form-check-input" 
-                  value="bank_transfer"
-                  checked={formData.paymentMethod === "bank_transfer"}
-                  onChange={handleChange}
-                  required 
-                />
-                <label className="form-check-label" htmlFor="bank_transfer">Bank Transfer</label>
-              </div>
-              
-              <div className="form-check">
-                <input 
-                  id="credit_card" 
-                  name="paymentMethod" 
-                  type="radio" 
-                  className="form-check-input" 
-                  value="credit_card"
-                  checked={formData.paymentMethod === "credit_card"}
-                  onChange={handleChange}
-                  required 
-                />
-                <label className="form-check-label" htmlFor="credit_card">Credit Card</label>
-              </div>
-              
-              <div className="form-check">
-                <input 
-                  id="ewallet" 
-                  name="paymentMethod" 
-                  type="radio" 
-                  className="form-check-input" 
-                  value="ewallet"
-                  checked={formData.paymentMethod === "ewallet"}
-                  onChange={handleChange}
-                  required 
-                />
-                <label className="form-check-label" htmlFor="ewallet">E-Wallet</label>
-              </div>
-            </div>
-            
-            {formData.paymentMethod === "credit_card" && (
-              <div className="row gy-3">
-                <div className="col-md-6">
-                  <label htmlFor="cc-name" className="form-label">Name on card</label>
-                  <input type="text" className="form-control" id="cc-name" placeholder="" />
-                  <small className="text-muted">Full name as displayed on card</small>
-                </div>
-
-                <div className="col-md-6">
-                  <label htmlFor="cc-number" className="form-label">Card number</label>
-                  <input type="text" className="form-control" id="cc-number" placeholder="" />
-                </div>
-
-                <div className="col-md-3">
-                  <label htmlFor="cc-expiration" className="form-label">Expiration</label>
-                  <input type="text" className="form-control" id="cc-expiration" placeholder="" />
-                </div>
-
-                <div className="col-md-3">
-                  <label htmlFor="cc-cvv" className="form-label">CVV</label>
-                  <input type="text" className="form-control" id="cc-cvv" placeholder="" />
-                </div>
-              </div>
-            )}
-
-            <hr className="my-4" />
-
-            <button 
-              className="w-100 btn btn-primary btn-lg" 
-              type="submit"
-              disabled={processing}
-            >
-              {processing ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                  Processing...
-                </>
-              ) : (
-                `Complete Order • ${formatToIDR(calculateTotal())}`
-              )}
-            </button>
-          </form>
-        </div>
-        
-        <div className="col-md-5 col-lg-4">
+      <div className="row">
+        <div className="col-lg-8">
           <div className="card mb-4">
-            <div className="card-header">
-              <h4 className="my-0">Order Summary</h4>
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0">Order Summary</h5>
             </div>
             <div className="card-body">
-              <ul className="list-group mb-3">
-                {cartItems.map((item) => (
-                  <li key={item.id} className="list-group-item d-flex justify-content-between lh-sm">
-                    <div>
-                      <h6 className="my-0">{item.Lecture.name}</h6>
-                      <small className="text-muted">{item.Lecture.technique}</small>
-                    </div>
-                    <span className="text-muted">{formatToIDR(item.Lecture.price)}</span>
-                  </li>
-                ))}
-                
-                <li className="list-group-item d-flex justify-content-between">
-                  <span>Total</span>
-                  <strong>{formatToIDR(calculateTotal())}</strong>
-                </li>
-              </ul>
+              <table className="table table-borderless">
+                <thead>
+                  <tr>
+                    <th scope="col">Course</th>
+                    <th scope="col" className="text-end">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map(item => (
+                    <tr key={item.id}>
+                      <td>
+                        <div>
+                          <h6>{item.Lecture.name}</h6>
+                          <p className="text-muted mb-0">{item.Lecture.technique}</p>
+                          <small className="text-muted">{item.Lecture.category?.name}</small>
+                        </div>
+                      </td>
+                      <td className="text-end">{formatToIDR(item.Lecture.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th className="text-end">{formatToIDR(calculateTotal())}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div className="col-lg-4">
+          <div className="card">
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0">Payment</h5>
+            </div>
+            <div className="card-body">
+              <p>Click the button below to proceed with payment through Midtrans secure payment gateway.</p>
+              
+              <div className="d-grid gap-2">
+                <button 
+                  className="btn btn-primary btn-lg"
+                  onClick={handlePayment}
+                  disabled={processing}
+                >
+                  {processing ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Processing...
+                    </>
+                  ) : (
+                    'Pay Now'
+                  )}
+                </button>
+              </div>
+              
+              {error && (
+                <div className="alert alert-danger mt-3">
+                  {error}
+                </div>
+              )}
               
               <div className="mt-3">
-                <Link to="/cart" className="btn btn-outline-secondary btn-sm">
-                  <i className="bi bi-arrow-left me-1"></i> Return to Cart
-                </Link>
+                <small className="text-muted">
+                  By clicking "Pay Now", you will be redirected to Midtrans secure payment page.
+                </small>
               </div>
             </div>
           </div>
           
-          <div className="card">
+          <div className="card mt-3">
             <div className="card-body">
-              <h5 className="card-title">Why Choose Our Courses</h5>
-              <ul className="list-unstyled mb-0">
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-primary me-2"></i>
-                  Industry-recognized certifications
-                </li>
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-primary me-2"></i>
-                  Expert instructors with real-world experience
-                </li>
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-primary me-2"></i>
-                  Lifetime access to course materials
-                </li>
-                <li>
-                  <i className="bi bi-check-circle-fill text-primary me-2"></i>
-                  30-day money-back guarantee
-                </li>
-              </ul>
+              <h6>Accepted Payment Methods</h6>
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                <img src="https://midtrans.com/assets/images/logo-bca.svg" alt="BCA" height="24" />
+                <img src="https://midtrans.com/assets/images/logo-mandiri.svg" alt="Mandiri" height="24" />
+                <img src="https://midtrans.com/assets/images/logo-bni.svg" alt="BNI" height="24" />
+                <img src="https://midtrans.com/assets/images/logo-bri.svg" alt="BRI" height="24" />
+                <img src="https://midtrans.com/assets/images/logo-gopay.svg" alt="GoPay" height="24" />
+              </div>
             </div>
           </div>
         </div>
