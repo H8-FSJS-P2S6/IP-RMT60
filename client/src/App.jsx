@@ -18,76 +18,74 @@ import Checkout from "./pages/Checkout";
 import UserProfile from "./pages/UserProfile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import PaymentResult from "./pages/PaymentResult"; // Tambahkan import
+import PaymentResult from "./pages/PaymentResult";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/Dashboard";
 import AdminUsers from "./pages/Admin/Users";
 import AdminCourses from "./pages/Admin/Courses";
 import AdminCategories from "./pages/Admin/Categories";
-
-// Route Guards
-const GuestRoute = () => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
-};
-
-const ProtectedRoute = () => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
-
-const AdminRoute = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  return isAuthenticated && isAdmin ? <Outlet /> : <Navigate to="/" replace />;
-};
+import AdminPayments from "./pages/Admin/Payments";
 
 function AppRoutes() {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  // Jika masih loading, tampilkan loading spinner
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
-      {/* Public Routes with MainLayout */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/:id" element={<CourseDetail />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/categories/:id" element={<CategoryDetail />} />
+      {/* Public routes */}
+      <Route path="/login" element={
+        isAuthenticated ? (isAdmin ? <Navigate to="/admin/dashboard" /> : <Navigate to="/" />) : <Login />
+      } />
+      <Route path="/register" element={
+        isAuthenticated ? (isAdmin ? <Navigate to="/admin/dashboard" /> : <Navigate to="/" />) : <Register />
+      } />
+
+      {/* Admin routes */}
+      <Route path="/admin/*" element={
+        isAuthenticated ? (isAdmin ? <AdminLayout /> : <Navigate to="/" />) : <Navigate to="/login" />
+      }>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="courses" element={<AdminCourses />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="payments" element={<AdminPayments />} />
       </Route>
 
-      {/* Auth Routes (Login/Register) */}
-      <Route element={<GuestRoute />}>
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+      {/* Regular user routes - redirect admin to admin dashboard */}
+      <Route path="/*" element={
+        isAdmin ? <Navigate to="/admin/dashboard" /> : <MainLayout />
+      }>
+        <Route index element={<Home />} />
+        <Route path="courses" element={<Courses />} />
+        <Route path="courses/:id" element={<CourseDetail />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="categories/:id" element={<CategoryDetail />} />
+        
+        {/* Protected user routes */}
+        <Route element={isAuthenticated ? <Outlet /> : <Navigate to="/login" />}>
+          <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="profile" element={<UserProfile />} />
         </Route>
-      </Route>
-
-      {/* Protected Routes for logged-in users */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/profile" element={<UserProfile />} />
-        </Route>
-      </Route>
-
-      {/* Admin Routes */}
-      <Route element={<AdminRoute />}>
-        <Route element={<AdminLayout />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/courses" element={<AdminCourses />} />
-          <Route path="/admin/categories" element={<AdminCategories />} />
-        </Route>
+        
+        <Route path="*" element={<NotFound />} />
       </Route>
 
       {/* Payment Result Routes */}
       <Route path="/payment/success" element={<PaymentResult />} />
       <Route path="/payment/failed" element={<PaymentResult />} />
       <Route path="/payment/pending" element={<PaymentResult />} />
-
-      {/* 404 Not Found */}
-      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

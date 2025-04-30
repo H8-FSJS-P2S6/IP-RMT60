@@ -11,7 +11,7 @@ export default function AdminSidebar() {
   
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    window.location.href = "/login"; // Selalu arahkan ke login page
   };
   
   return (

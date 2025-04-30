@@ -49,7 +49,7 @@ export default function Login() {
         response.data.access_token
       );
 
-      // Redirect berdasarkan role
+      // Admin selalu ke dashboard admin, user biasa ke homepage
       if (response.data.role === "Admin") {
         navigate("/admin/dashboard");
       } else {
@@ -75,7 +75,7 @@ export default function Login() {
       // Gunakan fungsi googleLogin dari AuthContext
       googleLogin(data);
 
-      // Redirect berdasarkan role
+      // Admin selalu ke dashboard admin, user biasa ke homepage
       if (data.role === "Admin") {
         navigate("/admin/dashboard");
       } else {

@@ -1,192 +1,134 @@
-import { useState, useEffect } from "react";
-import api from "../../utils/api";
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router';
+import api from '../../utils/api';
+import { toast } from 'react-toastify';
 
-export default function Courses() {
-  const [courses, setCourses] = useState([]);
+export default function AdminCourses() {
+  const [lectures, setLectures] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState({
-    categoryId: "",
-    status: ""
-  });
-  const [courseToDelete, setCourseToDelete] = useState(null);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    technique: "",
-    image: "",
-    experience_years: 0,
-    level: "Beginner",
-    language: "English",
-    instructor: "",
-    CategoryId: "",
-    status: "Active"
-  });
-  
-  // Fetch courses with pagination and filters
-  const fetchCourses = async (page = 1, search = "", filters = {}) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append("page", page);
-      params.append("limit", 10);
-      
-      if (search) params.append("search", search);
-      if (filters.categoryId) params.append("categoryId", filters.categoryId);
-      if (filters.status) params.append("status", filters.status);
+  const [selectedLecture, setSelectedLecture] = useState(null);
+  const [lectureToDelete, setLectureToDelete] = useState(null);
 
-      const response = await api.get(`/admin/lectures?${params.toString()}`);
-      
-      setCourses(response.data.lectures);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    technique: '',
+    CategoryId: '',
+    price: '',
+    description: '',
+    duration: '',
+    imageUrl: '',
+    videoUrl: ''
+  });
+
+  // Image preview
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    fetchLectures();
+    fetchCategories();
+  }, [currentPage, searchTerm]);
+
+  const fetchLectures = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      params.append("page", currentPage);
+      if (searchTerm) params.append("search", searchTerm);
+
+      const { data } = await api.get(`/admin/lectures?${params}`);
+      setLectures(data.lectures || data);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching courses:", error);
-      setError("Failed to load courses. Please try again.");
+      console.error("Error fetching lectures:", error);
+      setError("Failed to load courses");
+      toast.error("Failed to load courses");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch categories for dropdown
   const fetchCategories = async () => {
     try {
-      const response = await api.get("/public/categories");
-      setCategories(response.data);
+      const { data } = await api.get(`/admin/categories`);
+      setCategories(data.categories || data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      toast.error("Failed to load categories");
     }
-  };
-
-  useEffect(() => {
-    fetchCourses(currentPage, searchTerm, filter);
-    fetchCategories();
-  }, [currentPage]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    fetchCourses(1, searchTerm, filter);
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilter({
-      ...filter,
-      [name]: value
-    });
-  };
-
-  const applyFilters = () => {
-    setCurrentPage(1);
-    fetchCourses(1, searchTerm, filter);
-  };
-
-  const resetFilters = () => {
-    setFilter({
-      categoryId: "",
-      status: ""
-    });
-    setCurrentPage(1);
-    fetchCourses(1, searchTerm, { categoryId: "", status: "" });
-  };
-
-  const handleEditClick = (course) => {
-    setSelectedCourse(course);
-    setFormData({
-      name: course.name,
-      description: course.description || "",
-      price: course.price,
-      technique: course.technique || "",
-      image: course.image || "",
-      experience_years: course.experience_years || 0,
-      level: course.level || "Beginner",
-      language: course.language || "English",
-      instructor: course.instructor || "",
-      CategoryId: course.CategoryId || "",
-      status: course.status || "Active"
-    });
-  };
-
-  const handleDeleteClick = (course) => {
-    setCourseToDelete(course);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "price" || name === "experience_years" ? Number(value) : value
+      [name]: name === 'price' ? parseInt(value) || '' : value
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (selectedCourse) {
-        await api.put(`/admin/lectures/${selectedCourse.id}`, formData);
-      } else {
-        await api.post("/admin/lectures", formData);
-      }
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
       
-      // Refresh the course list
-      fetchCourses(currentPage, searchTerm, filter);
-      
-      // Close modal and reset form
-      document.getElementById('courseFormModal').querySelector('[data-bs-dismiss="modal"]').click();
-      setSelectedCourse(null);
-      resetForm();
-    } catch (error) {
-      console.error("Error saving course:", error);
-      alert(error.response?.data?.message || "Failed to save course");
+      // Set file for upload
+      setFormData({
+        ...formData,
+        imageFile: file
+      });
     }
   };
 
-  const confirmDelete = async () => {
-    try {
-      await api.delete(`/admin/lectures/${courseToDelete.id}`);
-      
-      // Remove course from list
-      setCourses(courses.filter(course => course.id !== courseToDelete.id));
-      
-      // Close modal
-      document.getElementById('deleteConfirmModal').querySelector('[data-bs-dismiss="modal"]').click();
-      setCourseToDelete(null);
-    } catch (error) {
-      console.error("Error deleting course:", error);
-      alert(error.response?.data?.message || "Failed to delete course");
+  const openFormModal = (lecture = null) => {
+    if (lecture) {
+      // Edit mode
+      setSelectedLecture(lecture);
+      setFormData({
+        name: lecture.name,
+        technique: lecture.technique,
+        CategoryId: lecture.CategoryId || '',
+        price: lecture.price,
+        description: lecture.description || '',
+        duration: lecture.duration || '',
+        imageUrl: lecture.imageUrl || '',
+        videoUrl: lecture.videoUrl || ''
+      });
+      setImagePreview(lecture.imageUrl || '');
+    } else {
+      // Create mode
+      setSelectedLecture(null);
+      setFormData({
+        name: '',
+        technique: '',
+        CategoryId: '',
+        price: '',
+        description: '',
+        duration: '',
+        imageUrl: '',
+        videoUrl: ''
+      });
+      setImagePreview('');
     }
+    // Open modal
+    const modal = new window.bootstrap.Modal(document.getElementById('lectureFormModal'));
+    modal.show();
   };
 
-  const openNewCourseModal = () => {
-    setSelectedCourse(null);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: 0,
-      technique: "",
-      image: "",
-      experience_years: 0,
-      level: "Beginner",
-      language: "English",
-      instructor: "",
-      CategoryId: "",
-      status: "Active"
-    });
+  const openDeleteModal = (lecture) => {
+    setLectureToDelete(lecture);
+    const modal = new window.bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
   };
 
   const formatToIDR = (price) => {
@@ -197,420 +139,395 @@ export default function Courses() {
     }).format(price);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      let response;
+      const formDataToSend = new FormData();
+      
+      // Add form fields to FormData
+      Object.keys(formData).forEach(key => {
+        if (key !== 'imageFile') {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      // Add image file if available
+      if (formData.imageFile) {
+        formDataToSend.append('image', formData.imageFile);
+      }
+
+      if (selectedLecture) {
+        // Update lecture
+        response = await api.put(`/admin/lectures/${selectedLecture.id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success("Course updated successfully");
+      } else {
+        // Create new lecture
+        response = await api.post('/admin/lectures', formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        console.log(response);
+        
+        toast.success("Course created successfully");
+      }
+
+      // Close modal
+      document.getElementById('lectureFormModal').querySelector('[data-bs-dismiss="modal"]').click();
+      
+      // Refresh lectures list
+      fetchLectures();
+    } catch (error) {
+      console.error("Error saving lecture:", error);
+      const errorMsg = error.response?.data?.message || "Failed to save course";
+      toast.error(errorMsg);
+    }
   };
 
-  return (
-    <div className="container-fluid px-4">
-      <h1 className="mt-4 mb-4">Course Management</h1>
+  const handleDelete = async () => {
+    if (!lectureToDelete) return;
+    
+    try {
+      await api.delete(`/admin/lectures/${lectureToDelete.id}`);
+      toast.success("Course deleted successfully");
+      
+      // Remove from local state
+      setLectures(lectures.filter(lecture => lecture.id !== lectureToDelete.id));
+      
+      // Close modal
+      document.getElementById('deleteConfirmModal').querySelector('[data-bs-dismiss="modal"]').click();
+      setLectureToDelete(null);
+    } catch (error) {
+      console.error("Error deleting lecture:", error);
+      const errorMsg = error.response?.data?.message || "Failed to delete course";
+      toast.error(errorMsg);
+    }
+  };
 
-      <div className="card mb-4">
-        <div className="card-header">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <i className="bi bi-journal-richtext me-1"></i>
-              Courses
-            </div>
-            <button 
-              className="btn btn-primary btn-sm" 
-              data-bs-toggle="modal" 
-              data-bs-target="#courseFormModal" 
-              onClick={openNewCourseModal}
-            >
-              <i className="bi bi-plus-circle me-1"></i>
-              Add Course
-            </button>
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
+    fetchLectures();
+  };
+
+  if (loading && lectures.length === 0) {
+    return (
+      <div className="container-fluid px-4">
+        <h1 className="mt-4">Courses Management</h1>
+        <div className="d-flex justify-content-center mt-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-        <div className="card-body">
-          {/* Search and Filter Row */}
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <form onSubmit={handleSearch} className="d-flex">
-                <input
-                  type="text"
-                  className="form-control me-2"
-                  placeholder="Search courses..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary">Search</button>
-              </form>
-            </div>
-            <div className="col-md-6">
-              <div className="d-flex justify-content-end">
-                <button 
-                  type="button" 
-                  className="btn btn-outline-secondary"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#filterCollapse"
-                >
-                  <i className="bi bi-funnel me-1"></i>
-                  Filters
-                </button>
-              </div>
-            </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="container-fluid px-4">
+        <div className="d-flex justify-content-between align-items-center">
+          <h1 className="mt-4">Courses Management</h1>
+          <button 
+            className="btn btn-primary mt-4"
+            onClick={() => openFormModal()}
+          >
+            <i className="fas fa-plus me-1"></i> New Course
+          </button>
+        </div>
+        
+        <div className="card mb-4">
+          <div className="card-header d-flex justify-content-between align-items-center">
+            <div><i className="fas fa-book-open me-1"></i> Course List</div>
+            <form className="d-flex" onSubmit={handleSearch}>
+              <input
+                type="text"
+                className="form-control form-control-sm me-2"
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ width: '200px' }}
+              />
+              <button type="submit" className="btn btn-sm btn-outline-primary">
+                <i className="fas fa-search"></i>
+              </button>
+            </form>
           </div>
-
-          {/* Collapsible Filter Section */}
-          <div className="collapse mb-4" id="filterCollapse">
-            <div className="card card-body bg-light">
-              <div className="row g-3">
-                <div className="col-md-5">
-                  <label className="form-label">Category</label>
-                  <select
-                    className="form-select"
-                    name="categoryId"
-                    value={filter.categoryId}
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map(category => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-5">
-                  <label className="form-label">Status</label>
-                  <select
-                    className="form-select"
-                    name="status"
-                    value={filter.status}
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                </div>
-                <div className="col-md-2 d-flex align-items-end">
-                  <div className="d-grid gap-2 w-100">
-                    <button 
-                      type="button" 
-                      className="btn btn-primary"
-                      onClick={applyFilters}
-                    >
-                      Apply
-                    </button>
-                    <button 
-                      type="button" 
-                      className="btn btn-outline-secondary"
-                      onClick={resetFilters}
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="text-center py-4">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : (
-            <>
+          <div className="card-body">
+            {error ? (
+              <div className="alert alert-danger">{error}</div>
+            ) : (
               <div className="table-responsive">
-                <table className="table table-striped table-hover align-middle">
-                  <thead>
+                <table className="table table-bordered table-hover align-middle">
+                  <thead className="table-light">
                     <tr>
-                      <th>ID</th>
-                      <th>Image</th>
-                      <th>Course Name</th>
-                      <th>Category</th>
+                      <th style={{width: '80px'}}>Image</th>
+                      <th>Name</th>
                       <th>Technique</th>
+                      <th>Category</th>
                       <th>Price</th>
-                      <th>Status</th>
-                      <th>Created At</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {courses.map(course => (
-                      <tr key={course.id}>
-                        <td>{course.id}</td>
-                        <td>
-                          <img 
-                            src={course.image || "https://via.placeholder.com/50x50?text=No+Image"} 
-                            alt={course.name} 
-                            className="img-thumbnail"
-                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                          />
-                        </td>
-                        <td>{course.name}</td>
-                        <td>{course.Category?.name || "Uncategorized"}</td>
-                        <td>{course.technique || "N/A"}</td>
-                        <td>{formatToIDR(course.price)}</td>
-                        <td>
-                          <span className={`badge ${
-                            course.status === "Active" ? "bg-success" :
-                            course.status === "Draft" ? "bg-warning" :
-                            "bg-secondary"
-                          }`}>
-                            {course.status}
-                          </span>
-                        </td>
-                        <td>{formatDate(course.createdAt)}</td>
-                        <td>
-                          <button 
-                            className="btn btn-sm btn-outline-primary me-2"
-                            onClick={() => handleEditClick(course)}
-                            data-bs-toggle="modal"
-                            data-bs-target="#courseFormModal"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button 
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDeleteClick(course)}
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteConfirmModal"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </td>
+                    {lectures.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">No courses found</td>
                       </tr>
-                    ))}
+                    ) : (
+                      lectures.map((lecture) => (
+                        <tr key={lecture.id}>
+                          <td>
+                            {lecture.imageUrl ? (
+                              <img 
+                                src={lecture.imageUrl} 
+                                alt={lecture.name}
+                                className="img-thumbnail"
+                                style={{width: '60px', height: '60px', objectFit: 'cover'}}
+                              />
+                            ) : (
+                              <div className="bg-light d-flex justify-content-center align-items-center"
+                                style={{width: '60px', height: '60px'}}>
+                                <i className="fas fa-image text-secondary"></i>
+                              </div>
+                            )}
+                          </td>
+                          <td>{lecture.name}</td>
+                          <td>{lecture.technique}</td>
+                          <td>{lecture.category?.name || '-'}</td>
+                          <td>{formatToIDR(lecture.price)}</td>
+                          <td>
+                            <div className="d-flex gap-1">
+                              <button 
+                                className="btn btn-sm btn-info"
+                                onClick={() => openFormModal(lecture)}
+                              >
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button 
+                                className="btn btn-sm btn-danger"
+                                onClick={() => openDeleteModal(lecture)}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <nav aria-label="Page navigation">
-                  <ul className="pagination justify-content-center">
-                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button 
+            )}
+            
+            {totalPages > 1 && (
+              <nav>
+                <ul className="pagination justify-content-center">
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      Previous
+                    </button>
+                  </li>
+                  
+                  {[...Array(totalPages)].map((_, i) => (
+                    <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                      <button
                         className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(i + 1)}
                       >
-                        Previous
+                        {i + 1}
                       </button>
                     </li>
-                    
-                    {[...Array(totalPages).keys()].map(page => (
-                      <li key={page + 1} className={`page-item ${currentPage === page + 1 ? 'active' : ''}`}>
-                        <button 
-                          className="page-link"
-                          onClick={() => handlePageChange(page + 1)}
-                        >
-                          {page + 1}
-                        </button>
-                      </li>
-                    ))}
-                    
-                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button 
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              )}
-            </>
-          )}
+                  ))}
+                  
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Course Form Modal */}
-      <div className="modal fade" id="courseFormModal" tabIndex="-1" aria-hidden="true">
+      
+      {/* Lecture Form Modal */}
+      <div className="modal fade" id="lectureFormModal" tabIndex="-1">
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">{selectedCourse ? 'Edit Course' : 'Add New Course'}</h5>
+              <h5 className="modal-title">{selectedLecture ? 'Edit Course' : 'Add New Course'}</h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form onSubmit={handleSubmit}>
-              <div className="modal-body">
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label htmlFor="name" className="form-label">Course Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
+            <div className="modal-body">
+              <form onSubmit={handleSubmit}>
+                <div className="row mb-3">
+                  <div className="col-md-8">
+                    <div className="mb-3">
+                      <label htmlFor="name" className="form-label">Course Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label htmlFor="technique" className="form-label">Technique</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="technique"
+                        name="technique"
+                        value={formData.technique}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="row">
+                      <div className="col-md-6 mb-3">
+                        <label htmlFor="CategoryId" className="form-label">Category</label>
+                        <select
+                          className="form-select"
+                          id="CategoryId"
+                          name="CategoryId"
+                          value={formData.CategoryId}
+                          onChange={handleInputChange}
+                          required
+                        >
+                          <option value="">Select Category</option>
+                          {categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="col-md-6 mb-3">
+                        <label htmlFor="price" className="form-label">Price (IDR)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          id="price"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="col-md-6">
-                    <label htmlFor="CategoryId" className="form-label">Category</label>
-                    <select
-                      className="form-select"
-                      id="CategoryId"
-                      name="CategoryId"
-                      value={formData.CategoryId}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category.id} value={category.id}>{category.name}</option>
-                      ))}
-                    </select>
+                  
+                  <div className="col-md-4">
+                    <div className="mb-3">
+                      <label className="form-label">Course Image</label>
+                      <div 
+                        className="border rounded p-2 text-center mb-2"
+                        style={{height: '180px', cursor: 'pointer'}}
+                        onClick={() => fileInputRef.current.click()}
+                      >
+                        {imagePreview ? (
+                          <img 
+                            src={imagePreview} 
+                            alt="Course preview" 
+                            style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} 
+                          />
+                        ) : (
+                          <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                            <i className="fas fa-cloud-upload-alt fa-3x text-secondary"></i>
+                            <p className="mt-2 mb-0 small">Click to upload image</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        className="d-none"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                      <div className="d-grid">
+                        <button 
+                          type="button" 
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => fileInputRef.current.click()}
+                        >
+                          {imagePreview ? 'Change Image' : 'Upload Image'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="mb-3 mt-3">
+                
+                <div className="mb-3">
                   <label htmlFor="description" className="form-label">Description</label>
                   <textarea
                     className="form-control"
                     id="description"
                     name="description"
+                    rows="3"
                     value={formData.description}
                     onChange={handleInputChange}
-                    rows="3"
                   ></textarea>
                 </div>
-
-                <div className="row g-3 mt-1">
-                  <div className="col-md-6">
-                    <label htmlFor="price" className="form-label">Price (IDR)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="price"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      required
-                      min="0"
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="technique" className="form-label">Technique</label>
+                
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="duration" className="form-label">Duration</label>
                     <input
                       type="text"
                       className="form-control"
-                      id="technique"
-                      name="technique"
-                      value={formData.technique}
+                      id="duration"
+                      name="duration"
+                      placeholder="e.g. 2 weeks"
+                      value={formData.duration}
                       onChange={handleInputChange}
                     />
                   </div>
-                </div>
-
-                <div className="mb-3 mt-3">
-                  <label htmlFor="image" className="form-label">Image URL</label>
-                  <input
-                    type="url"
-                    className="form-control"
-                    id="image"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div className="row g-3 mt-1">
-                  <div className="col-md-4">
-                    <label htmlFor="level" className="form-label">Level</label>
-                    <select
-                      className="form-select"
-                      id="level"
-                      name="level"
-                      value={formData.level}
-                      onChange={handleInputChange}
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                      <option value="Expert">Expert</option>
-                    </select>
-                  </div>
-                  <div className="col-md-4">
-                    <label htmlFor="language" className="form-label">Language</label>
-                    <select
-                      className="form-select"
-                      id="language"
-                      name="language"
-                      value={formData.language}
-                      onChange={handleInputChange}
-                    >
-                      <option value="English">English</option>
-                      <option value="Indonesian">Indonesian</option>
-                      <option value="Bilingual">Bilingual (Eng/Indo)</option>
-                    </select>
-                  </div>
-                  <div className="col-md-4">
-                    <label htmlFor="experience_years" className="form-label">Experience Required (Years)</label>
+                  
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="videoUrl" className="form-label">Video URL (Optional)</label>
                     <input
-                      type="number"
+                      type="url"
                       className="form-control"
-                      id="experience_years"
-                      name="experience_years"
-                      value={formData.experience_years}
+                      id="videoUrl"
+                      name="videoUrl"
+                      placeholder="e.g. https://youtube.com/..."
+                      value={formData.videoUrl}
                       onChange={handleInputChange}
-                      min="0"
                     />
                   </div>
                 </div>
                 
-                <div className="row g-3 mt-1">
-                  <div className="col-md-6">
-                    <label htmlFor="instructor" className="form-label">Instructor</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="instructor"
-                      name="instructor"
-                      value={formData.instructor}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="status" className="form-label">Status</label>
-                    <select
-                      className="form-select"
-                      id="status"
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Draft">Draft</option>
-                      <option value="Archived">Archived</option>
-                    </select>
-                  </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" className="btn btn-primary">
+                    {selectedLecture ? 'Update Course' : 'Create Course'}
+                  </button>
                 </div>
-
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" className="btn btn-primary">
-                  {selectedCourse ? 'Update Course' : 'Create Course'}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-
+      
       {/* Delete Confirmation Modal */}
-      <div className="modal fade" id="deleteConfirmModal" tabIndex="-1" aria-hidden="true">
+      <div className="modal fade" id="deleteConfirmModal" tabIndex="-1">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -618,18 +535,21 @@ export default function Courses() {
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-              <p>Are you sure you want to delete the course <strong>{courseToDelete?.name}</strong>?</p>
-              <p className="text-danger">This action cannot be undone and will remove all enrollments for this course.</p>
+              <p>Are you sure you want to delete the course: <strong>{lectureToDelete?.name}</strong>?</p>
+              <p className="text-danger mb-0">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                This action cannot be undone. All data related to this course will be permanently removed.
+              </p>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" className="btn btn-danger" onClick={confirmDelete}>
+              <button type="button" className="btn btn-danger" onClick={handleDelete}>
                 Delete Course
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
