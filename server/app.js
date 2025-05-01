@@ -9,7 +9,15 @@ const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
 
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow your frontend origin
+  credentials: true, // Allow cookies/credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,20 +29,26 @@ app.use('/api/ai', aiRoutes); // AI recommendation endpoint
 // Error Handler
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== '!production') {
-require ("dotenv").config();
+// Remove duplicate dotenv import and fix conditional logic
+// Note: The original condition `process.env.NODE_ENV !== '!production'` seems incorrect
+// Assuming you meant `!== 'production'` for development environment
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config(); // Load .env variables in development
 }
 
 // Database Connection and Server Start
 const PORT = process.env.PORT || 3000;
 
-sequelize.authenticate().then(() => {
-  console.log('Database connected');
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Database connected');
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Unable to connect to the database:', error);
   });
-}).catch((error) => {
-  console.error('Unable to connect to the database:', error);
-});
 
 module.exports = app;
