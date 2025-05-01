@@ -19,7 +19,8 @@ const PostCard = ({ post }) => {
 
   const mapStyles = {        
     height: "200px",
-    width: "100%"
+    width: "100%",
+    borderRadius: "8px"
   };
 
   const handleUpdate = (e) => {
@@ -32,12 +33,25 @@ const PostCard = ({ post }) => {
     setIsEditing(false);
   };
 
+  // Get truck icon based on truck type
+  const getTruckIcon = (type) => {
+    const icons = {
+      pickup: '🛻',
+      box: '📦',
+      flatbed: '🚚',
+      refrigerated: '❄️'
+    };
+    return icons[type] || '🚚';
+  };
+
   return (
-    <div className="card mb-3">
+    <div className="card post-card mb-4">
       <div className="card-body">
         {isEditing ? (
-          <form onSubmit={handleUpdate}>
+          <form onSubmit={handleUpdate} className="edit-form">
+            <h5 className="mb-4 text-center">Edit Delivery Details</h5>
             <div className="mb-3">
+              <label className="form-label">Departure Date</label>
               <input 
                 type="date" 
                 className="form-control" 
@@ -48,6 +62,7 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Origin</label>
               <input 
                 type="text" 
                 className="form-control" 
@@ -58,6 +73,7 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Destination</label>
               <input 
                 type="text" 
                 className="form-control" 
@@ -68,6 +84,7 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Truck Type</label>
               <select 
                 className="form-control" 
                 name="truckType" 
@@ -81,6 +98,7 @@ const PostCard = ({ post }) => {
               </select>
             </div>
             <div className="mb-3">
+              <label className="form-label">Max Weight (kg)</label>
               <input 
                 type="number" 
                 className="form-control" 
@@ -91,6 +109,7 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Contact Number</label>
               <input 
                 type="tel" 
                 className="form-control" 
@@ -101,51 +120,107 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Truck Image</label>
               <input 
                 type="file" 
                 className="form-control" 
                 onChange={(e) => setImage(e.target.files[0])} 
               />
             </div>
-            <button type="submit" className="btn btn-primary me-2">Save</button>
-            <button 
-              type="button" 
-              className="btn btn-secondary" 
-              onClick={() => setIsEditing(false)}
-            >
-              Cancel
-            </button>
+            <div className="d-flex justify-content-between mt-4">
+              <button type="submit" className="btn btn-primary">Save Changes</button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         ) : (
           <>
-            <h5 className="card-title">{post.origin} to {post.destination}</h5>
-            <p className="card-text">
-              Truck Type: {post.truckType}<br />
-              Max Weight: {post.maxWeight} kg<br />
-              Departure: {new Date(post.departureDate).toLocaleDateString()}<br />
-              Contact: {post.phoneNumber}
-            </p>
-            {post.imageUrl && <img src={post.imageUrl} alt="Truck" className="img-fluid mb-2" style={{maxHeight: '200px'}} />}
-            <GoogleMap
-              mapContainerStyle={mapStyles}
-              zoom={8}
-              center={{ lat: -6.2088, lng: 106.8456 }}
-            >
-              <Marker position={{ lat: -6.2088, lng: 106.8456 }} />
-            </GoogleMap>
+            <div className="post-header">
+              <span className="truck-icon me-2" style={{ fontSize: "2rem" }}>{getTruckIcon(post.truckType)}</span>
+              <div>
+                <h5 className="card-title mb-1 fw-bold">{post.origin} to {post.destination}</h5>
+                <p className="text-muted mb-0">
+                  <small>Posted on {new Date(post.createdAt || Date.now()).toLocaleDateString()}</small>
+                </p>
+              </div>
+            </div>
+            
+            <hr className="my-3" />
+            
+            <div className="row">
+              <div className="col-md-6">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-2" style={{width: "30px", textAlign: "center"}}>🚚</div>
+                  <div>
+                    <strong>Truck Type:</strong> {post.truckType.charAt(0).toUpperCase() + post.truckType.slice(1)}
+                  </div>
+                </div>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-2" style={{width: "30px", textAlign: "center"}}>⚖️</div>
+                  <div>
+                    <strong>Max Weight:</strong> {post.maxWeight} kg
+                  </div>
+                </div>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-2" style={{width: "30px", textAlign: "center"}}>🗓️</div>
+                  <div>
+                    <strong>Departure:</strong> {new Date(post.departureDate).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-2" style={{width: "30px", textAlign: "center"}}>📱</div>
+                  <div>
+                    <strong>Contact:</strong> {post.phoneNumber}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="col-md-6">
+                {post.imageUrl && (
+                  <div className="truck-image-container mb-3">
+                    <img 
+                      src={post.imageUrl} 
+                      alt="Truck" 
+                      className="img-fluid rounded" 
+                      style={{maxHeight: '200px', width: '100%', objectFit: 'cover'}} 
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="map-container mt-3 mb-3">
+              <GoogleMap
+                mapContainerStyle={mapStyles}
+                zoom={8}
+                center={{ lat: -6.2088, lng: 106.8456 }}
+              >
+                <Marker position={{ lat: -6.2088, lng: 106.8456 }} />
+              </GoogleMap>
+            </div>
+            
             {user?.role === 'driver' && user.id === post.driverId && (
-              <div className="mt-2">
+              <div className="d-flex justify-content-end mt-3">
                 <button 
                   className="btn btn-primary me-2"
                   onClick={() => setIsEditing(true)}
                 >
-                  Edit
+                  <i className="bi bi-pencil me-1"></i> Edit
                 </button>
                 <button 
                   className="btn btn-danger"
-                  onClick={() => dispatch(deletePost(post.id))}
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this post?')) {
+                      dispatch(deletePost(post.id));
+                    }
+                  }}
                 >
-                  Delete
+                  <i className="bi bi-trash me-1"></i> Delete
                 </button>
               </div>
             )}

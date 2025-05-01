@@ -1,13 +1,14 @@
-// App.jsx (ensure this is correct)
+// App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { store } from './store/store';
+import { store } from './store'; // Updated import path
 import Navbar from './components/Navbar.jsx';
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import DriverDashboard from './pages/DriverDashboard.jsx';
+import Profile from './pages/Profile.jsx'; // Import halaman Profile
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<DriverDashboard />} />
+            <Route path="/profile" element={<Profile />} /> {/* Rute baru untuk Profile */}
           </Routes>
         </Router>
       </Provider>

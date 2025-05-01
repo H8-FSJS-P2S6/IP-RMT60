@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createPost } from '../store/slices/postSlice';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const PostForm = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
   const [formData, setFormData] = useState({
     departureDate: '',
     origin: '',
@@ -12,12 +15,20 @@ const PostForm = () => {
     maxWeight: '',
     phoneNumber: '',
   });
+  const [selectedDate, setSelectedDate] = useState(null);
   const [image, setImage] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
+    
+    // Format the date before submitting
+    const formattedData = {
+      ...formData,
+      departureDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+    };
+    
+    Object.keys(formattedData).forEach(key => data.append(key, formattedData[key]));
     if (image) data.append('image', image);
     
     dispatch(createPost(data));
@@ -29,6 +40,7 @@ const PostForm = () => {
       maxWeight: '',
       phoneNumber: '',
     });
+    setSelectedDate(null);
     setImage(null);
   };
 
@@ -36,19 +48,78 @@ const PostForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0];
+      setFormData({ ...formData, departureDate: formattedDate });
+    }
+  };
+
+  const datePickerStyles = {
+    container: {
+      width: '100%',
+    },
+    datePickerInput: {
+      width: '100%',
+      padding: '0.375rem 0.75rem', 
+      fontSize: '1rem',
+      fontWeight: 400,
+      lineHeight: 1.5,
+      color: '#212529',
+      backgroundColor: '#fff',
+      backgroundClip: 'padding-box',
+      border: '1px solid #ced4da',
+      borderRadius: '0.25rem',
+      transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+      height: 'calc(1.5em + 0.75rem + 2px)',
+    }
+  };
+
+  // Don't render the form if user is not logged in or is not a driver
+  if (!user || user.role !== 'driver') {
+    return null;
+  }
+
   return (
     <form onSubmit={handleSubmit} className="card p-4 mb-4">
       <div className="mb-3">
         <label className="form-label">Departure Date</label>
-        <input 
-          type="date" 
-          className="form-control" 
-          name="departureDate" 
-          value={formData.departureDate} 
-          onChange={handleChange} 
-          required 
-        />
+        <div style={datePickerStyles.container}>
+          <DatePicker
+            selected={selectedDate}
+            onChange={handleDateChange}
+            style={datePickerStyles.datePickerInput}
+            className="form-control"
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Select departure date"
+            minDate={new Date()}
+            required
+            isClearable
+            showYearDropdown
+            scrollableYearDropdown
+            yearDropdownItemNumber={5}
+            popperPlacement="bottom-start"
+            popperModifiers={[
+              {
+                name: "offset",
+                options: {
+                  offset: [0, 8],
+                },
+              },
+              {
+                name: "preventOverflow",
+                options: {
+                  rootBoundary: "viewport",
+                  tether: false,
+                  altAxis: true,
+                },
+              },
+            ]}
+          />
+        </div>
       </div>
+      
       <div className="mb-3">
         <label className="form-label">Origin</label>
         <input 

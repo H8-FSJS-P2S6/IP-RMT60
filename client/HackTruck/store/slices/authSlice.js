@@ -31,18 +31,40 @@ export const googleLogin = createAsyncThunk('auth/googleLogin', async (token, { 
   }
 });
 
+// New action to check for existing token and load user data
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
+  try {
+    // Get token from local storage
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      return rejectWithValue('No token found');
+    }
+    
+    // Validate token by making a request to get current user
+    const response = await api.get('/api/auth/me');
+    return { user: response.data, token };
+  } catch (error) {
+    // If token is invalid, remove it
+    localStorage.removeItem('token');
+    return rejectWithValue(error.response?.data?.message || 'Authentication failed');
+  }
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    token: null,
+    token: localStorage.getItem('token'), // Initialize token from localStorage
     loading: false,
     error: null,
   },
   reducers: {
     logout: (state) => {
+      localStorage.removeItem('token'); // Juga menghapus token dari localStorage
       state.user = null;
       state.token = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -79,6 +101,20 @@ const authSlice = createSlice({
       .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Add cases for checkAuth
+      .addCase(checkAuth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
       });
   },
 });
