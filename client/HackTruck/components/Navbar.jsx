@@ -110,7 +110,7 @@ const Navbar = () => {
               </Link>
               <button
                 onClick={handleLogout}
-                className="btn btn-danger me-3"
+                className="btn btn-danger"
                 style={{
                   borderRadius: '50px',
                   padding: '0.5rem 1rem',
@@ -121,43 +121,6 @@ const Navbar = () => {
                 <i className="bi bi-box-arrow-right me-2"></i>
                 Logout
               </button>
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light d-flex align-items-center"
-                  type="button"
-                  id="dropdownMenuButton"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style={{ borderRadius: '50px', padding: '0.4rem 1rem' }}
-                >
-                  <span className="me-2">{user.username}</span>
-                  <i className="bi bi-caret-down-fill"></i>
-                </button>
-                <ul className="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="dropdownMenuButton">
-                  <li>
-                    <span className="dropdown-item-text text-muted">
-                      <small>
-                        Logged in as <strong>{user.role}</strong>
-                      </small>
-                    </span>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item d-flex align-items-center" to="/profile">
-                      <i className="bi bi-person-circle me-2"></i>
-                      View Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <a className="dropdown-item d-flex align-items-center" href="#" onClick={handleLogout}>
-                      <i className="bi bi-box-arrow-right me-2"></i>
-                      Logout
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </div>
           ) : (
             <div className="d-flex align-items-center">
