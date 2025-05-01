@@ -3,6 +3,9 @@ import { Provider } from 'react-redux';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LoadScript } from '@react-google-maps/api';
 import { store } from '../store/store';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { checkAuth } from '../store/slices/authSlice';
 import Navbar from '../components/Navbar.jsx';
 import Home from '../pages/Home.jsx';
 import Login from '../pages/Login.jsx';
@@ -17,8 +20,14 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "713517391777-
 
 const AppContent = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const hideNavbarPaths = ['/login', '/register'];
   const shouldShowNavbar = !hideNavbarPaths.includes(location.pathname);
+  
+  // Check auth status on app load
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
   
   return (
     <>

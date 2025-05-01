@@ -5,20 +5,28 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Interceptor untuk menambahkan token ke setiap request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
+// Interceptor untuk menangani respons dan error
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Jika error response status 401 (Unauthorized), hapus token dan redirect ke login
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Gunakan pengecekan untuk tidak redirect jika sudah di halaman login
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

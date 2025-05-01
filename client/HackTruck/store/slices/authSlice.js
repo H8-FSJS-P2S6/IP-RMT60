@@ -49,26 +49,47 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
   }
 });
 
-export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue, dispatch }) => {
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
   try {
+    // Ambil token dari localStorage
     const token = localStorage.getItem('token');
     if (!token) {
       return rejectWithValue('No token found');
     }
-    const response = await api.get('/api/auth/user'); // Update to the correct endpoint
-    return { user: response.data, token };
+    
+    // Set token di state untuk digunakan aplikasi
+    // Jika perlu verifikasi token, buat request ke backend
+    try {
+      // Ini akan memverifikasi token dengan mengirim request
+      // dengan Authorization header yang sudah diset oleh interceptor
+      const response = await api.get('/api/posts/driver');
+      
+      // Jika request berhasil, token valid, langsung ambil data user dari token
+      // Decode payload dari JWT token (format: xxxxx.PAYLOAD.xxxxx)
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
+      
+      // Decode payload (base64)
+      const payload = JSON.parse(atob(tokenParts[1]));
+      
+      // Return user data dan token
+      return { 
+        user: response.data.user || payload,
+        token
+      };
+    } catch (verifyError) {
+      // Jika verifikasi gagal, hapus token
+      if (verifyError.response?.status === 401) {
+        localStorage.removeItem('token');
+      }
+      return rejectWithValue('Token invalid');
+    }
   } catch (error) {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-    }
-    const errorMessage = error.response?.data?.message || 'Authentication failed';
-    // Set timeout to clear error after 5 seconds instead of 2 seconds
-    if (error.response?.status !== 401) { // Don't show timeout for auth errors
-      setTimeout(() => {
-        dispatch(clearError());
-      }, 5000);
-    }
-    return rejectWithValue(errorMessage);
+    // Jika ada error, hapus token
+    localStorage.removeItem('token');
+    return rejectWithValue('Authentication failed');
   }
 });
 
