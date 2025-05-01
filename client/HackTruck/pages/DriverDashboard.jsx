@@ -1,26 +1,37 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Navigate, Link } from 'react-router-dom';
+import { checkAuth } from '../store/slices/authSlice';
 import PostForm from '../components/PostForm';
 
 const DriverDashboard = () => {
-  const { user } = useSelector(state => state.auth);
+  const dispatch = useDispatch();
+  const { user, loading, error } = useSelector(state => state.auth);
 
   useEffect(() => {
-    // Make sure the page takes the full width
+    // Temporarily disable checkAuth until the server endpoint is fixed
+    // dispatch(checkAuth());
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.documentElement.style.width = '100%';
     
     return () => {
-      // Clean up
       document.body.style.margin = '';
       document.body.style.padding = '';
       document.documentElement.style.width = '';
     };
-  }, []);
+  }, [dispatch]);
 
-  // Redirect if user is not logged in or not a driver
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return <Navigate to="/login" />;
   }
@@ -45,6 +56,11 @@ const DriverDashboard = () => {
                 </div>
               </div>
               <div className="card-body">
+                {error && (
+                  <div className="alert alert-danger mb-4 text-center">
+                    {error} - Please try logging in again.
+                  </div>
+                )}
                 <div className="row mb-4">
                   <div className="col-md-8 offset-md-2">
                     <div className="alert alert-info">

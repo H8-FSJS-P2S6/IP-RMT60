@@ -75,9 +75,9 @@ const Login = () => {
   useEffect(() => {
     if (!isCheckingAuth && user && token) {
       if (user.role === 'driver') {
-        navigate('/driver/dashboard');
+        navigate('/driver/dashboard', { replace: true });
       } else {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     }
   }, [user, token, navigate, isCheckingAuth]);
@@ -174,101 +174,109 @@ const Login = () => {
                   {formErrors.general || error}
                 </div>
               )}
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontSize: '1rem',
-                      fontWeight: '500',
-                      color: '#4b5563',
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="Enter your email"
+              {isCheckingAuth ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Checking session...</span>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label
+                      className="form-label"
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: '500',
+                        color: '#4b5563',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="Enter your email"
+                      style={{
+                        height: '45px',
+                        fontSize: '1rem',
+                        borderRadius: '10px',
+                        padding: '0.75rem 1.25rem',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: '#f9fafb',
+                        transition: 'all 0.3s ease',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
+                      onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
+                    />
+                    {formErrors.email && <div className="invalid-feedback">{formErrors.email}</div>}
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      className="form-label"
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: '500',
+                        color: '#4b5563',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Enter your password"
+                      style={{
+                        height: '45px',
+                        fontSize: '1rem',
+                        borderRadius: '10px',
+                        padding: '0.75rem 1.25rem',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: '#f9fafb',
+                        transition: 'all 0.3s ease',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
+                      onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
+                    />
+                    {formErrors.password && <div className="invalid-feedback">{formErrors.password}</div>}
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn w-100"
+                    disabled={loading}
                     style={{
                       height: '45px',
-                      fontSize: '1rem',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
                       borderRadius: '10px',
-                      padding: '0.75rem 1.25rem',
-                      border: '1px solid #d1d5db',
-                      backgroundColor: '#f9fafb',
+                      background: 'linear-gradient(135deg, #6b48ff, #00ddeb)',
+                      border: 'none',
+                      color: '#ffffff',
                       transition: 'all 0.3s ease',
-                      fontFamily: "'Inter', sans-serif",
+                      fontFamily: "'Poppins', sans-serif",
                     }}
-                    onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
-                    onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
-                  />
-                  {formErrors.email && <div className="invalid-feedback">{formErrors.email}</div>}
-                </div>
-                <div className="mb-4">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontSize: '1rem',
-                      fontWeight: '500',
-                      color: '#4b5563',
-                      fontFamily: "'Inter', sans-serif",
-                    }}
+                    onMouseOver={(e) => (e.target.style.opacity = '0.9')}
+                    onMouseOut={(e) => (e.target.style.opacity = '1')}
                   >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="Enter your password"
-                    style={{
-                      height: '45px',
-                      fontSize: '1rem',
-                      borderRadius: '10px',
-                      padding: '0.75rem 1.25rem',
-                      border: '1px solid #d1d5db',
-                      backgroundColor: '#f9fafb',
-                      transition: 'all 0.3s ease',
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
-                    onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
-                  />
-                  {formErrors.password && <div className="invalid-feedback">{formErrors.password}</div>}
-                </div>
-                <button
-                  type="submit"
-                  className="btn w-100"
-                  disabled={loading || isCheckingAuth}
-                  style={{
-                    height: '45px',
-                    fontSize: '1.1rem',
-                    fontWeight: '600',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #6b48ff, #00ddeb)',
-                    border: 'none',
-                    color: '#ffffff',
-                    transition: 'all 0.3s ease',
-                    fontFamily: "'Poppins', sans-serif",
-                  }}
-                  onMouseOver={(e) => (e.target.style.opacity = '0.9')}
-                  onMouseOut={(e) => (e.target.style.opacity = '1')}
-                >
-                  {loading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Logging in...
-                    </>
-                  ) : (
-                    'Sign In'
-                  )}
-                </button>
-              </form>
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Logging in...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </button>
+                </form>
+              )}
               <div className="d-flex align-items-center my-4">
                 <hr style={{ flex: 1, borderColor: '#d1d5db' }} />
                 <span
@@ -297,7 +305,7 @@ const Login = () => {
                     console.error('Google Login Failed');
                     setFormErrors({ general: 'Google login failed. Please try again or use email login.' });
                   }}
-                  useOneTap={true}
+                  useOneTap={false}
                   text="signin_with"
                   shape="rectangular"
                   width="400"

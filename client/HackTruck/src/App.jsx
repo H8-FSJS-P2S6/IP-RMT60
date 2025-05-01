@@ -13,10 +13,8 @@ import AllPosts from '../pages/AllPosts.jsx';
 import Profile from '../pages/Profile.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Use environment variable or fallback to the existing ID
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "713517391777-3sfb91kna4sibldihbrngjgflp2d0djd.apps.googleusercontent.com";
 
-// Component to handle conditional navbar
 const AppContent = () => {
   const location = useLocation();
   const hideNavbarPaths = ['/login', '/register'];
@@ -41,7 +39,10 @@ const AppContent = () => {
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+      <LoadScript
+        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+        libraries={['places']} // Add libraries if needed (e.g., for autocomplete)
+      >
         <Provider store={store}>
           <Router>
             <AppContent />

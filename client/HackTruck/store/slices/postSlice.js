@@ -21,13 +21,12 @@ export const fetchDriverPosts = createAsyncThunk('posts/fetchDriverPosts', async
 
 export const createPost = createAsyncThunk('posts/createPost', async (postData, { rejectWithValue }) => {
   try {
-    // FormData should be already set up in the component before calling this action
     const response = await api.post('/api/posts', postData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to create post' });
+    return rejectWithValue(error.response?.data?.message || 'Failed to create post');
   }
 });
 
@@ -80,6 +79,7 @@ const postSlice = createSlice({
     builder
       .addCase(fetchPosts.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.loading = false;
@@ -91,11 +91,29 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload.message;
       })
+      .addCase(fetchDriverPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchDriverPosts.fulfilled, (state, action) => {
+        state.loading = false;
         state.driverPosts = action.payload;
       })
+      .addCase(fetchDriverPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      })
+      .addCase(createPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(createPost.fulfilled, (state, action) => {
+        state.loading = false;
         state.driverPosts.push(action.payload);
+      })
+      .addCase(createPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(updatePost.fulfilled, (state, action) => {
         const index = state.driverPosts.findIndex(post => post.id === action.payload.id);

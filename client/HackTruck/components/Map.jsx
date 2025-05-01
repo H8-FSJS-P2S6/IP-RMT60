@@ -1,46 +1,53 @@
 import React from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript } from '@react-google-maps/api';
 
-class MapErrorBoundary extends React.Component {
-  state = { hasError: false };
+const containerStyle = {
+  width: '100%',
+  height: '100%',
+};
 
-  static getDerivedStateFromError(error) {
-    console.error('Map Error:', error);
-    return { hasError: true };
-  }
+const center = {
+  lat: -6.2088, // Example: Jakarta, Indonesia
+  lng: 106.8456,
+};
 
-  render() {
-    if (this.state.hasError) {
-      return <div>Failed to load map. Please try again later.</div>;
-    }
-    return this.props.children;
-  }
-}
+const mapOptions = {
+  zoom: 10,
+  mapTypeId: 'roadmap',
+  disableDefaultUI: false,
+  zoomControl: true,
+};
 
-const Map = ({ center }) => {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
+const Map = () => {
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   });
 
-  const mapStyles = {
-    height: '400px',
-    width: '100%',
-  };
+  if (loadError) {
+    return (
+      <div className="alert alert-danger text-center">
+        Error loading map. Please check your API key or network connection.
+      </div>
+    );
+  }
 
   if (!isLoaded) {
-    return <div>Loading map...</div>;
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading map...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <MapErrorBoundary>
-      <GoogleMap
-        mapContainerStyle={mapStyles}
-        zoom={8}
-        center={center || { lat: -6.2088, lng: 106.8456 }}
-      >
-        {center && <Marker position={center} />}
-      </GoogleMap>
-    </MapErrorBoundary>
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={center}
+      zoom={mapOptions.zoom}
+      options={mapOptions}
+    />
   );
 };
 

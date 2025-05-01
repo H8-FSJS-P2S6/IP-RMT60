@@ -6,13 +6,11 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Make sure the page takes the full width
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.documentElement.style.width = '100%';
     
     return () => {
-      // Clean up
       document.body.style.margin = '';
       document.body.style.padding = '';
       document.documentElement.style.width = '';
@@ -44,7 +42,7 @@ const Home = () => {
 
         {/* Map Section - Full width */}
         <div className="card shadow-sm border-0 rounded-lg overflow-hidden mb-5">
-          <div className="card-body p-0" style={{ height: '400px', width: '100%' }}>
+          <div className="card-body p-0 google-map-container" style={{ height: '400px', width: '100%', position: ' 更新(ﾉ´∀｀*)ﾉrelative' }}>
             <Map />
           </div>
         </div>

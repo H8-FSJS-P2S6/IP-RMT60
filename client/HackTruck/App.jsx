@@ -1,46 +1,43 @@
-// App.jsx
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { store } from './store'; // Updated import path
-import Navbar from './components/Navbar.jsx';
-import Home from './pages/Home.jsx';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import DriverDashboard from './pages/DriverDashboard.jsx';
-import Profile from './pages/Profile.jsx'; // Import halaman Profile
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { LoadScript } from '@react-google-maps/api';
+import store from './store';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import DriverDashboard from './pages/DriverDashboard';
+import DriverPosts from './pages/DriverPosts';
+import NotFound from './pages/NotFound';
 
-// Komponen untuk menangani navbar yang bersyarat
-const AppContent = () => {
-  const location = useLocation();
-  const hideNavbarPaths = ['/login', '/register'];
-  const shouldShowNavbar = !hideNavbarPaths.includes(location.pathname);
-  
-  return (
-    <>
-      {shouldShowNavbar && <Navbar />}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<DriverDashboard />} />
-        <Route path="/profile" element={<Profile />} /> {/* Rute baru untuk Profile */}
-      </Routes>
-    </>
-  );
-};
+// Define libraries as a static array outside the component
+const googleMapsLibraries = ['places'];
 
-function App() {
+const App = () => {
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "713517391777-3sfb91kna4sibldihbrngjgflp2d0djd.apps.googleusercontent.com";
+
   return (
-    <GoogleOAuthProvider clientId="713517391777-3sfb91kna4sibldihbrngjgflp2d0djd.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Provider store={store}>
-        <Router>
-          <AppContent />
-        </Router>
+        <LoadScript
+          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          libraries={googleMapsLibraries} // Use the static array
+        >
+          <Router>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/driver/dashboard" element={<DriverDashboard />} />
+              <Route path="/driver/posts" element={<DriverPosts />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </LoadScript>
       </Provider>
     </GoogleOAuthProvider>
   );
-}
+};
 
 export default App;
