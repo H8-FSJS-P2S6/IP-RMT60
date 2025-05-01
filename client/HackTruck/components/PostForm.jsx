@@ -14,6 +14,8 @@ const PostForm = () => {
     truckType: 'pickup',
     maxWeight: '',
     phoneNumber: '',
+    price: '',
+    mapEmbedUrl: '',
   });
   const [selectedDate, setSelectedDate] = useState(null);
   const [image, setImage] = useState(null);
@@ -42,6 +44,8 @@ const PostForm = () => {
         truckType: 'pickup',
         maxWeight: '',
         phoneNumber: '',
+        price: '',
+        mapEmbedUrl: '',
       });
       setSelectedDate(null);
       setImage(null);
@@ -178,6 +182,34 @@ const PostForm = () => {
           onChange={handleChange}
           required
         />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Price (Rp)</label>
+        <input
+          type="number"
+          className="form-control"
+          name="price"
+          value={formData.price}
+          onChange={handleChange}
+          placeholder="e.g., 500000"
+          required
+        />
+        <small className="text-muted">Enter price in Indonesian Rupiah (IDR)</small>
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Map Embed URL</label>
+        <input
+          type="text"
+          className="form-control"
+          name="mapEmbedUrl"
+          value={formData.mapEmbedUrl}
+          onChange={handleChange}
+          placeholder="https://www.google.com/maps/embed?..."
+        />
+        <small className="text-muted">
+          Paste Google Maps embed URL (optional). Get it from Google Maps by selecting
+          your route, clicking Share, and choosing Embed a map.
+        </small>
       </div>
       <div className="mb-3">
         <label className="form-label">Phone Number</label>

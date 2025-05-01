@@ -4,7 +4,7 @@ const { uploadImage } = require('../helpers/cloudinary');
 
 const createPost = async (req, res, next) => {
   try {
-    const { departureDate, origin, destination, truckType, maxWeight, phoneNumber } = req.body;
+    const { departureDate, origin, destination, truckType, maxWeight, phoneNumber, price, mapEmbedUrl } = req.body;
     
     let imageUrl;
     if (req.file) {
@@ -19,6 +19,8 @@ const createPost = async (req, res, next) => {
       maxWeight,
       phoneNumber,
       imageUrl,
+      price: price || 0,
+      mapEmbedUrl,
       driverId: req.user.id,
     });
 
@@ -88,7 +90,12 @@ const updatePost = async (req, res, next) => {
       imageUrl = await uploadImage(req.file);
     }
 
-    await post.update({ ...req.body, imageUrl });
+    await post.update({ 
+      ...req.body, 
+      imageUrl,
+      price: req.body.price || post.price || 0
+    });
+    
     res.json(post);
   } catch (error) {
     next(error);

@@ -37,6 +37,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     imageUrl: DataTypes.STRING,
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    mapEmbedUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     driverId: {
       type: DataTypes.UUID,
       references: {

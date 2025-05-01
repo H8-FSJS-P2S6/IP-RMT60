@@ -31,6 +31,8 @@ const PostCard = ({ post }) => {
     truckType: post.truckType,
     maxWeight: post.maxWeight,
     phoneNumber: post.phoneNumber,
+    price: post.price || 0,
+    mapEmbedUrl: post.mapEmbedUrl || '',
   });
   const [image, setImage] = useState(null);
   const [center, setCenter] = useState({ lat: -6.2088, lng: 106.8456 });
@@ -177,6 +179,29 @@ const PostCard = ({ post }) => {
               />
             </div>
             <div className="mb-3">
+              <label className="form-label">Price (Rp)</label>
+              <input
+                type="number"
+                className="form-control"
+                name="price"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Map Embed URL (Google Maps)</label>
+              <input
+                type="text"
+                className="form-control"
+                name="mapEmbedUrl"
+                value={formData.mapEmbedUrl}
+                onChange={(e) => setFormData({ ...formData, mapEmbedUrl: e.target.value })}
+                placeholder="https://www.google.com/maps/embed?..."
+              />
+              <small className="text-muted">Get embed URL from Google Maps share option</small>
+            </div>
+            <div className="mb-3">
               <label className="form-label">Contact Number</label>
               <input
                 type="tel"
@@ -249,6 +274,14 @@ const PostCard = ({ post }) => {
                 </div>
                 <div className="d-flex align-items-center mb-2">
                   <div className="me-2" style={{ width: '30px', textAlign: 'center' }}>
+                    💰
+                  </div>
+                  <div>
+                    <strong>Price:</strong> {post.price === 0 ? 'Contact for pricing' : `Rp ${post.price?.toLocaleString()}`}
+                  </div>
+                </div>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-2" style={{ width: '30px', textAlign: 'center' }}>
                     🗓️
                   </div>
                   <div>
@@ -281,11 +314,24 @@ const PostCard = ({ post }) => {
             </div>
 
             <div className="map-container mt-3 mb-3">
-              <MapErrorBoundary>
-                <GoogleMap mapContainerStyle={mapStyles} zoom={8} center={center}>
-                  <Marker position={center} />
-                </GoogleMap>
-              </MapErrorBoundary>
+              {post.mapEmbedUrl ? (
+                <iframe 
+                  src={post.mapEmbedUrl}
+                  width="100%" 
+                  height="300" 
+                  style={{border:0, borderRadius: '8px'}} 
+                  allowFullScreen="" 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Route Map"
+                ></iframe>
+              ) : (
+                <MapErrorBoundary>
+                  <GoogleMap mapContainerStyle={mapStyles} zoom={8} center={center}>
+                    <Marker position={center} />
+                  </GoogleMap>
+                </MapErrorBoundary>
+              )}
             </div>
 
             {user?.role === 'driver' && user.id === post.driverId && (
