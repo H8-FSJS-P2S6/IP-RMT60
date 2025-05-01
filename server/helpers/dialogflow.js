@@ -1,7 +1,7 @@
 const dialogflow = require('@google-cloud/dialogflow');
 const { v4: uuidv4 } = require('uuid');
 
-const CREDENTIALS = require('../config/sns-pproject-aaf4a4c8ad7c.json');
+const CREDENTIALS = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 const projectId = CREDENTIALS.project_id;
 
 
