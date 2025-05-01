@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login, googleLogin, checkAuth } from '../store/slices/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+// Import the truck icon (you can replace this with your actual logo later)
+import truckIcon from '../src/assets/react.svg';
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
@@ -125,6 +127,17 @@ const Login = () => {
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             <div style={{ width: '100%', maxWidth: '400px' }}>
+              <div className="text-center mb-3">
+                <img 
+                  src={truckIcon} 
+                  alt="HackTruck Logo" 
+                  style={{ 
+                    width: '80px', 
+                    height: '80px',
+                    marginBottom: '10px'
+                  }} 
+                />
+              </div>
               <h2
                 className="text-center mb-4"
                 style={{
