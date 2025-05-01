@@ -258,12 +258,26 @@ const Login = () => {
               <ErrorBoundary>
                 <GoogleLogin
                   onSuccess={credentialResponse => {
-                    console.log('Google Login Credential:', credentialResponse.credential);
-                    dispatch(googleLogin(credentialResponse.credential));
+                    console.log('Google Login Success!');
+                    console.log('Credential:', credentialResponse.credential);
+                    dispatch(googleLogin(credentialResponse.credential))
+                      .unwrap()
+                      .then(result => {
+                        console.log('Google login successful:', result);
+                      })
+                      .catch(error => {
+                        console.error('Google login dispatch error:', error);
+                      });
                   }}
                   onError={() => {
-                    console.log('Google Login Failed');
+                    console.error('Google Login Failed');
+                    // Display a more user-friendly error
+                    dispatch({ 
+                      type: 'auth/googleLogin/rejected', 
+                      payload: 'Google login failed. Please try again or use email login.' 
+                    });
                   }}
+                  useOneTap={true}
                   text="signin_with"
                   shape="rectangular"
                   width="400"
