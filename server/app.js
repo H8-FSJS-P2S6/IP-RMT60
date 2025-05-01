@@ -1,4 +1,7 @@
-require("dotenv").config();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -6,21 +9,15 @@ const cors = require("cors");
 const routes = require("./routes");
 const errorHandler = require("./middlewares/errorHandler");
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
-}));
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:5173", // Allow your frontend origin
+  credentials: true, // Allow cookies/credentials
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+};
 
-// Add these headers for Google Sign-In
-app.use((req, res, next) => {
-  res.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  res.header('Cross-Origin-Embedder-Policy', 'require-corp');
-  next();
-});
-
+app.use(cors());
 //middleware body-parser
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -47,6 +44,5 @@ if (process.env.NODE_ENV !== "test") {
     console.log(`SNS NDT Learning Platform API listening on port ${port}`);
   });
 }
-
 
 module.exports = app;
