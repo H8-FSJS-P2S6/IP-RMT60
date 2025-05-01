@@ -72,7 +72,24 @@ const PostCard = ({ post }) => {
     e.preventDefault();
     setPostError(null);
     const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
+    
+    // Explicitly append each field to the FormData object
+    data.append('departureDate', formData.departureDate);
+    data.append('origin', formData.origin);
+    data.append('destination', formData.destination);
+    data.append('truckType', formData.truckType);
+    data.append('maxWeight', formData.maxWeight);
+    data.append('phoneNumber', formData.phoneNumber);
+    
+    // Make sure price is explicitly included and converted to a number
+    data.append('price', formData.price.toString());
+    
+    // Make sure mapEmbedUrl is explicitly included
+    if (formData.mapEmbedUrl) {
+      data.append('mapEmbedUrl', formData.mapEmbedUrl);
+    }
+    
+    // Add image if available
     if (image) data.append('image', image);
 
     try {
@@ -185,7 +202,7 @@ const PostCard = ({ post }) => {
                 className="form-control"
                 name="price"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? '' : Number(e.target.value) })}
                 required
               />
             </div>
@@ -277,7 +294,7 @@ const PostCard = ({ post }) => {
                     💰
                   </div>
                   <div>
-                    <strong>Price:</strong> {post.price === 0 ? 'Contact for pricing' : `Rp ${post.price?.toLocaleString()}`}
+                    <strong>Price:</strong> {post.price && post.price > 0 ? `Rp ${post.price.toLocaleString()}` : 'Contact for pricing'}
                   </div>
                 </div>
                 <div className="d-flex align-items-center mb-2">

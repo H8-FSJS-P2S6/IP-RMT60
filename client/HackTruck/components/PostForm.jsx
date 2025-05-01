@@ -44,10 +44,22 @@ const PostForm = () => {
         postData.append('destination', formData.destination);
         postData.append('truckType', formData.truckType);
         postData.append('maxWeight', formData.maxWeight);
-        postData.append('price', formData.price);
-        if (formData.mapEmbedUrl) postData.append('mapEmbedUrl', formData.mapEmbedUrl);
-        if (formData.phoneNumber) postData.append('phoneNumber', formData.phoneNumber);
-        if (formData.image) postData.append('image', formData.image);
+        
+        // Explicitly convert price to string when appending
+        postData.append('price', formData.price.toString());
+        
+        // Make sure mapEmbedUrl is properly included
+        if (formData.mapEmbedUrl) {
+          postData.append('mapEmbedUrl', formData.mapEmbedUrl);
+        }
+        
+        if (formData.phoneNumber) {
+          postData.append('phoneNumber', formData.phoneNumber);
+        }
+        
+        if (formData.image) {
+          postData.append('image', formData.image);
+        }
 
         await dispatch(createPost(postData)).unwrap();
         // Reset form on success
@@ -152,7 +164,7 @@ const PostForm = () => {
           className={`form-control ${formErrors.price ? 'is-invalid' : ''}`}
           placeholder="e.g. 500000"
           value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? '' : Number(e.target.value) })}
         />
         <small className="form-text text-muted">Enter price in Indonesian Rupiah (IDR)</small>
         {formErrors.price && <div className="invalid-feedback">{formErrors.price}</div>}

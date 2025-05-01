@@ -11,6 +11,9 @@ const createPost = async (req, res, next) => {
       imageUrl = await uploadImage(req.file);
     }
 
+    // Ensure price is properly parsed as an integer
+    const priceValue = price !== undefined ? parseInt(price, 10) : 0;
+
     const post = await Post.create({
       departureDate,
       origin,
@@ -19,13 +22,14 @@ const createPost = async (req, res, next) => {
       maxWeight,
       phoneNumber,
       imageUrl,
-      price: price || 0,
+      price: priceValue,
       mapEmbedUrl,
       driverId: req.user.id,
     });
 
     res.status(201).json(post);
   } catch (error) {
+    console.error('Error creating post:', error);
     next(error);
   }
 };
@@ -90,14 +94,31 @@ const updatePost = async (req, res, next) => {
       imageUrl = await uploadImage(req.file);
     }
 
-    await post.update({ 
-      ...req.body, 
-      imageUrl,
-      price: req.body.price || post.price || 0
-    });
+    // Parse price as integer or use default if not provided
+    const priceValue = req.body.price !== undefined ? parseInt(req.body.price, 10) : post.price;
+    
+    // Create an update object with all fields that need updating
+    const updateData = {
+      departureDate: req.body.departureDate || post.departureDate,
+      origin: req.body.origin || post.origin,
+      destination: req.body.destination || post.destination,
+      truckType: req.body.truckType || post.truckType,
+      maxWeight: req.body.maxWeight || post.maxWeight,
+      phoneNumber: req.body.phoneNumber || post.phoneNumber,
+      price: priceValue,
+      mapEmbedUrl: req.body.mapEmbedUrl || post.mapEmbedUrl,
+      imageUrl
+    };
+    
+    // Update the post with the specific fields
+    await post.update(updateData);
+    
+    // Reload the post to get the updated data
+    await post.reload();
     
     res.json(post);
   } catch (error) {
+    console.error('Error updating post:', error);
     next(error);
   }
 };
