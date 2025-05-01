@@ -21,11 +21,15 @@ export const addToCart = createAsyncThunk(
   async (lectureId, { rejectWithValue }) => {
     try {
       if (!lectureId || isNaN(lectureId)) {
-        return rejectWithValue("Invalid lecture selected");
+        return rejectWithValue("Invalid lecture ID");
       }
-      const response = await api.post("/carts/add", { LectureId: lectureId });
+      
+      // Verify this matches your backend endpoint
+      const response = await api.post("/carts/add", { lectureId });
+      console.log("Add to cart response:", response.data);
       return response.data;
     } catch (error) {
+      console.error("Add to cart error:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to add item to cart"
       );
@@ -37,15 +41,20 @@ export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (cartItemId, { rejectWithValue }) => {
     try {
-      if (!cartItemId || isNaN(cartItemId)) {
-        return rejectWithValue("Invalid cart item");
+      if (!cartItemId) {
+        console.error("Invalid cart item ID:", cartItemId);
+        return rejectWithValue("Invalid cart item ID");
       }
+      
+      console.log(`Sending DELETE request to /carts/${cartItemId}`);
       const response = await api.delete(`/carts/${cartItemId}`);
-      if (response.status === 200) {
-        return cartItemId;
-      }
-      return rejectWithValue("Failed to remove item from cart");
+      console.log("Remove from cart response:", response.data);
+      
+      // Return the ID for the reducer to use
+      return cartItemId;
     } catch (error) {
+      console.error("Remove from cart error:", error);
+      console.error("Error response:", error.response?.data);
       return rejectWithValue(
         error.response?.data?.message || "Failed to remove item from cart"
       );
@@ -105,7 +114,7 @@ const cartSlice = createSlice({
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = state.items.filter((item) => item.id !== action.payload);
+        state.items = state.items.filter((item) => item.id !== parseInt(action.payload));
         state.isEmpty = state.items.length === 0;
       })
       .addCase(removeFromCart.rejected, (state, action) => {

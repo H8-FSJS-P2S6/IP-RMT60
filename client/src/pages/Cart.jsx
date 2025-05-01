@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router"; // Fix: Use react-router-dom
+import { Link, useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   fetchCart,
@@ -22,17 +22,35 @@ export default function Cart() {
   const totalAmount = useAppSelector(selectCartTotal);
 
   useEffect(() => {
-    dispatch(fetchCart());
+    const loadCart = async () => {
+      await dispatch(fetchCart());
+    };
+
+    loadCart();
   }, [dispatch]);
 
-  const handleRemoveItem = (id) => {
-    dispatch(removeFromCart(id)).then((action) => {
+  const handleRemoveItem = async (id) => {
+    try {
+      // Make sure we have a valid ID
+      if (!id) {
+        console.error("Invalid item ID:", id);
+        showCartToast.error("Cannot remove item: Invalid ID");
+        return;
+      }
+
+      console.log("Removing item ID:", id, typeof id); // Debug info with type
+      const action = await dispatch(removeFromCart(id));
+
       if (removeFromCart.fulfilled.match(action)) {
         showCartToast.itemRemoved();
       } else {
-        showCartToast.error(action.payload);
+        console.error("Failed to remove item:", action.payload);
+        showCartToast.error(action.payload || "Error removing item");
       }
-    });
+    } catch (err) {
+      console.error("Exception in removeFromCart:", err);
+      showCartToast.error("An unexpected error occurred");
+    }
   };
 
   const handleCheckout = () => {
@@ -63,10 +81,7 @@ export default function Cart() {
       <div className="container py-5">
         <div className="alert alert-danger" role="alert">
           {error}
-          <button
-            className="btn btn-link ms-2"
-            onClick={handleRetry}
-          >
+          <button className="btn btn-link ms-2" onClick={handleRetry}>
             Try Again
           </button>
         </div>
@@ -83,7 +98,9 @@ export default function Cart() {
         <div className="text-center py-5">
           <i className="bi bi-cart-x fs-1 text-secondary mb-3"></i>
           <h3>Your cart is empty</h3>
-          <p className="text-muted mb-4">Looks like you haven't added any courses yet.</p>
+          <p className="text-muted mb-4">
+            Looks like you haven't added any courses yet.
+          </p>
           <Link to="/courses" className="btn btn-primary">
             Explore Courses
           </Link>
@@ -100,10 +117,12 @@ export default function Cart() {
         <div className="col-lg-8">
           <div className="card shadow-sm">
             <div className="card-body">
-              <h5 className="card-title mb-4">{cartItems.length} Courses in Cart</h5>
+              <h5 className="card-title mb-4">
+                {cartItems.length} Courses in Cart
+              </h5>
 
               {cartItems.map((item) => (
-                <div key={item.id} className="d-flex mb-4 pb-4 border-bottom">
+                <div key={`cart-${item.LectureId}`} className="d-flex mb-4 pb-4 border-bottom">
                   <img
                     src={
                       item.Lecture?.image ||
@@ -141,7 +160,10 @@ export default function Cart() {
                     <div className="mt-3">
                       <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleRemoveItem(item.id)}
+                        onClick={() => {
+                          // Use the LectureId instead of id which doesn't exist
+                          handleRemoveItem(item.LectureId);
+                        }}
                       >
                         <i className="bi bi-trash me-1"></i>
                         Remove
@@ -180,7 +202,9 @@ export default function Cart() {
 
               <div className="d-flex justify-content-between mb-4">
                 <span className="fw-bold">Total:</span>
-                <span className="fw-bold text-primary">{formatToIDR(totalAmount)}</span>
+                <span className="fw-bold text-primary">
+                  {formatToIDR(totalAmount)}
+                </span>
               </div>
 
               <button
@@ -196,7 +220,8 @@ export default function Cart() {
             <div className="card-body">
               <h5 className="card-title">Need Help?</h5>
               <p className="text-muted small mb-0">
-                If you have questions about your order, please contact our support team.
+                If you have questions about your order, please contact our
+                support team.
               </p>
               <div className="mt-3">
                 <Link
