@@ -24,4 +24,15 @@ api.interceptors.response.use(
   }
 );
 
+// AI recommendation function
+export const getTruckRecommendation = async (weight) => {
+  try {
+    const response = await api.post('/api/ai/recommend', { weight });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting truck recommendation:', error);
+    throw error;
+  }
+};
+
 export default api;

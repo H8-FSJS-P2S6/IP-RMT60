@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchPosts, getTruckRecommendation, clearRecommendation } from '../store/slices/postSlice';
+import { fetchPosts } from '../store/slices/postSlice';
 import PostCard from '../components/PostCard';
+import AiRecommendation from '../components/AiRecommendation';
 
 const AllPosts = () => {
   const dispatch = useDispatch();
-  const { posts, loading, totalPages, currentPage, recommendation } = useSelector(state => state.posts);
+  const { posts, loading, totalPages, currentPage } = useSelector(state => state.posts);
   const [filters, setFilters] = useState({
     search: '',
     truckType: '',
@@ -13,7 +14,6 @@ const AllPosts = () => {
     order: 'DESC',
     page: 1,
   });
-  const [weight, setWeight] = useState('');
 
   useEffect(() => {
     dispatch(fetchPosts(filters));
@@ -33,13 +33,6 @@ const AllPosts = () => {
 
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value, page: 1 });
-  };
-
-  const handleRecommendation = (e) => {
-    e.preventDefault();
-    if (weight) {
-      dispatch(getTruckRecommendation(weight));
-    }
   };
 
   return (
@@ -112,66 +105,7 @@ const AllPosts = () => {
         </div>
 
         {/* AI Recommendation Section */}
-        <div className="card shadow-sm border-0 rounded-lg mb-5">
-          <div className="card-header bg-primary bg-gradient text-white py-4">
-            <h4 className="mb-0">
-              <i className="bi bi-lightning me-2"></i>
-              AI-Powered Recommendation
-            </h4>
-          </div>
-          <div className="card-body p-4">
-            <p className="text-muted mb-4">Let our AI find the most suitable truck based on your cargo weight</p>
-            <form onSubmit={handleRecommendation} className="row g-3 align-items-end">
-              <div className="col-md-6">
-                <label className="form-label">Cargo Weight (kg)</label>
-                <div className="input-group">
-                  <span className="input-group-text bg-light">
-                    <i className="bi bi-box"></i>
-                  </span>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="e.g., 500"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="d-flex">
-                  <button type="submit" className="btn btn-primary me-2">
-                    <i className="bi bi-magic me-2"></i>
-                    Get Recommendation
-                  </button>
-                  {recommendation && (
-                    <button 
-                      type="button" 
-                      className="btn btn-outline-secondary"
-                      onClick={() => dispatch(clearRecommendation())}
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </div>
-            </form>
-            {recommendation && (
-              <div className="alert alert-info mt-4 p-4" 
-                   style={{borderLeft: '4px solid #17a2b8'}}>
-                <div className="d-flex">
-                  <div className="me-3 fs-3">
-                    <i className="bi bi-lightbulb"></i>
-                  </div>
-                  <div>
-                    <h5 className="alert-heading">Recommendation</h5>
-                    <p className="mb-0">{recommendation}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <AiRecommendation />
 
         {/* Results Section */}
         <div className="d-flex justify-content-between align-items-center mb-4">

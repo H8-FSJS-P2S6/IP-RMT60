@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Map from '../components/Map';
+import AiRecommendation from '../components/AiRecommendation';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -40,9 +41,16 @@ const Home = () => {
           </div>
         </div>
 
+        {/* AI Recommendation Section */}
+        <div className="row mb-5">
+          <div className="col-lg-8 mx-auto">
+            <AiRecommendation />
+          </div>
+        </div>
+
         {/* Map Section - Full width */}
         <div className="card shadow-sm border-0 rounded-lg overflow-hidden mb-5">
-          <div className="card-body p-0 google-map-container" style={{ height: '400px', width: '100%', position: ' 更新(ﾉ´∀｀*)ﾉrelative' }}>
+          <div className="card-body p-0 google-map-container" style={{ height: '400px', width: '100%', position: 'relative' }}>
             <Map />
           </div>
         </div>

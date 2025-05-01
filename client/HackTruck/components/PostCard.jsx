@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { deletePost, updatePost } from '../store/slices/postSlice';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useState, useEffect } from 'react';
 import React from 'react';
 
@@ -37,30 +37,48 @@ const PostCard = ({ post }) => {
   const [image, setImage] = useState(null);
   const [center, setCenter] = useState({ lat: -6.2088, lng: 106.8456 });
   const [postError, setPostError] = useState(null);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
-  });
+  // Check if Google Maps API is loaded globally
+  useEffect(() => {
+    const checkMapsLoaded = () => {
+      if (window.google && window.google.maps) {
+        setMapsLoaded(true);
+      } else {
+        setTimeout(checkMapsLoaded, 100);
+      }
+    };
+    
+    checkMapsLoaded();
+    
+    return () => {
+      // Cleanup if needed
+    };
+  }, []);
 
   // Geocode the post's origin to get map coordinates
   useEffect(() => {
     const geocode = async () => {
       try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-            post.origin
-          )}&key=YOUR_GOOGLE_MAPS_API_KEY`
-        );
-        const data = await response.json();
-        if (data.results[0]) {
-          setCenter(data.results[0].geometry.location);
-        }
+        if (!mapsLoaded || !post.origin) return;
+        
+        // Let's use built-in geocoding to avoid API key issues
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address: post.origin }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            setCenter({
+              lat: results[0].geometry.location.lat(),
+              lng: results[0].geometry.location.lng()
+            });
+          }
+        });
       } catch (error) {
         console.error('Geocoding error:', error);
       }
     };
-    if (post.origin && isLoaded) geocode();
-  }, [post.origin, isLoaded]);
+    
+    if (post.origin && mapsLoaded) geocode();
+  }, [post.origin, mapsLoaded]);
 
   const mapStyles = {
     height: '200px',
@@ -122,8 +140,14 @@ const PostCard = ({ post }) => {
     return icons[type] || '🚚';
   };
 
-  if (!isLoaded) {
-    return <div>Loading map...</div>;
+  if (!mapsLoaded) {
+    return (
+      <div className="map-container mt-3 mb-3 d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading map...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

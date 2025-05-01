@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoogleMap, useLoadScript } from '@react-google-maps/api';
+import { GoogleMap } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
@@ -19,27 +19,8 @@ const mapOptions = {
 };
 
 const Map = () => {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
-
-  if (loadError) {
-    return (
-      <div className="alert alert-danger text-center">
-        Error loading map. Please check your API key or network connection.
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading map...</span>
-        </div>
-      </div>
-    );
-  }
+  // We're not using useLoadScript here as it's loaded in App.jsx
+  // This prevents duplicate loading of the Google Maps API
 
   return (
     <GoogleMap
