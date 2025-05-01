@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login, googleLogin, checkAuth } from '../store/slices/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-// Import the truck icon (you can replace this with your actual logo later)
 import truckIcon from '../src/assets/react.svg';
 
 class ErrorBoundary extends React.Component {
@@ -44,9 +43,9 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [formErrors, setFormErrors] = useState({});
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Check authentication status on mount
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
@@ -59,42 +58,51 @@ const Login = () => {
     };
     
     checkAuthentication();
-  }, [dispatch]);
 
-  // Handle redirection when authentication state changes
-  useEffect(() => {
-    if (!isCheckingAuth && user && token) {
-      console.log('Redirecting to dashboard, user and token exist', user);
-      // Redirect based on user role
-      if (user.role === 'driver') {
-        navigate('/driver/dashboard');
-      } else {
-        navigate('/');
-      }
-    }
-    
-    // Set the body and html to full height
     document.body.style.height = '100%';
     document.documentElement.style.height = '100%';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
-    
-    // Clean up when component unmounts
+
     return () => {
       document.body.style.height = '';
       document.documentElement.style.height = '';
       document.body.style.margin = '';
       document.body.style.padding = '';
     };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!isCheckingAuth && user && token) {
+      if (user.role === 'driver') {
+        navigate('/driver/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
   }, [user, token, navigate, isCheckingAuth]);
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.email.trim()) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email is invalid';
+    if (!formData.password) errors.password = 'Password is required';
+    else if (formData.password.length < 6) errors.password = 'Password must be at least 6 characters';
+    return errors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
-    try {
-      await dispatch(login(formData)).unwrap();
-    } catch (err) {
-      console.error('Login failed:', err);
+    const errors = validateForm();
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      try {
+        await dispatch(login(formData)).unwrap();
+      } catch (err) {
+        console.error('Login failed:', err);
+        setFormErrors({ general: err || 'Login failed. Please try again.' });
+      }
     }
   };
 
@@ -150,7 +158,7 @@ const Login = () => {
               >
                 Welcome to HacTruck
               </h2>
-              {error && (
+              {(error || formErrors.general) && (
                 <div
                   className="alert alert-danger mb-4 text-center"
                   style={{
@@ -163,7 +171,7 @@ const Login = () => {
                     transition: 'opacity 0.3s ease',
                   }}
                 >
-                  {error}
+                  {formErrors.general || error}
                 </div>
               )}
               <form onSubmit={handleSubmit}>
@@ -181,10 +189,9 @@ const Login = () => {
                   </label>
                   <input
                     type="email"
-                    className="form-control"
+                    className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
                     placeholder="Enter your email"
                     style={{
                       height: '45px',
@@ -199,6 +206,7 @@ const Login = () => {
                     onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
                     onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
                   />
+                  {formErrors.email && <div className="invalid-feedback">{formErrors.email}</div>}
                 </div>
                 <div className="mb-4">
                   <label
@@ -214,10 +222,9 @@ const Login = () => {
                   </label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
                     placeholder="Enter your password"
                     style={{
                       height: '45px',
@@ -232,11 +239,12 @@ const Login = () => {
                     onFocus={(e) => (e.target.style.borderColor = '#6b48ff')}
                     onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
                   />
+                  {formErrors.password && <div className="invalid-feedback">{formErrors.password}</div>}
                 </div>
                 <button
                   type="submit"
                   className="btn w-100"
-                  disabled={loading}
+                  disabled={loading || isCheckingAuth}
                   style={{
                     height: '45px',
                     fontSize: '1.1rem',
@@ -251,7 +259,14 @@ const Login = () => {
                   onMouseOver={(e) => (e.target.style.opacity = '0.9')}
                   onMouseOut={(e) => (e.target.style.opacity = '1')}
                 >
-                  {loading ? 'Logging in...' : 'Sign In'}
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Logging in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </button>
               </form>
               <div className="d-flex align-items-center my-4">
@@ -270,44 +285,22 @@ const Login = () => {
               </div>
               <ErrorBoundary>
                 <GoogleLogin
-                  onSuccess={credentialResponse => {
-                    console.log('Google Login Success!');
-                    console.log('Credential:', credentialResponse.credential);
-                    dispatch(googleLogin(credentialResponse.credential))
-                      .unwrap()
-                      .then(result => {
-                        console.log('Google login successful:', result);
-                      })
-                      .catch(error => {
-                        console.error('Google login dispatch error:', error);
-                      });
+                  onSuccess={async (credentialResponse) => {
+                    try {
+                      await dispatch(googleLogin(credentialResponse.credential)).unwrap();
+                    } catch (error) {
+                      console.error('Google login failed:', error);
+                      setFormErrors({ general: 'Google login failed. Please try again.' });
+                    }
                   }}
                   onError={() => {
                     console.error('Google Login Failed');
-                    // Display a more user-friendly error
-                    dispatch({ 
-                      type: 'auth/googleLogin/rejected', 
-                      payload: 'Google login failed. Please try again or use email login.' 
-                    });
+                    setFormErrors({ general: 'Google login failed. Please try again or use email login.' });
                   }}
                   useOneTap={true}
                   text="signin_with"
                   shape="rectangular"
                   width="400"
-                  style={{
-                    width: '100%',
-                    height: '45px',
-                    fontSize: '1rem',
-                    borderRadius: '10px',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: '#ffffff',
-                    color: '#374151',
-                    transition: 'all 0.3s ease',
-                    fontFamily: "'Inter', sans-serif",
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
                 />
               </ErrorBoundary>
               <div

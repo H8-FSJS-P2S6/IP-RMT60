@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -48,13 +47,11 @@ const Register = () => {
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    // Set the body and html to full height
     document.body.style.height = '100%';
     document.documentElement.style.height = '100%';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
 
-    // Redirect if already authenticated
     if (user && token) {
       if (user.role === 'driver') {
         navigate('/driver/dashboard');
@@ -63,7 +60,6 @@ const Register = () => {
       }
     }
 
-    // Clean up when component unmounts
     return () => {
       document.body.style.height = '';
       document.documentElement.style.height = '';
@@ -92,6 +88,7 @@ const Register = () => {
         await dispatch(register(formData)).unwrap();
       } catch (err) {
         console.error('Registration failed:', err);
+        setFormErrors({ general: err || 'Registration failed. Please try again.' });
       }
     }
   };
@@ -149,7 +146,7 @@ const Register = () => {
                 >
                   Join HacTruck
                 </h2>
-                {error && (
+                {(error || formErrors.general) && (
                   <div
                     className="alert alert-danger mb-4 text-center"
                     style={{
@@ -162,7 +159,7 @@ const Register = () => {
                       transition: 'opacity 0.3s ease',
                     }}
                   >
-                    {error}
+                    {formErrors.general || error}
                   </div>
                 )}
                 <form onSubmit={handleSubmit}>
