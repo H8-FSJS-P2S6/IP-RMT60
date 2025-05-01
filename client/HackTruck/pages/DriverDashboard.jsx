@@ -1,17 +1,12 @@
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchDriverPosts } from '../store/slices/postSlice';
+import { useSelector } from 'react-redux';
+import { Navigate, Link } from 'react-router-dom';
 import PostForm from '../components/PostForm';
-import PostCard from '../components/PostCard';
 
 const DriverDashboard = () => {
-  const dispatch = useDispatch();
-  const { driverPosts, loading } = useSelector(state => state.posts);
   const { user } = useSelector(state => state.auth);
 
   useEffect(() => {
-    dispatch(fetchDriverPosts());
-    
     // Make sure the page takes the full width
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -23,56 +18,50 @@ const DriverDashboard = () => {
       document.body.style.padding = '';
       document.documentElement.style.width = '';
     };
-  }, [dispatch]);
+  }, []);
+
+  // Redirect if user is not logged in or not a driver
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (user.role !== 'driver') {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="container-fluid p-0" style={{ width: '100%', maxWidth: '100%', overflow: 'auto' }}>
       <div className="container my-4">
         <div className="row">
           <div className="col-12">
-            <h2 className="mb-4">{user?.role === 'driver' ? 'Driver Dashboard' : 'User Dashboard'}</h2>
-            
-            {user?.role === 'driver' && (
-              <div className="card shadow-sm border-0 rounded-lg mb-5">
-                <div className="card-header bg-white py-3">
-                  <h4 className="mb-0">Add New Truck Listing</h4>
+            <div className="card shadow-sm border-0 rounded-lg mb-5">
+              <div className="card-header bg-white py-3">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h4 className="mb-0">Driver Dashboard</h4>
+                  <Link to="/driver/posts" className="btn btn-primary">
+                    <i className="bi bi-list-ul me-2"></i>
+                    View My Listings
+                  </Link>
                 </div>
-                <div className="card-body">
-                  <PostForm />
-                </div>
-              </div>
-            )}
-            
-            <div className="card shadow-sm border-0 rounded-lg">
-              <div className="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <h4 className="mb-0">{user?.role === 'driver' ? 'Your Truck Listings' : 'Truck Listings'}</h4>
-                {driverPosts && driverPosts.length > 0 && (
-                  <span className="badge bg-primary rounded-pill">{driverPosts.length}</span>
-                )}
               </div>
               <div className="card-body">
-                {loading ? (
-                  <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+                <div className="row mb-4">
+                  <div className="col-md-8 offset-md-2">
+                    <div className="alert alert-info">
+                      <h5 className="alert-heading">
+                        <i className="bi bi-info-circle me-2"></i>
+                        Welcome to your Dashboard!
+                      </h5>
+                      <p className="mb-0">
+                        Here you can create new truck listings for customers to find.
+                        You can view and manage all your listings from the "View My Listings" page.
+                      </p>
                     </div>
-                    <p className="mt-3 text-muted">Loading your listings...</p>
                   </div>
-                ) : driverPosts.length === 0 ? (
-                  <div className="alert alert-info text-center py-4">
-                    <i className="bi bi-truck fs-1 mb-3"></i>
-                    <h5>No listings yet</h5>
-                    <p>Sorry, there is no post list from driver</p>
-                  </div>
-                ) : (
-                  <div className="row">
-                    {driverPosts.map(post => (
-                      <div key={post.id} className="col-lg-4 col-md-6 mb-4">
-                        <PostCard post={post} />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                </div>
+                
+                <h5 className="mb-3 text-center">Add New Truck Listing</h5>
+                <PostForm />
               </div>
             </div>
           </div>

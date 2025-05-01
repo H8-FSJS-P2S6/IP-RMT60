@@ -8,6 +8,8 @@ import Home from '../pages/Home.jsx';
 import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import DriverDashboard from '../pages/DriverDashboard.jsx';
+import DriverPosts from '../pages/DriverPosts.jsx';
+import AllPosts from '../pages/AllPosts.jsx';
 import Profile from '../pages/Profile.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -28,6 +30,8 @@ const AppContent = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/driver/dashboard" element={<DriverDashboard />} />
+        <Route path="/driver/posts" element={<DriverPosts />} />
+        <Route path="/posts/all" element={<AllPosts />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </>

@@ -79,16 +79,36 @@ const Navbar = () => {
                 <i className="bi bi-house-door me-2"></i> Home
               </Link>
             </li>
+            <li className="nav-item mx-2">
+              <Link
+                className="nav-link d-flex align-items-center"
+                to="/posts/all"
+                style={{ fontWeight: '500' }}
+              >
+                <i className="bi bi-truck me-2"></i> All Trucks
+              </Link>
+            </li>
             {user?.role === 'driver' && (
-              <li className="nav-item mx-2">
-                <Link
-                  className="nav-link d-flex align-items-center"
-                  to="/driver/dashboard"
-                  style={{ fontWeight: '500' }}
-                >
-                  <i className="bi bi-speedometer2 me-2"></i> Dashboard
-                </Link>
-              </li>
+              <>
+                <li className="nav-item mx-2">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/driver/dashboard"
+                    style={{ fontWeight: '500' }}
+                  >
+                    <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item mx-2">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/driver/posts"
+                    style={{ fontWeight: '500' }}
+                  >
+                    <i className="bi bi-list-check me-2"></i> My Listings
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
 
