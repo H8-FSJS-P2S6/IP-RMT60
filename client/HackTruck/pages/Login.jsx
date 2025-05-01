@@ -9,7 +9,7 @@ class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
 
   static getDerivedStateFromError(error) {
-    console.log('ErrorBoundary caught:', error);
+    console.error('ErrorBoundary caught:', error);
     return { hasError: true, error };
   }
 
@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component {
             border: 'none',
           }}
         >
-          Something went wrong with Google Login. Please use email/password login.
+          Google Login issue: {this.state.error?.message || 'Unknown error'}. Please use email/password login or try again.
         </div>
       );
     }
@@ -44,6 +44,7 @@ const Login = () => {
     password: '',
   });
   const [formErrors, setFormErrors] = useState({});
+  const [googleError, setGoogleError] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -51,7 +52,9 @@ const Login = () => {
       try {
         await dispatch(checkAuth()).unwrap();
       } catch (err) {
-        console.log('No valid session found:', err);
+        if (err !== 'No token found') {
+          console.log('No valid session found:', err);
+        }
       } finally {
         setIsCheckingAuth(false);
       }
@@ -95,6 +98,7 @@ const Login = () => {
     e.preventDefault();
     const errors = validateForm();
     setFormErrors(errors);
+    setGoogleError(null);
 
     if (Object.keys(errors).length === 0) {
       try {
@@ -103,6 +107,17 @@ const Login = () => {
         console.error('Login failed:', err);
         setFormErrors({ general: err || 'Login failed. Please try again.' });
       }
+    }
+  };
+
+  const handleGoogleLogin = async (credential) => {
+    console.log('Attempting Google Login with credential:', credential);
+    try {
+      await dispatch(googleLogin(credential)).unwrap();
+      setGoogleError(null);
+    } catch (error) {
+      console.error('Google login failed:', error);
+      setGoogleError('Google login failed: ' + (error?.message || 'Server error') + '. Please try again or use email login.');
     }
   };
 
@@ -158,7 +173,7 @@ const Login = () => {
               >
                 Welcome to HacTruck
               </h2>
-              {(error || formErrors.general) && (
+              {(error || formErrors.general || googleError) && (
                 <div
                   className="alert alert-danger mb-4 text-center"
                   style={{
@@ -171,7 +186,7 @@ const Login = () => {
                     transition: 'opacity 0.3s ease',
                   }}
                 >
-                  {formErrors.general || error}
+                  {formErrors.general || googleError || error}
                 </div>
               )}
               {isCheckingAuth ? (
@@ -293,22 +308,19 @@ const Login = () => {
               </div>
               <ErrorBoundary>
                 <GoogleLogin
-                  onSuccess={async (credentialResponse) => {
-                    try {
-                      await dispatch(googleLogin(credentialResponse.credential)).unwrap();
-                    } catch (error) {
-                      console.error('Google login failed:', error);
-                      setFormErrors({ general: 'Google login failed. Please try again.' });
-                    }
+                  onSuccess={(credentialResponse) => {
+                    console.log('Google Login Success:', credentialResponse);
+                    handleGoogleLogin(credentialResponse.credential);
                   }}
-                  onError={() => {
-                    console.error('Google Login Failed');
-                    setFormErrors({ general: 'Google login failed. Please try again or use email login.' });
+                  onError={(error) => {
+                    console.error('Google Login Client Error:', error);
+                    setGoogleError('Google login failed: Client error. Please try again.');
                   }}
-                  useOneTap={false}
                   text="signin_with"
                   shape="rectangular"
                   width="400"
+                  theme="filled_blue"
+                  size="large"
                 />
               </ErrorBoundary>
               <div
