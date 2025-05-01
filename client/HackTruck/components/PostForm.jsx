@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createPost } from '../store/slices/postSlice';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const PostForm = () => {
   const dispatch = useDispatch();
@@ -88,6 +90,44 @@ const PostForm = () => {
     }
   };
 
+  // Function to handle date changes from DatePicker
+  const handleDateChange = (date) => {
+    if (date) {
+      // Format date to YYYY-MM-DD for backend compatibility
+      const formattedDate = date.toISOString().split('T')[0];
+      setFormData({ ...formData, departureDate: formattedDate });
+    } else {
+      setFormData({ ...formData, departureDate: '' });
+    }
+  };
+
+  // Add custom styles for DatePicker to make it consistent with other form elements
+  useEffect(() => {
+    // Target the react-datepicker container to ensure full width
+    const datePickerContainer = document.querySelector('.react-datepicker-wrapper');
+    if (datePickerContainer) {
+      datePickerContainer.style.width = '100%';
+      datePickerContainer.style.display = 'block';
+    }
+    
+    // Style the direct input element for consistent appearance
+    const datePickerInput = document.querySelector('.react-datepicker__input-container input');
+    if (datePickerInput) {
+      datePickerInput.style.width = '100%';
+      datePickerInput.style.height = 'calc(1.5em + 0.75rem + 2px)';
+      datePickerInput.style.padding = '0.375rem 0.75rem';
+      datePickerInput.style.fontSize = '1rem';
+      datePickerInput.style.fontWeight = '400';
+    }
+    
+    // Make the input container full width as well
+    const inputContainer = document.querySelector('.react-datepicker__input-container');
+    if (inputContainer) {
+      inputContainer.style.width = '100%';
+      inputContainer.style.display = 'block';
+    }
+  }, []);
+
   return (
     <form onSubmit={handleSubmit} encType="multipart/form-data">
       {error && (
@@ -97,11 +137,13 @@ const PostForm = () => {
       )}
       <div className="mb-3">
         <label className="form-label">Departure Date</label>
-        <input
-          type="date"
+        <DatePicker
+          selected={formData.departureDate ? new Date(formData.departureDate) : null}
+          onChange={handleDateChange}
           className={`form-control ${formErrors.departureDate ? 'is-invalid' : ''}`}
-          value={formData.departureDate}
-          onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+          dateFormat="yyyy-MM-dd"
+          placeholderText="Select departure date"
+          minDate={new Date()}
         />
         {formErrors.departureDate && <div className="invalid-feedback">{formErrors.departureDate}</div>}
       </div>

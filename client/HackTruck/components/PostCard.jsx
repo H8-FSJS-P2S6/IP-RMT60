@@ -3,6 +3,8 @@ import { deletePost, updatePost } from '../store/slices/postSlice';
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useState, useEffect } from 'react';
 import React from 'react';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 class MapErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -129,6 +131,46 @@ const PostCard = ({ post }) => {
     }
   };
 
+  // Handle date change from DatePicker
+  const handleDateChange = (date) => {
+    if (date) {
+      // Format date to YYYY-MM-DD for backend compatibility
+      const formattedDate = date.toISOString().split('T')[0];
+      setFormData({ ...formData, departureDate: formattedDate });
+    } else {
+      setFormData({ ...formData, departureDate: '' });
+    }
+  };
+
+  // Apply custom styling to the date picker when edit mode is activated
+  useEffect(() => {
+    if (isEditing) {
+      // Target the react-datepicker container to ensure full width
+      const datePickerContainer = document.querySelector('.react-datepicker-wrapper');
+      if (datePickerContainer) {
+        datePickerContainer.style.width = '100%';
+        datePickerContainer.style.display = 'block';
+      }
+      
+      // Also style the direct input element for consistent appearance
+      const datePickerInput = document.querySelector('.react-datepicker__input-container input');
+      if (datePickerInput) {
+        datePickerInput.style.width = '100%';
+        datePickerInput.style.height = 'calc(1.5em + 0.75rem + 2px)';
+        datePickerInput.style.padding = '0.375rem 0.75rem';
+        datePickerInput.style.fontSize = '1rem';
+        datePickerInput.style.fontWeight = '400';
+      }
+      
+      // Make the input container full width as well
+      const inputContainer = document.querySelector('.react-datepicker__input-container');
+      if (inputContainer) {
+        inputContainer.style.width = '100%';
+        inputContainer.style.display = 'block';
+      }
+    }
+  }, [isEditing]);
+
   // Get truck icon based on truck type
   const getTruckIcon = (type) => {
     const icons = {
@@ -163,12 +205,13 @@ const PostCard = ({ post }) => {
             <h5 className="mb-4 text-center">Edit Delivery Details</h5>
             <div className="mb-3">
               <label className="form-label">Departure Date</label>
-              <input
-                type="date"
+              <DatePicker
+                selected={formData.departureDate ? new Date(formData.departureDate) : null}
+                onChange={handleDateChange}
                 className="form-control"
-                name="departureDate"
-                value={formData.departureDate}
-                onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Select departure date"
+                minDate={new Date()}
                 required
               />
             </div>

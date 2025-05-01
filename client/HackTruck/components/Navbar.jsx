@@ -70,15 +70,17 @@ const Navbar = () => {
         <div className="collapse navbar-collapse justify-content-between" id="navbarNav">
           {/* Navigation menu */}
           <ul className="navbar-nav mx-auto">
-            <li className="nav-item mx-2">
-              <Link
-                className="nav-link d-flex align-items-center"
-                to={getHomeLinkDestination()}
-                style={{ fontWeight: '500' }}
-              >
-                <i className="bi bi-house-door me-2"></i> Home
-              </Link>
-            </li>
+            {user?.role !== 'driver' && (
+              <li className="nav-item mx-2">
+                <Link
+                  className="nav-link d-flex align-items-center"
+                  to={getHomeLinkDestination()}
+                  style={{ fontWeight: '500' }}
+                >
+                  <i className="bi bi-house-door me-2"></i> Home
+                </Link>
+              </li>
+            )}
             <li className="nav-item mx-2">
               <Link
                 className="nav-link d-flex align-items-center"
