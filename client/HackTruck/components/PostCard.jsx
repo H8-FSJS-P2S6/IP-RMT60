@@ -265,10 +265,9 @@ const PostCard = ({ post, showControls = true }) => {
             <span className="badge bg-success">Your Post</span>
           </div>
         )}
-
+        
         {isEditing ? (
-          <form onSubmit={handleUpdate} className="edit-form">
-            <h5 className="mb-4 text-center">Edit Delivery Details</h5>
+          <form onSubmit={handleUpdate}>
             <div className="mb-3">
               <label className="form-label">Departure Date</label>
               <DatePicker
@@ -346,17 +345,10 @@ const PostCard = ({ post, showControls = true }) => {
                 className="form-control"
                 name="mapEmbedUrl"
                 value={formData.mapEmbedUrl}
-                onChange={(e) => {
-                  // Extract URL if user pastes entire iframe code
-                  const value = extractUrlFromIframe(e.target.value);
-                  setFormData({ ...formData, mapEmbedUrl: value });
-                }}
+                onChange={(e) => setFormData({ ...formData, mapEmbedUrl: e.target.value })}
                 placeholder="https://www.google.com/maps/embed?..."
               />
-              <small className="text-muted">
-                Copy the embed URL (https://www.google.com/maps/embed?...) from Google Maps share option.
-                Paste entire iframe code or just the URL.
-              </small>
+              <small className="text-muted">Get embed URL from Google Maps share option</small>
             </div>
             <div className="mb-3">
               <label className="form-label">Contact Number</label>
