@@ -1,11 +1,10 @@
 const dialogflow = require('@google-cloud/dialogflow');
 const { v4: uuidv4 } = require('uuid');
 
-// Load credentials
 const CREDENTIALS = require('../config/sns-pproject-aaf4a4c8ad7c.json');
 const projectId = CREDENTIALS.project_id;
 
-// Initialize session client with credentials
+
 const sessionClient = new dialogflow.SessionsClient({
   credentials: CREDENTIALS
 });
