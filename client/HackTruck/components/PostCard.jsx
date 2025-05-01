@@ -1,10 +1,24 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { deletePost, updatePost } from '../store/slices/postSlice';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Map from './Map'; // Import the Map component directly
+
+// Utility function to extract URL from iframe string if needed
+const extractUrlFromIframe = (str) => {
+  if (!str) return '';
+  
+  // Check if it's an iframe string
+  if (str.includes('<iframe') && str.includes('src=')) {
+    const srcMatch = str.match(/src=["']([^"']+)["']/);
+    return srcMatch ? srcMatch[1] : '';
+  }
+  
+  return str; // Return as is if it's already a URL
+};
 
 class MapErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -88,6 +102,19 @@ const PostCard = ({ post, showControls = true }) => {
     
     if (mapsLoaded) geocode();
   }, [post.origin, mapsLoaded, mapLoadingRetries]);
+
+  // Clean map URL when editing
+  useEffect(() => {
+    if (isEditing && formData.mapEmbedUrl) {
+      const cleanUrl = extractUrlFromIframe(formData.mapEmbedUrl);
+      if (cleanUrl !== formData.mapEmbedUrl) {
+        setFormData(prev => ({
+          ...prev,
+          mapEmbedUrl: cleanUrl
+        }));
+      }
+    }
+  }, [isEditing, formData.mapEmbedUrl]);
 
   // Reset showError when authError or postError changes
   useEffect(() => {
@@ -319,10 +346,17 @@ const PostCard = ({ post, showControls = true }) => {
                 className="form-control"
                 name="mapEmbedUrl"
                 value={formData.mapEmbedUrl}
-                onChange={(e) => setFormData({ ...formData, mapEmbedUrl: e.target.value })}
+                onChange={(e) => {
+                  // Extract URL if user pastes entire iframe code
+                  const value = extractUrlFromIframe(e.target.value);
+                  setFormData({ ...formData, mapEmbedUrl: value });
+                }}
                 placeholder="https://www.google.com/maps/embed?..."
               />
-              <small className="text-muted">Get embed URL from Google Maps share option</small>
+              <small className="text-muted">
+                Copy the embed URL (https://www.google.com/maps/embed?...) from Google Maps share option.
+                Paste entire iframe code or just the URL.
+              </small>
             </div>
             <div className="mb-3">
               <label className="form-label">Contact Number</label>
@@ -438,21 +472,29 @@ const PostCard = ({ post, showControls = true }) => {
 
             <div className="map-container mt-3 mb-3">
               {post.mapEmbedUrl ? (
-                <iframe 
-                  src={post.mapEmbedUrl}
-                  width="100%" 
-                  height="300" 
-                  style={{border:0, borderRadius: '8px'}} 
-                  allowFullScreen="" 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Route Map"
-                ></iframe>
+                <>
+                  {console.log('Processing map URL:', post.mapEmbedUrl)}
+                  <iframe 
+                    src={extractUrlFromIframe(post.mapEmbedUrl)}
+                    width="100%" 
+                    height="300" 
+                    style={{border:0, borderRadius: '8px'}} 
+                    allowFullScreen="" 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Route Map"
+                    sandbox="allow-scripts allow-same-origin allow-popups"
+                    onError={(e) => console.error('Map iframe error:', e)}
+                  ></iframe>
+                </>
               ) : (
                 <MapErrorBoundary>
-                  <GoogleMap mapContainerStyle={mapStyles} zoom={8} center={center}>
-                    <Marker position={center} />
-                  </GoogleMap>
+                  <Map 
+                    center={center}
+                    mapContainerStyle={mapStyles}
+                    zoom={8}
+                    showMarker={true}
+                  />
                 </MapErrorBoundary>
               )}
             </div>

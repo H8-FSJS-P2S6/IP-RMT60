@@ -1,13 +1,15 @@
 import React from 'react';
-import { GoogleMap } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
   height: '100%',
+  minHeight: '200px',
+  borderRadius: '8px'
 };
 
-const center = {
-  lat: -6.2088, // Example: Jakarta, Indonesia
+const defaultCenter = {
+  lat: -6.2088, // Default: Jakarta, Indonesia
   lng: 106.8456,
 };
 
@@ -18,17 +20,17 @@ const mapOptions = {
   zoomControl: true,
 };
 
-const Map = () => {
-  // We're not using useLoadScript here as it's loaded in App.jsx
-  // This prevents duplicate loading of the Google Maps API
-
+// Updated Map component to accept custom props
+const Map = ({ center = defaultCenter, zoom = 8, showMarker = true, mapContainerStyle = containerStyle }) => {
   return (
     <GoogleMap
-      mapContainerStyle={containerStyle}
+      mapContainerStyle={mapContainerStyle}
       center={center}
-      zoom={mapOptions.zoom}
+      zoom={zoom}
       options={mapOptions}
-    />
+    >
+      {showMarker && <Marker position={center} />}
+    </GoogleMap>
   );
 };
 
