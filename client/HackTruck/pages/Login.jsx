@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, googleLogin, checkAuth } from '../store/slices/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
@@ -46,6 +46,14 @@ const Login = () => {
   const [formErrors, setFormErrors] = useState({});
   const [googleError, setGoogleError] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showError, setShowError] = useState(false);
+
+  // Use useCallback to memoize handleDismissError
+  const handleDismissError = useCallback(() => {
+    setShowError(false);
+    setFormErrors({});
+    setGoogleError(null);
+  }, []);
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -77,13 +85,24 @@ const Login = () => {
 
   useEffect(() => {
     if (!isCheckingAuth && user && token) {
-      if (user.role === 'driver') {
-        navigate('/driver/dashboard', { replace: true });
-      } else {
-        navigate('/', { replace: true });
-      }
+      setShowError(false); // Clear error on successful login
+      const navDelay = setTimeout(() => {
+        if (user.role === 'driver') {
+          navigate('/driver/dashboard', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+      }, 1500);
+      
+      return () => clearTimeout(navDelay);
     }
   }, [user, token, navigate, isCheckingAuth]);
+
+  useEffect(() => {
+    if (error || formErrors.general || googleError) {
+      setShowError(true);
+    }
+  }, [error, formErrors.general, googleError]);
 
   const validateForm = () => {
     const errors = {};
@@ -173,9 +192,9 @@ const Login = () => {
               >
                 Welcome to HacTruck
               </h2>
-              {(error || formErrors.general || googleError) && (
+              {showError && (error || formErrors.general || googleError) && (
                 <div
-                  className="alert alert-danger mb-4 text-center"
+                  className="alert alert-danger alert-dismissible fade show mb-4 text-center"
                   style={{
                     borderRadius: '10px',
                     fontSize: '0.95rem',
@@ -183,10 +202,10 @@ const Login = () => {
                     backgroundColor: '#fee2e2',
                     color: '#b91c1c',
                     border: 'none',
-                    transition: 'opacity 0.3s ease',
                   }}
                 >
-                  {formErrors.general || googleError || error}
+                  {error === "Invalid credentials" ? "Invalid password or email. Please check your login details and try again." : (formErrors.general || googleError || error)}
+                  <button type="button" className="btn-close" onClick={handleDismissError} aria-label="Close"></button>
                 </div>
               )}
               {isCheckingAuth ? (

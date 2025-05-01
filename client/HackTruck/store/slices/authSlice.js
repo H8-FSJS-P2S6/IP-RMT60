@@ -9,10 +9,10 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
     return { user, token };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'Login failed';
-    // Set timeout to clear error after 2 seconds
+    // Set timeout to clear error after 5 seconds instead of 2 seconds
     setTimeout(() => {
       dispatch(clearError());
-    }, 2000);
+    }, 5000);
     return rejectWithValue(errorMessage);
   }
 });
@@ -25,10 +25,10 @@ export const googleLogin = createAsyncThunk('auth/googleLogin', async (credentia
     return { user, token };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'Google login failed';
-    // Set timeout to clear error after 2 seconds
+    // Set timeout to clear error after 5 seconds instead of 2 seconds
     setTimeout(() => {
       dispatch(clearError());
-    }, 2000);
+    }, 5000);
     return rejectWithValue(errorMessage);
   }
 });
@@ -41,10 +41,10 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
     return { user, token };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'Registration failed';
-    // Set timeout to clear error after 2 seconds
+    // Set timeout to clear error after 5 seconds instead of 2 seconds
     setTimeout(() => {
       dispatch(clearError());
-    }, 2000);
+    }, 5000);
     return rejectWithValue(errorMessage);
   }
 });
@@ -62,11 +62,11 @@ export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWi
       localStorage.removeItem('token');
     }
     const errorMessage = error.response?.data?.message || 'Authentication failed';
-    // Set timeout to clear error after 2 seconds
+    // Set timeout to clear error after 5 seconds instead of 2 seconds
     if (error.response?.status !== 401) { // Don't show timeout for auth errors
       setTimeout(() => {
         dispatch(clearError());
-      }, 2000);
+      }, 5000);
     }
     return rejectWithValue(errorMessage);
   }

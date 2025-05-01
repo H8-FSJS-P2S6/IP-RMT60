@@ -45,6 +45,7 @@ const Register = () => {
     name: '',
   });
   const [formErrors, setFormErrors] = useState({});
+  const [showError, setShowError] = useState(true);
 
   useEffect(() => {
     document.body.style.height = '100%';
@@ -67,6 +68,13 @@ const Register = () => {
       document.body.style.padding = '';
     };
   }, [user, token, navigate]);
+
+  useEffect(() => {
+    // Reset showError to true when there's a new error
+    if (error || formErrors.general) {
+      setShowError(true);
+    }
+  }, [error, formErrors.general]);
 
   const validateForm = () => {
     const errors = {};
@@ -91,6 +99,10 @@ const Register = () => {
         setFormErrors({ general: err || 'Registration failed. Please try again.' });
       }
     }
+  };
+
+  const handleDismissError = () => {
+    setShowError(false);
   };
 
   return (
@@ -146,9 +158,9 @@ const Register = () => {
                 >
                   Join HacTruck
                 </h2>
-                {(error || formErrors.general) && (
+                {showError && (error || formErrors.general) && (
                   <div
-                    className="alert alert-danger mb-4 text-center"
+                    className="alert alert-danger alert-dismissible fade show mb-4 text-center"
                     style={{
                       borderRadius: '10px',
                       fontSize: '0.95rem',
@@ -156,10 +168,10 @@ const Register = () => {
                       backgroundColor: '#fee2e2',
                       color: '#b91c1c',
                       border: 'none',
-                      transition: 'opacity 0.3s ease',
                     }}
                   >
                     {formErrors.general || error}
+                    <button type="button" className="btn-close" onClick={handleDismissError} aria-label="Close"></button>
                   </div>
                 )}
                 <form onSubmit={handleSubmit}>

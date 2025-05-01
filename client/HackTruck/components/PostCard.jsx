@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { deletePost, updatePost } from '../store/slices/postSlice';
-import { GoogleMap, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import DatePicker from "react-datepicker";
@@ -39,48 +39,64 @@ const PostCard = ({ post, showControls = true }) => {
   const [image, setImage] = useState(null);
   const [center, setCenter] = useState({ lat: -6.2088, lng: 106.8456 });
   const [postError, setPostError] = useState(null);
-  const [mapsLoaded, setMapsLoaded] = useState(false);
+  const [showError, setShowError] = useState(!!authError || !!postError);
+  const [errorTimeout, setErrorTimeout] = useState(null);
+  const [mapLoadingRetries, setMapLoadingRetries] = useState(0);
+  const MAX_RETRIES = 5;
 
-  // Check if Google Maps API is loaded globally
+  // Use the proper Google Maps loading hook instead of manual checks
+  const { isLoaded: mapsLoaded } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+    libraries: ['places'],
+  });
+
   useEffect(() => {
-    const checkMapsLoaded = () => {
-      if (window.google && window.google.maps) {
-        setMapsLoaded(true);
-      } else {
-        setTimeout(checkMapsLoaded, 100);
-      }
-    };
-    
-    checkMapsLoaded();
-    
-    return () => {
-      // Cleanup if needed
-    };
-  }, []);
+    if (errorTimeout) {
+      return () => clearTimeout(errorTimeout);
+    }
+  }, [errorTimeout]);
 
-  // Geocode the post's origin to get map coordinates
+  // Geocode the post's origin to get map coordinates when maps are loaded
   useEffect(() => {
     const geocode = async () => {
+      if (!mapsLoaded || !post.origin) return;
+      
       try {
-        if (!mapsLoaded || !post.origin) return;
-        
-        // Let's use built-in geocoding to avoid API key issues
-        const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({ address: post.origin }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            setCenter({
-              lat: results[0].geometry.location.lat(),
-              lng: results[0].geometry.location.lng()
-            });
-          }
-        });
+        if (window.google && window.google.maps) {
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ address: post.origin }, (results, status) => {
+            if (status === "OK" && results[0]) {
+              setCenter({
+                lat: results[0].geometry.location.lat(),
+                lng: results[0].geometry.location.lng()
+              });
+            } else {
+              console.log("Geocoding was not successful for the following reason:", status);
+            }
+          });
+        }
       } catch (error) {
         console.error('Geocoding error:', error);
+        // Retry loading if within retry limits
+        if (mapLoadingRetries < MAX_RETRIES) {
+          setTimeout(() => {
+            setMapLoadingRetries(prev => prev + 1);
+          }, 1000); // Wait 1 second before retry
+        }
       }
     };
     
-    if (post.origin && mapsLoaded) geocode();
-  }, [post.origin, mapsLoaded]);
+    if (mapsLoaded) geocode();
+  }, [post.origin, mapsLoaded, mapLoadingRetries]);
+
+  // Reset showError when authError or postError changes
+  useEffect(() => {
+    setShowError(!!authError || !!postError);
+  }, [authError, postError]);
+
+  const handleDismissError = () => {
+    setShowError(false);
+  };
 
   const mapStyles = {
     height: '200px',
@@ -209,9 +225,10 @@ const PostCard = ({ post, showControls = true }) => {
   return (
     <div className="card post-card mb-4">
       <div className="card-body">
-        {(authError || postError) && (
-          <div className="alert alert-danger mb-3">
-            {authError || postError}
+        {showError && (authError || postError) && (
+          <div className="alert alert-danger alert-dismissible fade show mb-3">
+            {authError === "Invalid credentials" ? "Invalid password or email. Please check your login details and try again." : (authError || postError)}
+            <button type="button" className="btn-close" onClick={handleDismissError} aria-label="Close"></button>
           </div>
         )}
 
