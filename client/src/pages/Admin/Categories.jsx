@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../utils/api";
+import { showToast } from '../../utils/toast';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -55,23 +56,22 @@ export default function Categories() {
     try {
       if (selectedCategory) {
         await api.put(`/admin/categories/${selectedCategory.id}`, formData);
+        showToast.success('Category updated successfully');
       } else {
         await api.post("/admin/categories", formData);
+        showToast.success('Category created successfully');
       }
       
-      // Refresh the category list
+      // Refresh list
       fetchCategories();
       
-      // Close modal and reset form
+      // Close modal
       document.getElementById('categoryFormModal').querySelector('[data-bs-dismiss="modal"]').click();
       setSelectedCategory(null);
-      setFormData({
-        name: "",
-        description: ""
-      });
+      resetForm();
     } catch (error) {
       console.error("Error saving category:", error);
-      alert(error.response?.data?.message || "Failed to save category");
+      showToast.error(error.response?.data?.message || "Failed to save category");
     }
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import api from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import { showToast } from '../utils/toast';
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -44,12 +45,11 @@ export default function CourseDetail() {
 
     setAddingToCart(true);
     try {
-      await api.post("/carts/add", { lectureId: id }); // Perbaikan API endpoint untuk cart
-      // Show success message
-      alert("Course added to cart successfully!");
+      await api.post("/carts/add", { lectureId: id });
+      showToast.success("Course added to cart successfully!");
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert(error.response?.data?.message || "Failed to add course to cart");
+      showToast.error(error.response?.data?.message || "Failed to add course to cart");
     } finally {
       setAddingToCart(false);
     }

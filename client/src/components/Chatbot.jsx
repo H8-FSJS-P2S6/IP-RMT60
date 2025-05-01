@@ -85,20 +85,34 @@ export default function Chatbot() {
 
   return (
     <div className="chatbot-container">
-      {/* Tombol untuk membuka/menutup chatbot */}
-      <button 
-        className={`chatbot-toggle ${isOpen ? 'active' : ''}`}
-        onClick={handleToggleChat}
-      >
-        {isOpen ? (
-          <i className="bi bi-x-lg"></i>
-        ) : (
-          <>
-            <i className="bi bi-chat-dots-fill"></i>
-            <span className="chat-notification"></span>
-          </>
+      {/* Enhanced toggle button */}
+      <div className="chatbot-toggle-wrapper">
+        {!isOpen && (
+          <div className="chat-bubble-animation">
+            <div className="chat-bubble bubble-1"></div>
+            <div className="chat-bubble bubble-2"></div>
+            <div className="chat-bubble bubble-3"></div>
+          </div>
         )}
-      </button>
+        <button 
+          className={`chatbot-toggle ${isOpen ? 'active' : ''}`}
+          onClick={handleToggleChat}
+          aria-label={isOpen ? "Close chat" : "Open chat"}
+        >
+          <div className="toggle-content">
+            {isOpen ? (
+              <i className="bi bi-x-lg"></i>
+            ) : (
+              <>
+                <i className="bi bi-chat-dots-fill"></i>
+                <span className="chat-notification"></span>
+              </>
+            )}
+          </div>
+          <div className="toggle-text">{isOpen ? 'Close' : 'Chat'}</div>
+          <div className="toggle-ripple"></div>
+        </button>
+      </div>
       
       {/* Chat window */}
       <div className={`chatbot-box ${isOpen ? 'open' : ''}`}>

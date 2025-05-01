@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
@@ -15,6 +15,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const googleButtonRef = useRef(null);
   
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
@@ -27,14 +28,29 @@ export default function Login() {
   });
 
   useEffect(() => {
+    // Redirect authenticated users away from login page
+    if (isAuthenticated) {
+      const targetPath = isAdmin ? "/admin/dashboard" : "/";
+      if (location.pathname === "/login") {
+        navigate(targetPath, { replace: true });
+      }
+    }
+  }, [isAuthenticated, isAdmin, navigate, location.pathname]);
+
+  useEffect(() => {
     // Clear any previous errors when mounting component
     dispatch(clearAuthError());
   }, [dispatch]);
 
   useEffect(() => {
     if (isAuthenticated) {
+      // Prevent navigation if we're already at the target location
       const from = location.state?.from?.pathname || (isAdmin ? "/admin/dashboard" : "/");
-      navigate(from);
+      const currentPath = location.pathname;
+      
+      if (currentPath !== from) {
+        navigate(from, { replace: true });
+      }
     }
   }, [isAuthenticated, isAdmin, navigate, location]);
 
@@ -51,31 +67,58 @@ export default function Login() {
     dispatch(login(formData));
   };
 
-  async function handleCredentialResponse(response) {
-    dispatch(googleLogin({ id_token: response.credential }));
-  }
+  const handleCredentialResponse = useCallback((response) => {
+    if (response.credential) {
+      dispatch(googleLogin({ id_token: response.credential }));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    // Ensure window.google is available
-    if (window.google && window.google.accounts) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_CLIENT_ID,
-        callback: handleCredentialResponse,
-      });
-
-      // Ensure buttonDiv element exists in DOM
-      const buttonDiv = document.getElementById("buttonDiv");
-      if (buttonDiv) {
-        window.google.accounts.id.renderButton(buttonDiv, {
-          theme: "outline",
-          size: "large",
-        });
-        window.google.accounts.id.prompt();
+    // Cleanup previous google sign-in if exists
+    const cleanup = () => {
+      const googleScript = document.querySelector('script[src*="accounts.google.com/gsi"]');
+      if (googleScript) {
+        googleScript.remove();
       }
+    };
+
+    // Initialize Google Sign-In
+    const initializeGoogleSignIn = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+        });
+
+        window.google.accounts.id.renderButton(
+          googleButtonRef.current,
+          { 
+            theme: "outline", 
+            size: "large", 
+            width: 320, // Changed from '100%' to a fixed number
+            type: 'standard',
+            shape: 'rectangular',
+            text: 'continue_with',
+            logo_alignment: 'center'
+          }
+        );
+      }
+    };
+
+    // Add script only if it doesn't exist
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.body.appendChild(script);
     } else {
-      console.error("Google API is not available");
+      initializeGoogleSignIn();
     }
-  }, []);
+
+    return cleanup;
+  }, [handleCredentialResponse]);
 
   return (
     <div className="container py-5">
@@ -150,9 +193,17 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="d-flex justify-content-center mt-4">
-                <div id="buttonDiv"></div>
+              <div className="d-flex align-items-center my-4">
+                <hr className="flex-grow-1" />
+                <span className="px-3 text-muted">or</span>
+                <hr className="flex-grow-1" />
               </div>
+
+              <div 
+                ref={googleButtonRef} 
+                className="d-flex justify-content-center align-items-center"
+                style={{ minHeight: '40px' }} // Add minimum height to prevent layout shift
+              ></div>
 
               <div className="text-center mt-4">
                 <p className="mb-0">

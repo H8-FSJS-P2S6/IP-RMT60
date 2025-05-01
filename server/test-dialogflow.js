@@ -19,7 +19,7 @@ console.log('Client initialized successfully');
 async function testQuery() {
   const projectId = credentials.project_id;
   const sessionId = 'test-session';
-  const query = 'Hello';
+  const query = 'Apa itu SNS?';
   
   const sessionPath = sessionClient.projectAgentSessionPath(
     projectId, sessionId);
@@ -29,7 +29,7 @@ async function testQuery() {
     queryInput: {
       text: {
         text: query,
-        languageCode: 'en-US',
+        languageCode: 'id-ID',
       },
     },
   };

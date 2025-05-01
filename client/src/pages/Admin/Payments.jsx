@@ -43,37 +43,53 @@ export default function AdminPayments() {
     }).format(price);
   };
   
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'Completed':
-        return 'bg-success';
-      case 'Processing':
-        return 'bg-info';
-      case 'Pending':
-        return 'bg-warning';
-      case 'Cancelled':
-      case 'Failed':
-        return 'bg-danger';
-      case 'Refunded':
-        return 'bg-secondary';
-      default:
-        return 'bg-secondary';
-    }
+  const ActionButton = ({ action, status, onClick, icon, label, variant = 'primary' }) => (
+    <button
+      className={`btn btn-${variant} btn-sm d-flex align-items-center gap-1`}
+      onClick={onClick}
+      disabled={status === action}
+    >
+      <i className={`bi ${icon}`}></i>
+      {label}
+    </button>
+  );
+
+  const StatusBadge = ({ status }) => {
+    const variants = {
+      'Pending': 'warning',
+      'Processing': 'info',
+      'Completed': 'success',
+      'Cancelled': 'danger',
+      'Failed': 'danger'
+    };
+
+    return (
+      <span className={`badge bg-${variants[status] || 'secondary'}`}>
+        {status}
+      </span>
+    );
   };
-  
+
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await api.put(`/admin/transactions/${id}/status`, { status: newStatus });
-      setTransactions(transactions.map(t => 
-        t.id === id ? { ...t, status: newStatus } : t
-      ));
+      await api.put(`/admin/payments/${id}/status`, { 
+        status: newStatus,
+        payment_id: id
+      });
+      
+      setTransactions(prevTransactions => 
+        prevTransactions.map(t => 
+          t.id === id ? { ...t, status: newStatus } : t
+        )
+      );
+      
       toast.success(`Payment status updated to ${newStatus}`);
     } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Failed to update payment status");
+      console.error('Error updating payment status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update payment status');
     }
   };
-  
+
   const fetchTransactionDetails = async (id) => {
     try {
       const { data } = await api.get(`/admin/transactions/${id}`);
@@ -102,14 +118,17 @@ export default function AdminPayments() {
   return (
     <>
       <div className="container-fluid px-4">
-        <div className="d-flex justify-content-between align-items-center">
-          <h1 className="mt-4">Payment Transactions</h1>
-          <button 
-            className="btn btn-sm btn-outline-secondary mt-4"
-            onClick={() => fetchTransactions()}
-          >
-            <i className="fas fa-sync me-1"></i> Refresh
-          </button>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h1 className="mt-4">Payments Management</h1>
+          <div className="d-flex gap-2">
+            <button 
+              className="btn btn-outline-primary d-flex align-items-center gap-2"
+              onClick={() => fetchTransactions()}
+            >
+              <i className="bi bi-arrow-clockwise"></i>
+              Refresh
+            </button>
+          </div>
         </div>
         
         <div className="card mb-4">
@@ -160,9 +179,7 @@ export default function AdminPayments() {
                           <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
                           <td>{formatToIDR(transaction.total_amount)}</td>
                           <td>
-                            <span className={`badge ${getStatusBadgeClass(transaction.status)}`}>
-                              {transaction.status}
-                            </span>
+                            <StatusBadge status={transaction.status} />
                           </td>
                           <td>{transaction.payment_method}</td>
                           <td>
@@ -180,40 +197,44 @@ export default function AdminPayments() {
                                 </button>
                                 <ul className="dropdown-menu">
                                   <li>
-                                    <button 
-                                      className="dropdown-item" 
+                                    <ActionButton
+                                      action="Pending"
+                                      status={transaction.status}
                                       onClick={() => handleStatusChange(transaction.id, 'Pending')}
-                                      disabled={transaction.status === 'Pending'}
-                                    >
-                                      Pending
-                                    </button>
+                                      icon="bi-hourglass-split"
+                                      label="Mark Pending"
+                                      variant="outline-warning"
+                                    />
                                   </li>
                                   <li>
-                                    <button 
-                                      className="dropdown-item" 
+                                    <ActionButton
+                                      action="Processing"
+                                      status={transaction.status}
                                       onClick={() => handleStatusChange(transaction.id, 'Processing')}
-                                      disabled={transaction.status === 'Processing'}
-                                    >
-                                      Processing
-                                    </button>
+                                      icon="bi-hourglass-split"
+                                      label="Mark Processing"
+                                      variant="outline-info"
+                                    />
                                   </li>
                                   <li>
-                                    <button 
-                                      className="dropdown-item" 
+                                    <ActionButton
+                                      action="Completed"
+                                      status={transaction.status}
                                       onClick={() => handleStatusChange(transaction.id, 'Completed')}
-                                      disabled={transaction.status === 'Completed'}
-                                    >
-                                      Completed
-                                    </button>
+                                      icon="bi-check-circle"
+                                      label="Mark Complete"
+                                      variant="outline-success"
+                                    />
                                   </li>
                                   <li>
-                                    <button 
-                                      className="dropdown-item text-danger" 
+                                    <ActionButton
+                                      action="Cancelled"
+                                      status={transaction.status}
                                       onClick={() => handleStatusChange(transaction.id, 'Cancelled')}
-                                      disabled={transaction.status === 'Cancelled'}
-                                    >
-                                      Cancelled
-                                    </button>
+                                      icon="bi-x-circle"
+                                      label="Cancel Payment"
+                                      variant="outline-danger"
+                                    />
                                   </li>
                                 </ul>
                               </div>
@@ -299,9 +320,7 @@ export default function AdminPayments() {
                           <tr>
                             <td>Status</td>
                             <td>
-                              : <span className={`badge ${getStatusBadgeClass(selectedTransaction.status)}`}>
-                                {selectedTransaction.status}
-                              </span>
+                              : <StatusBadge status={selectedTransaction.status} />
                             </td>
                           </tr>
                         </tbody>
@@ -377,31 +396,34 @@ export default function AdminPayments() {
                   </button>
                   <ul className="dropdown-menu">
                     <li>
-                      <button 
-                        className="dropdown-item" 
+                      <ActionButton
+                        action="Processing"
+                        status={selectedTransaction.status}
                         onClick={() => handleStatusChange(selectedTransaction.id, 'Processing')}
-                        disabled={selectedTransaction.status === 'Processing'}
-                      >
-                        Mark as Processing
-                      </button>
+                        icon="bi-hourglass-split"
+                        label="Mark Processing"
+                        variant="outline-info"
+                      />
                     </li>
                     <li>
-                      <button 
-                        className="dropdown-item" 
+                      <ActionButton
+                        action="Completed"
+                        status={selectedTransaction.status}
                         onClick={() => handleStatusChange(selectedTransaction.id, 'Completed')}
-                        disabled={selectedTransaction.status === 'Completed'}
-                      >
-                        Mark as Completed
-                      </button>
+                        icon="bi-check-circle"
+                        label="Mark Complete"
+                        variant="outline-success"
+                      />
                     </li>
                     <li>
-                      <button 
-                        className="dropdown-item text-danger" 
+                      <ActionButton
+                        action="Cancelled"
+                        status={selectedTransaction.status}
                         onClick={() => handleStatusChange(selectedTransaction.id, 'Cancelled')}
-                        disabled={selectedTransaction.status === 'Cancelled'}
-                      >
-                        Mark as Cancelled
-                      </button>
+                        icon="bi-x-circle"
+                        label="Cancel Payment"
+                        variant="outline-danger"
+                      />
                     </li>
                   </ul>
                 </div>

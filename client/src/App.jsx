@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Provider } from 'react-redux';
 import store from './store';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -98,6 +100,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppRoutes />
+          <ToastContainer position="top-right" autoClose={3000} />
         </BrowserRouter>
       </AuthProvider>
     </Provider>

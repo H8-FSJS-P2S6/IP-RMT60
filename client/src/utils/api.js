@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showToast } from './toast';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -25,6 +26,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle errors globally
+    const message = error.response?.data?.message || 'An error occurred';
+    showToast.error(message);
     if (error.response) {
       // Server responded with a status code outside of 2xx
       if (error.response.status === 401) {

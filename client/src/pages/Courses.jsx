@@ -8,7 +8,6 @@ import {
   setPage,
   selectCourses,
   selectCoursesLoading,
-  selectCoursesError,
   selectCoursesPagination,
   selectCoursesFilters,
   selectCoursesSort,
@@ -18,13 +17,13 @@ import {
   selectCategories,
 } from "../store/slices/categorySlice";
 import { addToCart } from "../store/slices/cartSlice";
+import { toast } from "react-toastify";
 
 export default function Courses() {
   const dispatch = useAppDispatch();
   const courses = useAppSelector(selectCourses);
   const loading = useAppSelector(selectCoursesLoading);
-  const error = useAppSelector(selectCoursesError);
-  console.log(error);
+  
 
   const pagination = useAppSelector(selectCoursesPagination);
   const filters = useAppSelector(selectCoursesFilters);
@@ -65,7 +64,10 @@ export default function Courses() {
 
   const handleAddToCart = (courseId) => {
     dispatch(addToCart(courseId));
-    alert("Kursus berhasil ditambahkan ke keranjang");
+    toast.success("Course added to cart", {
+      position: "top-right",
+      autoClose: 2000,
+    });
   };
 
   const formatToIDR = (price) => {

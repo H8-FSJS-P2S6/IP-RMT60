@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
+import { Link } from "react-router";
 
 export default function UserProfile() {
   const { user, logout } = useAuth();
@@ -487,7 +488,18 @@ export default function UserProfile() {
                               </div>
                             </p>
                             <div className="mt-auto">
-                              <a href="#" className="btn btn-primary d-block">Continue Learning</a>
+                              <Link 
+                                to={`/courses/${enrollment.LectureId}`} 
+                                className="btn btn-primary d-block"
+                              >
+                                Continue Learning
+                              </Link>
+                              <Link 
+                                to="/support" 
+                                className="text-decoration-none"
+                              >
+                                Contact instructor
+                              </Link>
                             </div>
                           </div>
                         </div>

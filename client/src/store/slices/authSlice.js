@@ -130,21 +130,26 @@ export const logout = createAsyncThunk(
 // Add Google Login action
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
-  async (googleData, { rejectWithValue }) => {
+  async ({ id_token }, { rejectWithValue }) => {
     try {
-      // Send the Google ID token to your backend
-      const response = await api.post('/users/google-login', googleData);
+      // Change the endpoint to match your backend route
+      const response = await api.post('/users/login/google', { 
+        id_token,
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID 
+      });
+      
       const { access_token, ...userData } = response.data;
       
       // Save to localStorage
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Set authorization header
-      axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      // Set default authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       return { user: userData, token: access_token };
     } catch (error) {
+      console.error('Google login error:', error);
       return rejectWithValue(error.response?.data?.message || 'Google login failed');
     }
   }
@@ -278,7 +283,7 @@ const authSlice = createSlice({
       })
       .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Google login failed';
+        state.error = action.payload;
       });
   }
 });
