@@ -250,7 +250,7 @@ export default function AdminCourses() {
                 style={{ width: '200px' }}
               />
               <button type="submit" className="btn btn-sm btn-outline-primary">
-                <i className="fas fa-search"></i>
+                Search
               </button>
             </form>
           </div>

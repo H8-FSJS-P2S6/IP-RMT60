@@ -174,7 +174,7 @@ export default function Categories() {
                           data-bs-toggle="modal"
                           data-bs-target="#categoryFormModal"
                         >
-                          <i className="bi bi-pencil"></i>
+                          Edit
                         </button>
                         <button 
                           className="btn btn-sm btn-outline-danger"
@@ -184,7 +184,7 @@ export default function Categories() {
                           disabled={category.lectureCount > 0}
                           title={category.lectureCount > 0 ? "Cannot delete category with courses" : "Delete"}
                         >
-                          <i className="bi bi-trash"></i>
+                          Delete
                         </button>
                       </td>
                     </tr>

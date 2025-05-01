@@ -9,7 +9,11 @@ export default function AdminSidebar() {
   const handleLogout = () => {
     logout();
     showToast.success("Logged out successfully");
-    navigate("/login");
+    
+    // Add small delay to ensure auth state updates before navigation
+    setTimeout(() => {
+      navigate("/login");
+    }, 50);
   };
 
   return (
