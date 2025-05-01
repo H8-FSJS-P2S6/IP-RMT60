@@ -6,7 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 const PostForm = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.auth);
+  const { user, error: authError } = useSelector(state => state.auth);
   const [formData, setFormData] = useState({
     departureDate: '',
     origin: '',
@@ -17,31 +17,37 @@ const PostForm = () => {
   });
   const [selectedDate, setSelectedDate] = useState(null);
   const [image, setImage] = useState(null);
+  const [postError, setPostError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPostError(null);
     const data = new FormData();
-    
+
     // Format the date before submitting
     const formattedData = {
       ...formData,
       departureDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
     };
-    
+
     Object.keys(formattedData).forEach(key => data.append(key, formattedData[key]));
     if (image) data.append('image', image);
-    
-    dispatch(createPost(data));
-    setFormData({
-      departureDate: '',
-      origin: '',
-      destination: '',
-      truckType: 'pickup',
-      maxWeight: '',
-      phoneNumber: '',
-    });
-    setSelectedDate(null);
-    setImage(null);
+
+    try {
+      await dispatch(createPost(data)).unwrap();
+      setFormData({
+        departureDate: '',
+        origin: '',
+        destination: '',
+        truckType: 'pickup',
+        maxWeight: '',
+        phoneNumber: '',
+      });
+      setSelectedDate(null);
+      setImage(null);
+    } catch (err) {
+      setPostError(err.message || 'Failed to create post');
+    }
   };
 
   const handleChange = (e) => {
@@ -53,6 +59,8 @@ const PostForm = () => {
     if (date) {
       const formattedDate = date.toISOString().split('T')[0];
       setFormData({ ...formData, departureDate: formattedDate });
+    } else {
+      setFormData({ ...formData, departureDate: '' });
     }
   };
 
@@ -62,7 +70,7 @@ const PostForm = () => {
     },
     datePickerInput: {
       width: '100%',
-      padding: '0.375rem 0.75rem', 
+      padding: '0.375rem 0.75rem',
       fontSize: '1rem',
       fontWeight: 400,
       lineHeight: 1.5,
@@ -73,7 +81,7 @@ const PostForm = () => {
       borderRadius: '0.25rem',
       transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
       height: 'calc(1.5em + 0.75rem + 2px)',
-    }
+    },
   };
 
   // Don't render the form if user is not logged in or is not a driver
@@ -83,6 +91,11 @@ const PostForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="card p-4 mb-4">
+      {(authError || postError) && (
+        <div className="alert alert-danger mb-3">
+          {authError || postError}
+        </div>
+      )}
       <div className="mb-3">
         <label className="form-label">Departure Date</label>
         <div style={datePickerStyles.container}>
@@ -102,15 +115,15 @@ const PostForm = () => {
             popperPlacement="bottom-start"
             popperModifiers={[
               {
-                name: "offset",
+                name: 'offset',
                 options: {
                   offset: [0, 8],
                 },
               },
               {
-                name: "preventOverflow",
+                name: 'preventOverflow',
                 options: {
-                  rootBoundary: "viewport",
+                  rootBoundary: 'viewport',
                   tether: false,
                   altAxis: true,
                 },
@@ -119,35 +132,34 @@ const PostForm = () => {
           />
         </div>
       </div>
-      
       <div className="mb-3">
         <label className="form-label">Origin</label>
-        <input 
-          type="text" 
-          className="form-control" 
-          name="origin" 
-          value={formData.origin} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="text"
+          className="form-control"
+          name="origin"
+          value={formData.origin}
+          onChange={handleChange}
+          required
         />
       </div>
       <div className="mb-3">
         <label className="form-label">Destination</label>
-        <input 
-          type="text" 
-          className="form-control" 
-          name="destination" 
-          value={formData.destination} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="text"
+          className="form-control"
+          name="destination"
+          value={formData.destination}
+          onChange={handleChange}
+          required
         />
       </div>
       <div className="mb-3">
         <label className="form-label">Truck Type</label>
-        <select 
-          className="form-control" 
-          name="truckType" 
-          value={formData.truckType} 
+        <select
+          className="form-control"
+          name="truckType"
+          value={formData.truckType}
           onChange={handleChange}
         >
           <option value="pickup">Pickup</option>
@@ -158,35 +170,37 @@ const PostForm = () => {
       </div>
       <div className="mb-3">
         <label className="form-label">Max Weight (kg)</label>
-        <input 
-          type="number" 
-          className="form-control" 
-          name="maxWeight" 
-          value={formData.maxWeight} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="number"
+          className="form-control"
+          name="maxWeight"
+          value={formData.maxWeight}
+          onChange={handleChange}
+          required
         />
       </div>
       <div className="mb-3">
         <label className="form-label">Phone Number</label>
-        <input 
-          type="tel" 
-          className="form-control" 
-          name="phoneNumber" 
-          value={formData.phoneNumber} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="tel"
+          className="form-control"
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+          required
         />
       </div>
       <div className="mb-3">
         <label className="form-label">Image</label>
-        <input 
-          type="file" 
-          className="form-control" 
-          onChange={(e) => setImage(e.target.files[0])} 
+        <input
+          type="file"
+          className="form-control"
+          onChange={(e) => setImage(e.target.files[0])}
         />
       </div>
-      <button type="submit" className="btn btn-primary">Create Post</button>
+      <button type="submit" className="btn btn-primary">
+        Create Post
+      </button>
     </form>
   );
 };

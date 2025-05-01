@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, googleLogin } from '../store/slices/authSlice';
+import { login, googleLogin, checkAuth } from '../store/slices/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,10 +42,33 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
+  // Check authentication status on mount
   useEffect(() => {
-    if (user && token) {
-      navigate('/driver/dashboard');
+    const checkAuthentication = async () => {
+      try {
+        await dispatch(checkAuth()).unwrap();
+      } catch (err) {
+        console.log('No valid session found:', err);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    
+    checkAuthentication();
+  }, [dispatch]);
+
+  // Handle redirection when authentication state changes
+  useEffect(() => {
+    if (!isCheckingAuth && user && token) {
+      console.log('Redirecting to dashboard, user and token exist', user);
+      // Redirect based on user role
+      if (user.role === 'driver') {
+        navigate('/driver/dashboard');
+      } else {
+        navigate('/');
+      }
     }
     
     // Set the body and html to full height
@@ -61,12 +84,16 @@ const Login = () => {
       document.body.style.margin = '';
       document.body.style.padding = '';
     };
-  }, [user, token, navigate]);
+  }, [user, token, navigate, isCheckingAuth]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form Data:', formData);
-    await dispatch(login(formData));
+    try {
+      await dispatch(login(formData)).unwrap();
+    } catch (err) {
+      console.error('Login failed:', err);
+    }
   };
 
   return (

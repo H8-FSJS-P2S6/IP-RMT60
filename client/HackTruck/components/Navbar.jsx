@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
-// Import React logo
 import reactLogo from '../src/assets/react.svg';
 
 const Navbar = () => {
@@ -11,19 +10,17 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Hapus localStorage saat logout
     localStorage.clear();
     dispatch(logout());
-    // Arahkan ke halaman login alih-alih home
     navigate('/login');
   };
 
-  // Tentukan tujuan link Home berdasarkan peran pengguna
+  // Determine the home link destination based on user role
   const getHomeLinkDestination = () => {
     if (user?.role === 'driver') {
       return '/driver/dashboard';
     }
-    return '/'; // Default untuk pengguna non-driver atau belum login
+    return '/';
   };
 
   return (
@@ -38,13 +35,12 @@ const Navbar = () => {
       <div className="container">
         <Link
           className="navbar-brand d-flex align-items-center"
-          to={getHomeLinkDestination()} // Ubah link untuk logo brand
+          to={getHomeLinkDestination()}
           style={{ fontSize: '1.5rem', fontWeight: '700' }}
         >
-          {/* Added round logo image */}
-          <img 
-            src={reactLogo} 
-            alt="HackTruck Logo" 
+          <img
+            src={reactLogo}
+            alt="HackTruck Logo"
             className="me-2"
             style={{
               width: '32px',
@@ -52,13 +48,13 @@ const Navbar = () => {
               borderRadius: '50%',
               backgroundColor: 'white',
               padding: '3px',
-              objectFit: 'contain'
+              objectFit: 'contain',
             }}
           />
           <i className="bi bi-truck me-2"></i>
           HacTruck
         </Link>
-        
+
         <button
           className="navbar-toggler"
           type="button"
@@ -70,20 +66,19 @@ const Navbar = () => {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-        
+
         <div className="collapse navbar-collapse justify-content-between" id="navbarNav">
-          {/* Menu navigasi tengah */}
+          {/* Navigation menu */}
           <ul className="navbar-nav mx-auto">
             <li className="nav-item mx-2">
               <Link
                 className="nav-link d-flex align-items-center"
-                to={getHomeLinkDestination()} // Ubah link untuk menu Home
+                to={getHomeLinkDestination()}
                 style={{ fontWeight: '500' }}
               >
                 <i className="bi bi-house-door me-2"></i> Home
               </Link>
             </li>
-            
             {user?.role === 'driver' && (
               <li className="nav-item mx-2">
                 <Link
@@ -96,46 +91,42 @@ const Navbar = () => {
               </li>
             )}
           </ul>
-          
-          {/* Menu kanan (profil/user) */}
+
+          {/* User menu */}
           {user ? (
             <div className="d-flex align-items-center">
-              {/* Profile Button - Added directly in navbar */}
-              <Link 
-                to="/profile" 
+              <Link
+                to="/profile"
                 className="btn btn-light me-3"
-                style={{ 
-                  borderRadius: '50px', 
+                style={{
+                  borderRadius: '50px',
                   padding: '0.5rem 1rem',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
                 }}
               >
                 <i className="bi bi-person-circle me-2"></i>
                 Profile
               </Link>
-              
-              {/* Tombol Logout */}
-              <button 
+              <button
                 onClick={handleLogout}
                 className="btn btn-danger me-3"
-                style={{ 
-                  borderRadius: '50px', 
+                style={{
+                  borderRadius: '50px',
                   padding: '0.5rem 1rem',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
                 }}
               >
                 <i className="bi bi-box-arrow-right me-2"></i>
                 Logout
               </button>
-              
               <div className="dropdown">
-                <button 
-                  className="btn btn-outline-light d-flex align-items-center" 
-                  type="button" 
-                  id="dropdownMenuButton" 
-                  data-bs-toggle="dropdown" 
+                <button
+                  className="btn btn-outline-light d-flex align-items-center"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-bs-toggle="dropdown"
                   aria-expanded="false"
                   style={{ borderRadius: '50px', padding: '0.4rem 1rem' }}
                 >
@@ -145,25 +136,22 @@ const Navbar = () => {
                 <ul className="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="dropdownMenuButton">
                   <li>
                     <span className="dropdown-item-text text-muted">
-                      <small>Logged in as <strong>{user.role}</strong></small>
+                      <small>
+                        Logged in as <strong>{user.role}</strong>
+                      </small>
                     </span>
                   </li>
-                  <li><hr className="dropdown-divider" /></li>
                   <li>
-                    <Link 
-                      className="dropdown-item d-flex align-items-center" 
-                      to="/profile"
-                    >
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
+                    <Link className="dropdown-item d-flex align-items-center" to="/profile">
                       <i className="bi bi-person-circle me-2"></i>
                       View Profile
                     </Link>
                   </li>
                   <li>
-                    <a 
-                      className="dropdown-item d-flex align-items-center" 
-                      href="#"
-                      onClick={handleLogout}
-                    >
+                    <a className="dropdown-item d-flex align-items-center" href="#" onClick={handleLogout}>
                       <i className="bi bi-box-arrow-right me-2"></i>
                       Logout
                     </a>
@@ -173,18 +161,18 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="d-flex align-items-center">
-              <Link 
-                to="/profile" 
+              <Link
+                to="/login"
                 className="btn btn-light"
-                style={{ 
-                  borderRadius: '50px', 
+                style={{
+                  borderRadius: '50px',
                   padding: '0.5rem 1rem',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
                 }}
               >
                 <i className="bi bi-person-circle me-2"></i>
-                Profile
+                Login
               </Link>
             </div>
           )}
