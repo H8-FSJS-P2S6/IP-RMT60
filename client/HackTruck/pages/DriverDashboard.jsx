@@ -47,13 +47,7 @@ const DriverDashboard = () => {
           <div className="col-12">
             <div className="card shadow-sm border-0 rounded-lg mb-5">
               <div className="card-header bg-white py-3">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h4 className="mb-0">Driver Dashboard</h4>
-                  <Link to="/driver/posts" className="btn btn-primary">
-                    <i className="bi bi-list-ul me-2"></i>
-                    View My Listings
-                  </Link>
-                </div>
+                <h4 className="mb-0">Driver Dashboard</h4>
               </div>
               <div className="card-body">
                 {error && (
@@ -70,7 +64,7 @@ const DriverDashboard = () => {
                       </h5>
                       <p className="mb-0">
                         Here you can create new truck listings for customers to find.
-                        You can view and manage all your listings from the "View My Listings" page.
+                        You can view and manage all your listings from the "My Listings" page in the navigation bar.
                       </p>
                     </div>
                   </div>

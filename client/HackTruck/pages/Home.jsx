@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Map from '../components/Map';
-import AiRecommendation from '../components/AiRecommendation';
+import AnimatedTruck from '../components/AnimatedTruck';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -26,25 +26,17 @@ const Home = () => {
     <div className="container-fluid p-0" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Hero Section */}
       <div className="container py-5">
-        <div className="row mb-5">
+        <div className="row mb-1">
           <div className="col-lg-8 mx-auto text-center">
-            <h1 className="display-4 fw-bold mb-4" style={{ color: '#333' }}>Find The Perfect Truck For Your Delivery</h1>
-            <p className="lead text-muted mb-4">Fast, reliable, and secure truck transportation for all your delivery needs</p>
-            <div className="d-flex justify-content-center">
-              <button 
-                onClick={handleFindTrucks} 
-                className="btn btn-primary btn-lg px-5"
-              >
-                Find Trucks
-              </button>
-            </div>
+            <h1 className="display-4 fw-bold mb-3" style={{ color: '#333' }}>Find The Perfect Truck For Your Delivery</h1>
+            <p className="lead text-muted mb-2">Fast, reliable, and secure truck transportation for all your delivery needs</p>
           </div>
         </div>
 
-        {/* AI Recommendation Section */}
+        {/* Animated Truck Section */}
         <div className="row mb-5">
-          <div className="col-lg-8 mx-auto">
-            <AiRecommendation />
+          <div className="col-12">
+            <AnimatedTruck />
           </div>
         </div>
 
@@ -108,10 +100,11 @@ const Home = () => {
                 <h2 className="mb-3">Ready to ship your cargo?</h2>
                 <p className="lead mb-4">Browse our selection of trucks and find the perfect one for your delivery needs.</p>
                 <button 
-                  onClick={handleFindTrucks} 
-                  className="btn btn-light btn-lg px-5"
+                  className="btn btn-light btn-lg px-5 py-3 fw-bold" 
+                  style={{ borderRadius: '10px' }}
+                  onClick={handleFindTrucks}
                 >
-                  Find Available Trucks
+                  <i className="bi bi-truck me-2"></i>Find Trucks
                 </button>
               </div>
             </div>
