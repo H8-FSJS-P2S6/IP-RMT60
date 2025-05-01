@@ -1,46 +1,60 @@
 const dialogflow = require('@google-cloud/dialogflow');
-const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
-async function sendMessageToDialogflow(message, sessionId) {
-  const projectId = process.env.DIALOGFLOW_PROJECT_ID;
-  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const CREDENTIALS = require('../config/sns-project.json');
+console.log(CREDENTIALS);
+ 
+const projectId = CREDENTIALS.project_id;
 
-  // Validate environment variables
-  if (!projectId) {
-    throw new Error('DIALOGFLOW_PROJECT_ID is not set');
-  }
-  if (!credentialsPath) {
-    throw new Error('GOOGLE_APPLICATION_CREDENTIALS is not set');
-  }
 
-  // Log for debugging
-  console.log('Project ID:', projectId);
-  console.log('Credentials Path:', credentialsPath);
+const sessionClient = new dialogflow.SessionsClient({
+  credentials: CREDENTIALS
+});
 
-  // Initialize Dialogflow client
-  const sessionsClient = new dialogflow.SessionsClient({
-    keyFilename: credentialsPath,
-  });
-
-  const sessionPath = sessionsClient.projectAgentSessionPath(projectId, sessionId);
-
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: message,
-        languageCode: 'id-ID', // Match the agent's language
-      },
-    },
-  };
-
+/**
+ * 
+ * @param {string} text 
+ * @param {string} sessionId 
+ * @returns {Promise<Object>} 
+ */
+const sendMessageToDialogflow = async (text, sessionId = uuidv4()) => {
   try {
-    const [response] = await sessionsClient.detectIntent(request);
-    return response.queryResult.fulfillmentText;
+   
+    const validSessionId = sessionId || uuidv4();
+    console.log(`Processing message in session: ${validSessionId}`);
+    
+    const sessionPath = sessionClient.projectAgentSessionPath(
+      projectId,
+      validSessionId
+    );
+
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: text,
+          languageCode: 'en-EN', 
+        },
+      },
+    };
+
+    console.log(`Sending to Dialogflow: "${text}"`);
+    const responses = await sessionClient.detectIntent(request);
+    const result = responses[0].queryResult;
+    
+    console.log(`Received intent: ${result.intent?.displayName || 'unknown'}`);
+    console.log(`Response text: ${result.fulfillmentText}`);
+
+    return {
+      text: result.fulfillmentText,
+      intent: result.intent?.displayName || '',
+      parameters: result.parameters?.fields || {},
+      sessionId: validSessionId,
+    };
   } catch (error) {
-    console.error('Dialogflow error:', error);
-    throw new Error(`Failed to communicate with Dialogflow: ${error.message}`);
+    console.error('Error dengan Dialogflow:', error);
+    throw new Error('Gagal berkomunikasi dengan chatbot: ' + error.message);
   }
-}
+};
 
 module.exports = { sendMessageToDialogflow };
