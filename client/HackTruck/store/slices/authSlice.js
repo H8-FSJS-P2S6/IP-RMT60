@@ -26,7 +26,9 @@ export const googleLogin = createAsyncThunk('auth/googleLogin', async (credentia
 export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
   try {
     const response = await api.post('/api/auth/register', userData);
-    return response.data;
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    return { user, token };
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Registration failed');
   }
@@ -89,8 +91,10 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
