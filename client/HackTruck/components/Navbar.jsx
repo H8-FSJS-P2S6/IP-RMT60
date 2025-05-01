@@ -2,6 +2,8 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
+// Import React logo
+import reactLogo from '../src/assets/react.svg';
 
 const Navbar = () => {
   const { user } = useSelector(state => state.auth);
@@ -9,8 +11,11 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Hapus localStorage saat logout
+    localStorage.clear();
     dispatch(logout());
-    navigate('/');
+    // Arahkan ke halaman login alih-alih home
+    navigate('/login');
   };
 
   // Tentukan tujuan link Home berdasarkan peran pengguna
@@ -36,6 +41,20 @@ const Navbar = () => {
           to={getHomeLinkDestination()} // Ubah link untuk logo brand
           style={{ fontSize: '1.5rem', fontWeight: '700' }}
         >
+          {/* Added round logo image */}
+          <img 
+            src={reactLogo} 
+            alt="HackTruck Logo" 
+            className="me-2"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: 'white',
+              padding: '3px',
+              objectFit: 'contain'
+            }}
+          />
           <i className="bi bi-truck me-2"></i>
           HacTruck
         </Link>
@@ -96,6 +115,21 @@ const Navbar = () => {
                 Profile
               </Link>
               
+              {/* Tombol Logout */}
+              <button 
+                onClick={handleLogout}
+                className="btn btn-danger me-3"
+                style={{ 
+                  borderRadius: '50px', 
+                  padding: '0.5rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <i className="bi bi-box-arrow-right me-2"></i>
+                Logout
+              </button>
+              
               <div className="dropdown">
                 <button 
                   className="btn btn-outline-light d-flex align-items-center" 
@@ -105,18 +139,6 @@ const Navbar = () => {
                   aria-expanded="false"
                   style={{ borderRadius: '50px', padding: '0.4rem 1rem' }}
                 >
-                  <div className="avatar me-2" style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 'bold'
-                  }}>
-                    {user.username && user.username.charAt(0).toUpperCase()}
-                  </div>
                   <span className="me-2">{user.username}</span>
                   <i className="bi bi-caret-down-fill"></i>
                 </button>
@@ -152,18 +174,17 @@ const Navbar = () => {
           ) : (
             <div className="d-flex align-items-center">
               <Link 
-                to="/login" 
-                className="btn btn-outline-light me-2"
-                style={{ borderRadius: '50px', padding: '0.5rem 1.5rem' }}
-              >
-                Login
-              </Link>
-              <Link 
-                to="/register" 
+                to="/profile" 
                 className="btn btn-light"
-                style={{ borderRadius: '50px', padding: '0.5rem 1.5rem' }}
+                style={{ 
+                  borderRadius: '50px', 
+                  padding: '0.5rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
               >
-                Register
+                <i className="bi bi-person-circle me-2"></i>
+                Profile
               </Link>
             </div>
           )}

@@ -1,6 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+// Import React logo dari assets
+import reactLogo from '../src/assets/react.svg';
 
 const Profile = () => {
   const { user, loading } = useSelector(state => state.auth);
@@ -21,8 +23,8 @@ const Profile = () => {
     );
   }
 
-  // Default avatar jika tidak ada gambar profil
-  const defaultAvatar = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+  // Menggunakan logo React SVG sebagai default avatar
+  const defaultAvatar = reactLogo;
 
   return (
     <div className="container py-5">
