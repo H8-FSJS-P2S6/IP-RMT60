@@ -1,61 +1,85 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api';
 
-export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (params, { rejectWithValue }) => {
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (params, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.get('/api/posts', { params });
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to fetch posts' });
+    const errorData = error.response?.data || { message: 'Failed to fetch posts' };
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorData);
   }
 });
 
-export const fetchDriverPosts = createAsyncThunk('posts/fetchDriverPosts', async (_, { rejectWithValue }) => {
+export const fetchDriverPosts = createAsyncThunk('posts/fetchDriverPosts', async (_, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.get('/api/posts/driver');
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to fetch driver posts' });
+    const errorData = error.response?.data || { message: 'Failed to fetch driver posts' };
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorData);
   }
 });
 
-export const createPost = createAsyncThunk('posts/createPost', async (postData, { rejectWithValue }) => {
+export const createPost = createAsyncThunk('posts/createPost', async (postData, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.post('/api/posts', postData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to create post');
+    const errorMessage = error.response?.data?.message || 'Failed to create post';
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorMessage);
   }
 });
 
-export const updatePost = createAsyncThunk('posts/updatePost', async ({ id, postData }, { rejectWithValue }) => {
+export const updatePost = createAsyncThunk('posts/updatePost', async ({ id, postData }, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.put(`/api/posts/${id}`, postData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to update post' });
+    const errorData = error.response?.data || { message: 'Failed to update post' };
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorData);
   }
 });
 
-export const deletePost = createAsyncThunk('posts/deletePost', async (id, { rejectWithValue }) => {
+export const deletePost = createAsyncThunk('posts/deletePost', async (id, { rejectWithValue, dispatch }) => {
   try {
     await api.delete(`/api/posts/${id}`);
     return id;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to delete post' });
+    const errorData = error.response?.data || { message: 'Failed to delete post' };
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorData);
   }
 });
 
-export const getTruckRecommendation = createAsyncThunk('posts/getTruckRecommendation', async (weight, { rejectWithValue }) => {
+export const getTruckRecommendation = createAsyncThunk('posts/getTruckRecommendation', async (weight, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.post('/api/ai/recommend', { weight });
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Failed to get recommendation' });
+    const errorData = error.response?.data || { message: 'Failed to get recommendation' };
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorData);
   }
 });
 
@@ -73,6 +97,9 @@ const postSlice = createSlice({
   reducers: {
     clearRecommendation: (state) => {
       state.recommendation = null;
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -130,5 +157,5 @@ const postSlice = createSlice({
   },
 });
 
-export const { clearRecommendation } = postSlice.actions;
+export const { clearRecommendation, clearError } = postSlice.actions;
 export default postSlice.reducer;

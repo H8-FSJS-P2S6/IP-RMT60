@@ -1,40 +1,55 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api';
 
-export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
+export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.post('/api/auth/login', credentials);
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     return { user, token };
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Login failed');
+    const errorMessage = error.response?.data?.message || 'Login failed';
+    // Set timeout to clear error after 2 seconds
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorMessage);
   }
 });
 
-export const googleLogin = createAsyncThunk('auth/googleLogin', async (credential, { rejectWithValue }) => {
+export const googleLogin = createAsyncThunk('auth/googleLogin', async (credential, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.post('/api/auth/google', { token: credential });
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     return { user, token };
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Google login failed');
+    const errorMessage = error.response?.data?.message || 'Google login failed';
+    // Set timeout to clear error after 2 seconds
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorMessage);
   }
 });
 
-export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
+export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue, dispatch }) => {
   try {
     const response = await api.post('/api/auth/register', userData);
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     return { user, token };
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    const errorMessage = error.response?.data?.message || 'Registration failed';
+    // Set timeout to clear error after 2 seconds
+    setTimeout(() => {
+      dispatch(clearError());
+    }, 2000);
+    return rejectWithValue(errorMessage);
   }
 });
 
-export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue, dispatch }) => {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -46,7 +61,14 @@ export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWi
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
     }
-    return rejectWithValue(error.response?.data?.message || 'Authentication failed');
+    const errorMessage = error.response?.data?.message || 'Authentication failed';
+    // Set timeout to clear error after 2 seconds
+    if (error.response?.status !== 401) { // Don't show timeout for auth errors
+      setTimeout(() => {
+        dispatch(clearError());
+      }, 2000);
+    }
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -63,6 +85,9 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       localStorage.removeItem('token');
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -111,7 +136,10 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        // Only set error if it's not the "No token found" case
+        if (action.payload !== 'No token found') {
+          state.error = action.payload;
+        }
         if (action.payload === 'No token found' || action.meta?.rejectedWithValue) {
           state.user = null;
           state.token = null;
@@ -120,5 +148,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
