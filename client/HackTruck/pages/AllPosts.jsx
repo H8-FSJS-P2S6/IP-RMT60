@@ -132,7 +132,7 @@ const AllPosts = () => {
           <div className="row">
             {posts.map(post => (
               <div key={post.id} className="col-lg-4 col-md-6 mb-4">
-                <PostCard post={post} />
+                <PostCard post={post} showControls={false} />
               </div>
             ))}
           </div>

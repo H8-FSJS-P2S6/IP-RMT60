@@ -22,7 +22,7 @@ class MapErrorBoundary extends React.Component {
   }
 }
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, showControls = true }) => {
   const { user, error: authError } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
@@ -91,6 +91,14 @@ const PostCard = ({ post }) => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setPostError(null);
+    
+    // Validasi kepemilikan post
+    if (!user || user.id !== post.driverId) {
+      setPostError("You don't have permission to update this post");
+      setIsEditing(false);
+      return;
+    }
+    
     const data = new FormData();
     
     // Explicitly append each field to the FormData object
@@ -121,6 +129,12 @@ const PostCard = ({ post }) => {
   };
 
   const handleDelete = async () => {
+    // Validasi kepemilikan post
+    if (!user || user.id !== post.driverId) {
+      setPostError("You don't have permission to delete this post");
+      return;
+    }
+    
     if (confirm('Are you sure you want to delete this post?')) {
       setPostError(null);
       try {
@@ -200,6 +214,14 @@ const PostCard = ({ post }) => {
             {authError || postError}
           </div>
         )}
+
+        {/* Show driver badge if post belongs to current user */}
+        {user?.id === post.driverId && (
+          <div className="position-absolute top-0 end-0 mt-2 me-2">
+            <span className="badge bg-success">Your Post</span>
+          </div>
+        )}
+
         {isEditing ? (
           <form onSubmit={handleUpdate} className="edit-form">
             <h5 className="mb-4 text-center">Edit Delivery Details</h5>
@@ -418,11 +440,19 @@ const PostCard = ({ post }) => {
               )}
             </div>
 
-            {user?.role === 'driver' && user.id === post.driverId && (
+            {/* Show edit/delete buttons only when showControls is true AND user is the post owner */}
+            {showControls && user?.role === 'driver' && user.id === post.driverId && (
               <div className="d-flex justify-content-end mt-3">
                 <button
                   className="btn btn-primary me-2"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    // Tambahan validasi sebelum masuk mode edit
+                    if (user.id === post.driverId) {
+                      setIsEditing(true);
+                    } else {
+                      setPostError("You don't have permission to edit this post");
+                    }
+                  }}
                 >
                   <i className="bi bi-pencil me-1"></i> Edit
                 </button>
