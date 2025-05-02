@@ -11,7 +11,8 @@ HacTruck adalah platform web yang mempertemukan supir truk dan pengguna umum unt
 - **JWT Authentication**
 - **Swagger (API Documentation)**
 - **Jest + Supertest (Testing)**
-- **Raja Ongkir API (Integrasi Lokasi & Ongkir)**
+- **Google Maps**
+- **Whatsapp Api**
 - **AI Helper** (Rekomendasi jenis truk)
 
 ### Frontend:
