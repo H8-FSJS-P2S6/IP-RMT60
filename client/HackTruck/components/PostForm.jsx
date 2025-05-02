@@ -175,9 +175,7 @@ const PostForm = () => {
         setFormErrors({});
         setDirectionsResponse(null);
         setShowMap(false);
-        
-        // Redirect to driver posts page (My Listings)
-        navigate('/driver/posts');
+        navigate('/driver-posts');
       } catch (err) {
         console.error('Post creation failed:', err);
       }

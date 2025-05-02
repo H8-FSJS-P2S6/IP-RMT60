@@ -20,27 +20,6 @@ const extractUrlFromIframe = (str) => {
   return str; // Return as is if it's already a URL
 };
 
-// Utility function to format phone number for WhatsApp
-const formatPhoneForWhatsApp = (phone) => {
-  if (!phone) return '';
-  
-  // Remove any non-digit characters
-  const digits = phone.replace(/\D/g, '');
-  
-  // Convert Indonesian format (starting with 0) to international format (+62)
-  if (digits.startsWith('0')) {
-    return `+62${digits.substring(1)}`;
-  }
-  
-  // If it already has country code, return as is
-  if (digits.startsWith('62')) {
-    return `+${digits}`;
-  }
-  
-  // Default case, assume it's already properly formatted or not Indonesian
-  return digits;
-};
-
 class MapErrorBoundary extends React.Component {
   state = { hasError: false };
 
@@ -260,24 +239,6 @@ const PostCard = ({ post, showControls = true }) => {
     return icons[type] || '🚚';
   };
 
-  // Function to open WhatsApp with the phone number
-  const openWhatsApp = (phoneNumber) => {
-    const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
-    
-    // Create a pre-filled message with post details
-    const message = encodeURIComponent(
-      `Halo, saya tertarik dengan layanan transportasi Anda:\n` +
-      `- Rute: ${post.origin} ke ${post.destination}\n` +
-      `- Tanggal Keberangkatan: ${new Date(post.departureDate).toLocaleDateString()}\n` +
-      `- Jenis Truk: ${post.truckType.charAt(0).toUpperCase() + post.truckType.slice(1)}\n` +
-      `- Kapasitas Berat: ${post.maxWeight} kg\n` +
-      `Apakah masih tersedia?`
-    );
-    
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   if (!mapsLoaded) {
     return (
       <div className="map-container mt-3 mb-3 d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
@@ -481,19 +442,8 @@ const PostCard = ({ post, showControls = true }) => {
                   <div className="me-2" style={{ width: '30px', textAlign: 'center' }}>
                     📱
                   </div>
-                  <div className="d-flex align-items-center">
-                    <div className="me-2">
-                      <strong>Contact:</strong> {post.phoneNumber}
-                    </div>
-                    {post.phoneNumber && (
-                      <button 
-                        className="btn btn-sm btn-success" 
-                        onClick={() => openWhatsApp(post.phoneNumber)}
-                        title="Contact via WhatsApp"
-                      >
-                        <i className="bi bi-whatsapp"></i> WhatsApp
-                      </button>
-                    )}
+                  <div>
+                    <strong>Contact:</strong> {post.phoneNumber}
                   </div>
                 </div>
               </div>
