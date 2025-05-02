@@ -41,9 +41,10 @@ const getPosts = async (req, res, next) => {
 
     const where = {};
     if (search) {
+      // Menggunakan substring case-insensitive search yang kompatibel dengan berbagai database
       where[Op.or] = [
-        { origin: { [Op.iLike]: `%${search}%` } },
-        { destination: { [Op.iLike]: `%${search}%` } },
+        { origin: { [Op.substring]: search } },
+        { destination: { [Op.substring]: search } },
       ];
     }
     if (truckType) {
@@ -64,6 +65,7 @@ const getPosts = async (req, res, next) => {
       currentPage: parseInt(page),
     });
   } catch (error) {
+    console.error('Error getting posts:', error);
     next(error);
   }
 };
