@@ -139,6 +139,6 @@ MIT License
 Pull Request dan Issue sangat terbuka! Pastikan sesuai dengan konvensi dan gunakan branch-feature.
 
 ## 📍 Tim Developer
-- 💻 Backend: Nama Kamu
-- 💻 Frontend: Nama Kamu
-- 🧠 AI Helper: Nama Kamu (jika berbeda)
+- 💻 Backend: iqballfarhan
+- 💻 Frontend: iqballfarhan
+- 🧠 AI Helper: iqballfarhan
