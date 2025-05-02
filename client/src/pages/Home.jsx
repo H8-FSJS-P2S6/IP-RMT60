@@ -68,7 +68,6 @@ export default function Home() {
               <h1 className="display-4 fw-bold mb-3">SNS NDT Learning Platform</h1>
               <p className="lead mb-4">Expand your knowledge in Non-Destructive Testing with our expert instructors and comprehensive courses.</p>
               <Link to="/courses" className="btn btn-light btn-lg px-4 me-2">Explore Courses</Link>
-              <Link to="/register" className="btn btn-outline-light btn-lg px-4">Sign Up</Link>
             </div>
             <div className="col-lg-6 d-none d-lg-block">
               <img 

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router"; 
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   fetchCourses,
@@ -17,10 +17,12 @@ import {
   selectCategories,
 } from "../store/slices/categorySlice";
 import { addToCart } from "../store/slices/cartSlice";
+import { selectIsAuthenticated } from "../store/slices/authSlice";
 import { toast } from "react-toastify";
 
 export default function Courses() {
   const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated); 
   const courses = useAppSelector(selectCourses);
   const loading = useAppSelector(selectCoursesLoading);
   
@@ -97,7 +99,7 @@ export default function Courses() {
                   onChange={handleFilterChange}
                 />
                 <button className="btn btn-primary">
-                  <i className="bi bi-search"></i>
+                  Search
                 </button>
               </div>
             </div>
@@ -248,16 +250,18 @@ export default function Courses() {
                       <div className="d-flex gap-2">
                         <Link
                           to={`/courses/${course.id}`}
-                          className="btn btn-outline-primary flex-grow-1"
+                          className={`btn btn-outline-primary ${!isAuthenticated ? 'w-100' : 'flex-grow-1'}`}
                         >
                           Detail
                         </Link>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => handleAddToCart(course.id)}
-                        >
-                          <i className="bi bi-cart-plus"></i> Tambah
-                        </button>
+                        {isAuthenticated && (
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => handleAddToCart(course.id)}
+                          >
+                            Add
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

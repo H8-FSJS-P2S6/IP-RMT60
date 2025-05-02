@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx jest --verbose --detectOpenHandles --forceExit --runInBand",
+    "test:coverage": "jest --coverage",
     "dev": "npx nodemon app"
   },
   "keywords": [],

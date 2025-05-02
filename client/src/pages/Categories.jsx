@@ -71,7 +71,7 @@ export default function Categories() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="btn btn-primary">
-              <i className="bi bi-search"></i>
+              Search
             </button>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function Categories() {
             </div>
             <div className="col-lg-6">
               <img 
-                src="https://via.placeholder.com/600x400?text=NDT+Certification"
+                src="https://www.pallakkindt.com/images/Nadcap-cert.jpg"
                 alt="NDT Certification"
                 className="img-fluid rounded shadow"
               />
