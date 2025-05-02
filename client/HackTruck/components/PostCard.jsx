@@ -20,6 +20,44 @@ const extractUrlFromIframe = (str) => {
   return str; // Return as is if it's already a URL
 };
 
+// Utility function to format phone number for WhatsApp
+const formatWhatsAppNumber = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  
+  // Remove any non-digit characters
+  const digits = phoneNumber.replace(/\D/g, '');
+  
+  // If number starts with 0, replace it with +62
+  if (digits.startsWith('0')) {
+    return '+62' + digits.substring(1);
+  }
+  
+  // If number starts with 62, add + prefix
+  if (digits.startsWith('62')) {
+    return '+' + digits;
+  }
+  
+  // Otherwise return as is
+  return digits;
+};
+
+// Create WhatsApp link with formatted message
+const createWhatsAppLink = (post) => {
+  const formattedNumber = formatWhatsAppNumber(post.phoneNumber);
+  
+  // Create pre-formatted message with the new requested format
+  const message = encodeURIComponent(
+    `Halo, saya tertarik dengan layanan transportasi Anda:\n` +
+    `- Rute: ${post.origin} ke ${post.destination}\n` +
+    `- Tanggal Keberangkatan: ${new Date(post.departureDate).toLocaleDateString()}\n` +
+    `- Jenis Truk: ${post.truckType.charAt(0).toUpperCase() + post.truckType.slice(1)}\n` +
+    `- Kapasitas Berat: ${post.maxWeight} kg\n` +
+    `Apakah masih tersedia?`
+  );
+  
+  return `https://api.whatsapp.com/send?phone=${formattedNumber}&text=${message}`;
+};
+
 class MapErrorBoundary extends React.Component {
   state = { hasError: false };
 
@@ -442,8 +480,11 @@ const PostCard = ({ post, showControls = true }) => {
                   <div className="me-2" style={{ width: '30px', textAlign: 'center' }}>
                     📱
                   </div>
-                  <div>
+                  <div className="d-flex align-items-center">
                     <strong>Contact:</strong> {post.phoneNumber}
+                    <a href={createWhatsAppLink(post)} target="_blank" rel="noopener noreferrer" className="btn btn-success btn-sm ms-2">
+                      <i className="bi bi-whatsapp me-1"></i>WhatsApp
+                    </a>
                   </div>
                 </div>
               </div>
