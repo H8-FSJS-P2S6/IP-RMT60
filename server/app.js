@@ -1,6 +1,4 @@
-// Load environment variables first
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const { sequelize } = require('./models');
@@ -13,7 +11,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Make origin configurable
+  origin: 'http://localhost:5173', // Allow your frontend origin
   credentials: true, // Allow cookies/credentials
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
@@ -30,6 +28,13 @@ app.use('/api/ai', aiRoutes); // AI recommendation endpoint
 
 // Error Handler
 app.use(errorHandler);
+
+// Remove duplicate dotenv import and fix conditional logic
+// Note: The original condition `process.env.NODE_ENV !== '!production'` seems incorrect
+// Assuming you meant `!== 'production'` for development environment
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config(); // Load .env variables in development
+}
 
 // Database Connection and Server Start
 const PORT = process.env.PORT || 3000;
