@@ -1,5 +1,0 @@
-HackTruck
-
-https://mnskcrjmbpduuthhmoqj.supabase.co
-
-postgresql://postgres.mnskcrjmbpduuthhmoqj:16021998@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
