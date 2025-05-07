@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "qwerty",
+    "database": "list_hp_DB",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "qwerty",
+    "database": "list_hp_DB_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
