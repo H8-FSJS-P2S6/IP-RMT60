@@ -1,0 +1,62 @@
+[
+    {
+        "name": "product.read"
+    },
+    {
+        "name": "product.create"
+    },
+    {
+        "name": "product.update"
+    },
+    {
+        "name": "product.delete"
+    },
+    {
+        "name": "category.read"
+    },
+    {
+        "name": "category.create"
+    },
+    {
+        "name": "category.update"
+    },
+    {
+        "name": "category.delete"
+    },
+    {
+        "name": "user.read"
+    },
+    {
+        "name": "user.create"
+    },
+    {
+        "name": "user.update"
+    },
+    {
+        "name": "user.delete"
+    },
+    {
+        "name": "role.read"
+    },
+    {
+        "name": "role.create"
+    },
+    {
+        "name": "role.update"
+    },
+    {
+        "name": "role.delete"
+    },
+    {
+        "name": "permission.read"
+    },
+    {
+        "name": "permission.create"
+    },
+    {
+        "name": "permission.update"
+    },
+    {
+        "name": "permission.delete"
+    }
+]

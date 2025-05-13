@@ -1,0 +1,44 @@
+[
+  {
+    "email": "administrator@email.com",
+    "password": "password",
+    "name": "Administrator",
+    "status": "active"
+  },
+  {
+    "email": "andika@email.com",
+    "password": "password",
+    "name": "Andika Rahmadi Saputra",
+    "status": "active"
+  },
+  {
+    "email": "admin@email.com",
+    "password": "password",
+    "name": "Admin",
+    "status": "active"
+  },
+  {
+    "email": "seller@email.com",
+    "password": "password",
+    "name": "Seller",
+    "status": "active"
+  },
+  {
+    "email": "seller2@email.com",
+    "password": "password",
+    "name": "Seller Dua",
+    "status": "active"
+  },
+  {
+    "email": "buyer@email.com",
+    "password": "password",
+    "name": "Buyer",
+    "status": "active"
+  },
+  {
+    "email": "inactive@email.com",
+    "password": "password",
+    "name": "Buyer Inactive",
+    "status": "inactive"
+  }
+]

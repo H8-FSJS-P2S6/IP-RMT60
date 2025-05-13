@@ -1,0 +1,482 @@
+[
+  {
+    "name": "Headphone Wireless",
+    "description": "Headphone nirkabel dengan fitur noise cancellation dan baterai tahan lama.",
+    "price": 299000,
+    "stock": 20,
+    "status": "active",
+    "UserId": 1
+  },
+  {
+    "name": "Sepatu Lari",
+    "description": "Sepatu lari ringan dan nyaman untuk olahraga harian.",
+    "price": 450000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 2
+  },
+  {
+    "name": "Smartwatch Seri 5",
+    "description": "Jam tangan pintar dengan fitur kebugaran dan notifikasi pintar.",
+    "price": 1200000,
+    "status": "active",
+    "stock": 12,
+    "UserId": 1
+  },
+  {
+    "name": "Kursi Gaming",
+    "description": "Kursi gaming ergonomis dengan sandaran yang bisa disesuaikan.",
+    "price": 1750000,
+    "status": "active",
+    "stock": 7,
+    "UserId": 1
+  },
+  {
+    "name": "Speaker Bluetooth",
+    "description": "Speaker Bluetooth portabel dengan kualitas suara jernih dan tahan air.",
+    "price": 325000,
+    "status": "active",
+    "stock": 50,
+    "UserId": 2
+  },
+  {
+    "name": "Jaket Denim Pria",
+    "description": "Jaket denim kasual cocok untuk hangout dan acara santai.",
+    "price": 350000,
+    "status": "active",
+    "stock": 15,
+    "UserId": 1
+  },
+  {
+    "name": "Kemeja Flanel Lengan Panjang",
+    "description": "Kemeja flanel pria dengan motif kotak-kotak, nyaman dipakai harian.",
+    "price": 189000,
+    "status": "active",
+    "stock": 25,
+    "UserId": 1
+  },
+  {
+    "name": "Celana Chino Slim Fit",
+    "description": "Celana chino pria slim fit, cocok untuk gaya kasual maupun semi-formal.",
+    "price": 229000,
+    "status": "active",
+    "stock": 30,
+    "UserId": 1
+  },
+  {
+    "name": "Kaos Polos Katun Premium",
+    "description": "Kaos pria bahan katun premium, adem dan nyaman dipakai.",
+    "price": 79000,
+    "status": "active",
+    "stock": 50,
+    "UserId": 1
+  },
+  {
+    "name": "Sepatu Sneakers Pria",
+    "description": "Sneakers pria bergaya sporty dan nyaman untuk aktivitas sehari-hari.",
+    "price": 299000,
+    "status": "active",
+    "stock": 18,
+    "UserId": 1
+  },
+  {
+    "name": "Jas Formal Slim Fit",
+    "description": "Jas pria potongan slim fit, ideal untuk acara formal dan kerja.",
+    "price": 549000,
+    "status": "active",
+    "stock": 10,
+    "UserId": 1
+  },
+  {
+    "name": "Sweater Rajut Pria",
+    "description": "Sweater pria bahan rajut lembut, cocok untuk cuaca dingin.",
+    "price": 179000,
+    "status": "active",
+    "stock": 22,
+    "UserId": 1
+  },
+  {
+    "name": "Dompet Kulit Pria",
+    "description": "Dompet pria dari kulit asli dengan banyak slot kartu.",
+    "price": 159000,
+    "status": "active",
+    "stock": 40,
+    "UserId": 1
+  },
+  {
+    "name": "Sabuk Kulit Asli",
+    "description": "Sabuk pria berbahan kulit asli dengan buckle logam elegan.",
+    "price": 99000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 1
+  },
+  {
+    "name": "Topi Baseball Pria",
+    "description": "Topi kasual pria model baseball yang stylish dan nyaman.",
+    "price": 59000,
+    "status": "active",
+    "stock": 45,
+    "UserId": 1
+  },
+  {
+    "name": "Lampu Meja Minimalis",
+    "description": "Lampu meja bergaya minimalis, cocok untuk ruang kerja atau kamar tidur.",
+    "price": 129000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 1
+  },
+  {
+    "name": "Rak Dinding Kayu",
+    "description": "Rak dinding kayu estetik untuk dekorasi ruang tamu atau kamar.",
+    "price": 99000,
+    "status": "active",
+    "stock": 15,
+    "UserId": 2
+  },
+  {
+    "name": "Bantal Sofa Motif Geometris",
+    "description": "Bantal dekoratif dengan motif geometris modern.",
+    "price": 49000,
+    "status": "active",
+    "stock": 40,
+    "UserId": 1
+  },
+  {
+    "name": "Karpet Lantai Lembut",
+    "description": "Karpet lembut dengan ukuran medium, ideal untuk ruang keluarga.",
+    "price": 199000,
+    "status": "active",
+    "stock": 12,
+    "UserId": 4
+  },
+  {
+    "name": "Jam Dinding Vintage",
+    "description": "Jam dinding gaya vintage untuk menambah kesan klasik di rumah.",
+    "price": 159000,
+    "status": "active",
+    "stock": 18,
+    "UserId": 5
+  },
+  {
+    "name": "Dispenser Sabun Otomatis",
+    "description": "Dispenser sabun otomatis dengan sensor gerak untuk kemudahan dan kebersihan.",
+    "price": 89000,
+    "status": "active",
+    "stock": 25,
+    "UserId": 1
+  },
+  {
+    "name": "Tirai Jendela Blackout",
+    "description": "Tirai blackout dengan kemampuan menahan cahaya dan menjaga privasi.",
+    "price": 139000,
+    "status": "active",
+    "stock": 22,
+    "UserId": 2
+  },
+  {
+    "name": "Tempat Penyimpanan Serbaguna",
+    "description": "Box penyimpanan lipat untuk merapikan barang-barang rumah.",
+    "price": 69000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 1
+  },
+  {
+    "name": "Diffuser Aromaterapi",
+    "description": "Diffuser dengan fitur LED dan aroma terapi untuk relaksasi di rumah.",
+    "price": 149000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 4
+  },
+  {
+    "name": "Taplak Meja Motif Etnik",
+    "description": "Taplak meja dengan desain etnik yang unik dan menarik.",
+    "price": 59000,
+    "status": "active",
+    "stock": 30,
+    "UserId": 5
+  },
+  {
+    "name": "Facial Wash Herbal",
+    "description": "Sabun pencuci wajah dengan ekstrak alami untuk kulit bersih dan segar.",
+    "price": 39000,
+    "status": "active",
+    "stock": 40,
+    "UserId": 1
+  },
+  {
+    "name": "Body Lotion Whitening",
+    "description": "Lotion badan dengan formula pencerah dan melembapkan kulit.",
+    "price": 47000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 2
+  },
+  {
+    "name": "Minyak Esensial Lavender",
+    "description": "Minyak esensial aroma lavender untuk relaksasi dan terapi tidur.",
+    "price": 59000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 1
+  },
+  {
+    "name": "Suplemen Vitamin C",
+    "description": "Vitamin C 1000mg untuk menjaga daya tahan tubuh.",
+    "price": 68000,
+    "status": "active",
+    "stock": 50,
+    "UserId": 4
+  },
+  {
+    "name": "Shampo Anti Ketombe",
+    "description": "Shampo dengan formula anti ketombe dan menjaga kesehatan kulit kepala.",
+    "price": 32000,
+    "status": "active",
+    "stock": 28,
+    "UserId": 5
+  },
+  {
+    "name": "Hand Sanitizer Aloe Vera",
+    "description": "Hand sanitizer dengan kandungan aloe vera yang lembut di kulit.",
+    "price": 25000,
+    "status": "active",
+    "stock": 45,
+    "UserId": 1
+  },
+  {
+    "name": "Masker Wajah Charcoal",
+    "description": "Masker wajah berbahan charcoal untuk membersihkan pori-pori secara menyeluruh.",
+    "price": 30000,
+    "status": "active",
+    "stock": 33,
+    "UserId": 2
+  },
+  {
+    "name": "Cream Malam Anti Aging",
+    "description": "Krim malam untuk mengurangi tanda-tanda penuaan dini pada wajah.",
+    "price": 87000,
+    "status": "active",
+    "stock": 17,
+    "UserId": 1
+  },
+  {
+    "name": "Lip Balm Natural",
+    "description": "Lip balm dengan bahan alami untuk menjaga kelembapan bibir.",
+    "price": 21000,
+    "status": "active",
+    "stock": 60,
+    "UserId": 4
+  },
+  {
+    "name": "Hair Tonic Penumbuh Rambut",
+    "description": "Hair tonic yang membantu menguatkan akar rambut dan merangsang pertumbuhan.",
+    "price": 69000,
+    "status": "active",
+    "stock": 19,
+    "UserId": 5
+  },
+  {
+    "name": "Matras Yoga Anti Slip",
+    "description": "Matras yoga dengan bahan anti slip dan empuk, ideal untuk latihan harian.",
+    "price": 85000,
+    "status": "active",
+    "stock": 25,
+    "UserId": 1
+  },
+  {
+    "name": "Botol Minum Olahraga 1L",
+    "description": "Botol minum berkapasitas 1 liter, cocok untuk aktivitas luar ruangan.",
+    "price": 45000,
+    "status": "active",
+    "stock": 40,
+    "UserId": 2
+  },
+  {
+    "name": "Sarung Tangan Gym",
+    "description": "Sarung tangan khusus untuk olahraga angkat beban agar genggaman lebih kuat.",
+    "price": 39000,
+    "status": "active",
+    "stock": 30,
+    "UserId": 2
+  },
+  {
+    "name": "Tas Pinggang Outdoor",
+    "description": "Tas pinggang ringan dan praktis untuk hiking dan lari.",
+    "price": 56000,
+    "status": "active",
+    "stock": 18,
+    "UserId": 4
+  },
+  {
+    "name": "Lampu Sepeda LED",
+    "description": "Lampu LED untuk sepeda dengan mode terang dan tahan air.",
+    "price": 32000,
+    "status": "active",
+    "stock": 22,
+    "UserId": 5
+  },
+  {
+    "name": "Puzzle Kayu Edukatif",
+    "description": "Mainan puzzle dari kayu untuk melatih logika dan koordinasi anak.",
+    "price": 49000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 1
+  },
+  {
+    "name": "Remote Control Car",
+    "description": "Mobil remote control dengan desain sporty dan baterai isi ulang.",
+    "price": 125000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 2
+  },
+  {
+    "name": "Set Alat Masak Mini",
+    "description": "Mainan set alat masak mini untuk anak perempuan belajar memasak.",
+    "price": 69000,
+    "status": "active",
+    "stock": 28,
+    "UserId": 2
+  },
+  {
+    "name": "Monopoli Classic Edition",
+    "description": "Permainan papan klasik Monopoli untuk dimainkan bersama keluarga.",
+    "price": 78000,
+    "status": "active",
+    "stock": 15,
+    "UserId": 4
+  },
+  {
+    "name": "Lego Brick Set Kreatif",
+    "description": "Set lego dengan berbagai bentuk dan warna untuk membangun imajinasi anak.",
+    "price": 99000,
+    "status": "active",
+    "stock": 25,
+    "UserId": 5
+  },
+  {
+    "name": "Cover Jok Motor Anti Air",
+    "description": "Sarung jok motor tahan air dan nyaman digunakan untuk segala cuaca.",
+    "price": 37000,
+    "status": "active",
+    "stock": 30,
+    "UserId": 1
+  },
+  {
+    "name": "Parfum Mobil Aroma Kopi",
+    "description": "Pengharum mobil dengan aroma kopi yang menyegarkan dan tahan lama.",
+    "price": 29000,
+    "status": "active",
+    "stock": 40,
+    "UserId": 2
+  },
+  {
+    "name": "Pompa Ban Portable Elektrik",
+    "description": "Pompa ban elektrik yang praktis dibawa untuk perjalanan jauh.",
+    "price": 175000,
+    "status": "active",
+    "stock": 12,
+    "UserId": 2
+  },
+  {
+    "name": "Sarung Stir Mobil Anti Slip",
+    "description": "Sarung stir dengan bahan anti slip yang nyaman di genggaman.",
+    "price": 45000,
+    "status": "active",
+    "stock": 22,
+    "UserId": 4
+  },
+  {
+    "name": "Vakum Mobil Mini USB",
+    "description": "Alat vakum mini portabel dengan koneksi USB untuk membersihkan interior mobil.",
+    "price": 67000,
+    "status": "active",
+    "stock": 18,
+    "UserId": 5
+  },
+  {
+    "name": "Novel Fiksi Sejarah",
+    "description": "Novel berlatar sejarah dengan alur cerita menarik dan penuh intrik.",
+    "price": 58000,
+    "status": "active",
+    "stock": 25,
+    "UserId": 1
+  },
+  {
+    "name": "Buku Self Improvement",
+    "description": "Panduan pengembangan diri untuk hidup lebih produktif dan bahagia.",
+    "price": 64000,
+    "status": "active",
+    "stock": 30,
+    "UserId": 2
+  },
+  {
+    "name": "Komik Petualangan Anak",
+    "description": "Komik seru dengan ilustrasi penuh warna yang cocok untuk anak-anak.",
+    "price": 33000,
+    "status": "active",
+    "stock": 45,
+    "UserId": 2
+  },
+  {
+    "name": "Ensiklopedia Sains Anak",
+    "description": "Buku ensiklopedia dengan penjelasan sederhana tentang dunia sains.",
+    "price": 87000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 4
+  },
+  {
+    "name": "Kamus Inggris Indonesia",
+    "description": "Kamus lengkap Inggris - Indonesia untuk pelajar dan umum.",
+    "price": 49000,
+    "status": "active",
+    "stock": 38,
+    "UserId": 5
+  },
+  {
+    "name": "Power Bank 10000mAh",
+    "description": "Power bank berkapasitas besar dengan dual output USB.",
+    "price": 125000,
+    "status": "active",
+    "stock": 20,
+    "UserId": 1
+  },
+  {
+    "name": "Holder HP Mobil Universal",
+    "description": "Holder ponsel untuk mobil dengan rotasi 360 derajat dan kuat.",
+    "price": 35000,
+    "status": "active",
+    "stock": 35,
+    "UserId": 2
+  },
+  {
+    "name": "Kabel Charger Type-C Fast Charging",
+    "description": "Kabel charger type-C dengan dukungan fast charging hingga 3A.",
+    "price": 29000,
+    "status": "active",
+    "stock": 50,
+    "UserId": 1
+  },
+  {
+    "name": "Earphone Bluetooth TWS",
+    "description": "Earphone bluetooth stereo dengan koneksi cepat dan baterai tahan lama.",
+    "price": 99000,
+    "status": "active",
+    "stock": 28,
+    "UserId": 4
+  },
+  {
+    "name": "Smartwatch Fitness Tracker",
+    "description": "Smartwatch untuk memantau aktivitas harian, detak jantung, dan notifikasi.",
+    "price": 175000,
+    "status": "active",
+    "stock": 15,
+    "UserId": 5
+  }
+]

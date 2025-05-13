@@ -1,0 +1,34 @@
+/* .App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.card-container {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.card {
+  text-decoration: none;
+  color: black;
+  opacity: 1;
+  transition: 0.25 ease-out;
+}
+
+.card:hover {
+  cursor: pointer;
+  opacity: 0.8;
+  transition: 0.25s ease-in;
+}
+
+.card-image {
+  width: 150px;
+  border-radius: 5px;
+}
+
+.card-title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 150px;
+} */
