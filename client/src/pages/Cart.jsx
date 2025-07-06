@@ -122,7 +122,10 @@ export default function Cart() {
               </h5>
 
               {cartItems.map((item) => (
-                <div key={`cart-${item.LectureId}`} className="d-flex mb-4 pb-4 border-bottom">
+                <div
+                  key={`cart-${item.LectureId}`}
+                  className="d-flex mb-4 pb-4 border-bottom"
+                >
                   <img
                     src={
                       item.Lecture?.image ||

@@ -82,11 +82,23 @@ export default function Courses() {
 
   return (
     <div className="container py-5">
-      <h1 className="mb-4">All Courses</h1>
+      {/* Header Section */}
+      <div className="row mb-5">
+        <div className="col-lg-8">
+          <h1 className="section-title">Explore NDT Courses</h1>
+          <p className="section-subtitle">Advance your career with industry-leading Non-Destructive Testing certification programs</p>
+        </div>
+        <div className="col-lg-4 d-flex align-items-center justify-content-lg-end">
+          <div className="d-flex align-items-center bg-light rounded-pill px-3 py-2">
+            <i className="bi bi-mortarboard me-2 text-primary"></i>
+            <span className="fw-semibold">{pagination.totalItems} Courses Available</span>
+          </div>
+        </div>
+      </div>
 
-      {/* Search & Filters */}
-      <div className="card mb-4">
-        <div className="card-body">
+      {/* Enhanced Search & Filters */}
+      <div className="card-modern mb-5">
+        <div className="card-body p-4">
           <div className="row g-3">
             <div className="col-md-4">
               <div className="input-group">
@@ -208,58 +220,130 @@ export default function Courses() {
         </div>
       ) : courses.length === 0 ? (
         <div className="text-center py-5">
-          <div className="alert alert-info">
-            <h4 className="alert-heading">No courses found</h4>
-            <p>Try adjusting your filters or search criteria</p>
+          <div className="bg-light rounded-modern p-5">
+            <div className="mb-4">
+              <i className="bi bi-search display-1 text-muted"></i>
+            </div>
+            <h4 className="fw-bold mb-3">No courses found</h4>
+            <p className="text-muted mb-4">We couldn't find any courses matching your criteria. Try adjusting your filters or search terms.</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() =>
+                dispatch(
+                  setFilters({
+                    categoryId: "",
+                    minPrice: "",
+                    maxPrice: "",
+                    search: "",
+                  })
+                )
+              }
+            >
+              <i className="bi bi-arrow-clockwise me-2"></i>
+              Reset Filters
+            </button>
           </div>
         </div>
       ) : (
         <>
-          <p className="text-muted mb-4">
-            Showing {courses.length} of {pagination.totalItems} courses
-          </p>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center">
+              <span className="text-muted">Showing</span>
+              <span className="fw-bold mx-1">{courses.length}</span>
+              <span className="text-muted">of</span>
+              <span className="fw-bold mx-1">{pagination.totalItems}</span>
+              <span className="text-muted">courses</span>
+            </div>
+            <div className="d-flex align-items-center">
+              <i className="bi bi-grid-3x3-gap me-2 text-primary"></i>
+              <span className="small text-muted">Grid View</span>
+            </div>
+          </div>
 
-          <div className="row g-4 mb-4">
-            {courses.map((course) => (
+          <div className="row g-4 mb-5">
+            {courses.map((course, index) => (
               <div key={course.id} className="col-md-6 col-lg-4">
-                <div className="card h-100 shadow-sm hover-shadow">
-                  <img
-                    src={
-                      course.image ||
-                      "https://via.placeholder.com/300x200?text=NDT+Course"
-                    }
-                    className="card-img-top"
-                    alt={course.name}
-                    height="200"
-                    style={{ objectFit: "cover" }}
-                  />
-                  <div className="card-body d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-secondary">
+                <div className="card-course position-relative">
+                  <div className="position-relative overflow-hidden">
+                    <img
+                      src={
+                        course.image ||
+                        "https://via.placeholder.com/320x180?text=NDT+Course&bg=2C3E50&color=ffffff"
+                      }
+                      className="card-img-top"
+                      alt={course.name}
+                    />
+                    <div className="position-absolute top-0 start-0 m-3">
+                      {index % 3 === 0 && <span className="badge bg-success">Popular</span>}
+                      {index % 3 === 1 && <span className="badge bg-warning text-dark">Featured</span>}
+                      {index % 3 === 2 && <span className="badge bg-info">Trending</span>}
+                    </div>
+                    <div className="position-absolute bottom-0 end-0 m-3">
+                      <span className="badge badge-modern">
                         {course.category?.name || "General"}
                       </span>
-                      <span className="text-primary fw-bold">
-                        {formatToIDR(course.price)}
-                      </span>
                     </div>
-                    <h5 className="card-title">{course.name}</h5>
-                    <p className="card-text text-muted mb-4">
+                  </div>
+                  
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-gradient-primary rounded-circle p-1 me-2" style={{ width: '24px', height: '24px' }}>
+                          <i className="bi bi-star-fill text-white" style={{ fontSize: '0.75rem' }}></i>
+                        </div>
+                        <small className="text-muted">4.{Math.floor(Math.random() * 5) + 5} ({Math.floor(Math.random() * 200) + 50} reviews)</small>
+                      </div>
+                      <span className="text-primary fw-bold fs-5">{formatToIDR(course.price)}</span>
+                    </div>
+                    
+                    <h5 className="card-title mb-2" style={{ 
+                      fontSize: '1.1rem', 
+                      lineHeight: '1.3',
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                      {course.name}
+                    </h5>
+                    
+                    <p className="card-text text-muted mb-3" style={{ 
+                      fontSize: '0.9rem',
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
                       {course.technique}
                     </p>
+                    
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div className="d-flex align-items-center text-muted">
+                        <i className="bi bi-clock me-1"></i>
+                        <small>Self-paced</small>
+                      </div>
+                      <div className="d-flex align-items-center text-muted">
+                        <i className="bi bi-people me-1"></i>
+                        <small>{Math.floor(Math.random() * 100) + 25} students</small>
+                      </div>
+                    </div>
+                    
                     <div className="mt-auto">
                       <div className="d-flex gap-2">
                         <Link
                           to={`/courses/${course.id}`}
-                          className={`btn btn-outline-primary ${!isAuthenticated ? 'w-100' : 'flex-grow-1'}`}
+                          className={`btn btn-outline-primary ${!isAuthenticated ? 'flex-grow-1' : 'flex-grow-1'}`}
                         >
-                          Detail
+                          <i className="bi bi-eye me-2"></i>
+                          View Details
                         </Link>
                         {isAuthenticated && (
                           <button
-                            className="btn btn-primary"
+                            className="btn btn-primary px-3"
                             onClick={() => handleAddToCart(course.id)}
+                            title="Add to Cart"
                           >
-                            Add
+                            <i className="bi bi-cart-plus"></i>
                           </button>
                         )}
                       </div>

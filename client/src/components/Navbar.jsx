@@ -1,7 +1,7 @@
-import { Link } from "react-router"; // Perbaiki import dari "react-router" ke "react-router-dom"
+import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
-import { FaHome, FaBook, FaTags, FaUser, FaShoppingCart, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaTachometerAlt } from 'react-icons/fa';
+import { FaGraduationCap, FaBook, FaTags, FaUser, FaShoppingCart, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaTachometerAlt, FaBell, FaSearch, FaPlay } from 'react-icons/fa';
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -27,125 +27,237 @@ export default function Navbar() {
   
   return (
     <>
-      <nav className={`navbar navbar-expand-lg ${scrolled ? 'navbar-light bg-light' : 'navbar-dark'} fixed-top transition-all duration-300`}
-           style={{ 
-             transition: 'all 0.3s ease',
-             padding: scrolled ? '0.5rem 1rem' : '1rem',
-             background: scrolled 
-               ? 'rgba(255, 255, 255, 0.95)' 
-               : 'linear-gradient(to right, #0062E6, #33AEFF)',
-             borderBottom: scrolled 
-               ? '1px solid #e5e5e5' 
-               : '2px solid rgba(255, 255, 255, 0.2)'
-           }}>
+      {/* Top notification bar */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4">
         <div className="container">
-          <Link className="navbar-brand fw-bold d-flex align-items-center" to="/">
-            <span className="me-2" style={{ 
-              fontSize: '1.5rem',
-              filter: scrolled ? 'drop-shadow(0 0 2px rgba(13, 110, 253, 0.4))' : 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.7))'
-            }}>⚡</span>
-            <span style={{ 
-              background: scrolled ? 'linear-gradient(45deg, #0d6efd, #0dcaf0)' : 'transparent', 
-              WebkitBackgroundClip: scrolled ? 'text' : 'unset', 
-              WebkitTextFillColor: scrolled ? 'transparent' : 'inherit',
-              transition: 'all 0.3s ease',
-              fontWeight: '800',
-              letterSpacing: '0.5px'
-            }}>
-              SAR NDT SERVICES
-            </span>
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <FaBell className="me-2" />
+              <span className="small">🎉 New courses available! Start your NDT journey today.</span>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+              <span className="small d-none d-md-inline">📞 Support: +62 21 1234 5678</span>
+              <span className="small">✨ Free trial available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav className={`navbar navbar-expand-lg ${scrolled ? 'navbar-light bg-white' : 'navbar-dark'} sticky-top shadow-lg`}
+           style={{ 
+             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+             padding: '1rem 0',
+             borderBottom: scrolled ? '3px solid #3498DB' : 'none',
+             backdropFilter: 'blur(20px)',
+             background: scrolled 
+               ? 'rgba(255, 255, 255, 0.98)' 
+               : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+             zIndex: 1050
+           }}>
+        <div className="container-fluid px-4">
+          <Link className="navbar-brand fw-bold d-flex align-items-center" to="/" 
+                style={{ transform: scrolled ? 'scale(0.95)' : 'scale(1)', transition: 'transform 0.3s ease' }}>
+            <div className="me-3 d-flex align-items-center justify-content-center rounded-3 shadow-lg"
+                 style={{ 
+                   width: '50px', 
+                   height: '50px',
+                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                   transform: 'rotate(-5deg)',
+                   transition: 'all 0.3s ease'
+                 }}>
+              <FaGraduationCap className="fs-4 text-white" style={{ transform: 'rotate(5deg)' }} />
+            </div>
+            <div>
+              <div style={{ 
+                fontSize: '1.75rem',
+                fontWeight: '900',
+                letterSpacing: '-1px',
+                background: scrolled ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: scrolled ? 'transparent' : 'white',
+                transition: 'all 0.3s ease',
+                lineHeight: '1'
+              }}>
+                EduCraft
+              </div>
+              <div style={{
+                fontSize: '0.75rem',
+                color: scrolled ? '#6b7280' : 'rgba(255,255,255,0.8)',
+                fontWeight: '500',
+                letterSpacing: '0.5px'
+              }}>
+                NDT Learning Platform
+              </div>
+            </div>
           </Link>
+          
+          {/* Search Bar - Center */}
+          <div className="d-none d-lg-flex flex-grow-1 justify-content-center mx-5">
+            <div className="position-relative" style={{ maxWidth: '400px', width: '100%' }}>
+              <input 
+                type="text" 
+                className="form-control rounded-pill ps-5 pe-4 border-0 shadow-sm"
+                placeholder="Search courses, categories..."
+                style={{
+                  background: scrolled ? '#f8f9fa' : 'rgba(255,255,255,0.9)',
+                  color: '#2c3e50',
+                  height: '45px',
+                  fontSize: '0.95rem'
+                }}
+              />
+              <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
+            </div>
+          </div>
+
           <button
-            className="navbar-toggler"
+            className="navbar-toggler border-0 rounded-3 shadow-sm"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarNav"
             aria-controls="navbarNav"
             aria-expanded="false"
             aria-label="Toggle navigation"
+            style={{
+              background: scrolled ? '#f8f9fa' : 'rgba(255,255,255,0.2)',
+              padding: '0.75rem 1rem'
+            }}
           >
             <span className="navbar-toggler-icon"></span>
           </button>
           
           <div className="collapse navbar-collapse" id="navbarNav">
+            {/* Mobile Search */}
+            <div className="d-lg-none my-3">
+              <div className="position-relative">
+                <input 
+                  type="text" 
+                  className="form-control rounded-pill ps-5 pe-4 border-0"
+                  placeholder="Search courses..."
+                  style={{
+                    background: scrolled ? '#f8f9fa' : 'rgba(255,255,255,0.9)',
+                    color: '#2c3e50'
+                  }}
+                />
+                <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
+              </div>
+            </div>
+
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <Link className={`nav-link d-flex align-items-center ${scrolled ? 'text-dark' : 'text-white'} mx-1`} to="/" 
+                <Link className={`nav-link d-flex align-items-center fw-semibold position-relative ${scrolled ? 'text-dark' : 'text-white'} mx-2`} 
+                      to="/"
                       style={{
-                        position: 'relative',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '8px',
-                        transition: 'all 0.2s ease'
+                        padding: '0.75rem 1.25rem',
+                        borderRadius: '15px',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        background: 'transparent'
                       }}
                       onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = scrolled ? 'rgba(13, 110, 253, 0.1)' : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.background = scrolled 
+                          ? 'linear-gradient(135deg, #667eea20, #764ba220)' 
+                          : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
                       }}
                       onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.transform = 'translateY(0)';
                       }}>
-                  <FaHome className="me-1" /> <span>Home</span>
+                  <FaGraduationCap className="me-2" />
+                  Home
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className={`nav-link d-flex align-items-center ${scrolled ? 'text-dark' : 'text-white'} mx-1`} to="/courses"
+                <Link className={`nav-link d-flex align-items-center fw-semibold ${scrolled ? 'text-dark' : 'text-white'} mx-2`} 
+                      to="/courses"
                       style={{
-                        position: 'relative',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '8px',
-                        transition: 'all 0.2s ease'
+                        padding: '0.75rem 1.25rem',
+                        borderRadius: '15px',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = scrolled ? 'rgba(13, 110, 253, 0.1)' : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.background = scrolled 
+                          ? 'linear-gradient(135deg, #667eea20, #764ba220)' 
+                          : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
                       }}
                       onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.transform = 'translateY(0)';
                       }}>
-                  <FaBook className="me-1" /> <span>Courses</span>
+                  <FaPlay className="me-2" />
+                  Courses
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className={`nav-link d-flex align-items-center ${scrolled ? 'text-dark' : 'text-white'} mx-1`} to="/categories"
+                <Link className={`nav-link d-flex align-items-center fw-semibold ${scrolled ? 'text-dark' : 'text-white'} mx-2`} 
+                      to="/categories"
                       style={{
-                        position: 'relative',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '8px',
-                        transition: 'all 0.2s ease'
+                        padding: '0.75rem 1.25rem',
+                        borderRadius: '15px',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = scrolled ? 'rgba(13, 110, 253, 0.1)' : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.background = scrolled 
+                          ? 'linear-gradient(135deg, #667eea20, #764ba220)' 
+                          : 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
                       }}
                       onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.transform = 'translateY(0)';
                       }}>
-                  <FaTags className="me-1" /> <span>Categories</span>
+                  <FaTags className="me-2" />
+                  Categories
                 </Link>
               </li>
             </ul>
             
-            <ul className="navbar-nav ms-auto">
+            <ul className="navbar-nav ms-auto align-items-lg-center">
               {!isAuthenticated ? (
                 <>
                   <li className="nav-item mx-1">
-                    <Link className={`nav-link btn py-2 px-3 d-flex align-items-center ${scrolled ? 'btn-outline-primary' : 'btn-outline-light'}`} to="/login" 
+                    <Link className="nav-link btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold d-flex align-items-center justify-content-center" 
+                          to="/login"
                           style={{ 
-                            borderRadius: '10px',
-                            transition: 'all 0.3s ease',
-                            boxShadow: scrolled ? '0 2px 5px rgba(13, 110, 253, 0.1)' : '0 2px 5px rgba(0, 0, 0, 0.2)'
+                            borderWidth: '2px',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            background: 'transparent'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = scrolled ? '#667eea' : 'white';
+                            e.currentTarget.style.color = scrolled ? 'white' : '#667eea';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 10px 20px rgba(102, 126, 234, 0.3)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = scrolled ? '#667eea' : 'white';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
                           }}>
-                      <FaSignInAlt className="me-2" /> Login
+                      <FaSignInAlt className="me-2" />
+                      Sign In
                     </Link>
                   </li>
                   <li className="nav-item mx-1">
-                    <Link className="nav-link btn btn-primary text-white py-2 px-3 d-flex align-items-center" to="/register" 
+                    <Link className="nav-link btn rounded-pill px-4 py-2 fw-semibold d-flex align-items-center justify-content-center text-white" 
+                          to="/register"
                           style={{ 
-                            borderRadius: '10px',
-                            fontWeight: '500',
-                            transition: 'all 0.3s ease',
-                            boxShadow: scrolled ? '0 4px 8px rgba(13, 110, 253, 0.2)' : '0 4px 8px rgba(0, 0, 0, 0.3)',
-                            background: scrolled ? 'linear-gradient(45deg, #0d6efd, #0dcaf0)' : 'rgba(255, 255, 255, 0.25)',
-                            border: 'none'
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            border: 'none',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.5)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
                           }}>
-                      <FaUserPlus className="me-2" /> Register
+                      <FaUserPlus className="me-2" />
+                      Get Started
                     </Link>
                   </li>
                 </>
@@ -153,115 +265,171 @@ export default function Navbar() {
                 <>
                   {isAdmin && (
                     <li className="nav-item mx-1">
-                      <Link className="nav-link btn btn-warning py-2 px-3 d-flex align-items-center" to="/admin/dashboard"
+                      <Link className="nav-link btn btn-warning rounded-pill px-4 py-2 fw-semibold d-flex align-items-center justify-content-center" 
+                            to="/admin/dashboard"
                             style={{ 
-                              borderRadius: '10px',
-                              color: '#212529',
-                              fontWeight: '500',
-                              boxShadow: scrolled ? '0 4px 8px rgba(255, 193, 7, 0.2)' : '0 4px 8px rgba(0, 0, 0, 0.2)'
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%)',
+                              border: 'none',
+                              color: 'white'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 107, 107, 0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
                             }}>
-                        <FaTachometerAlt className="me-2" /> Admin Panel
+                        <FaTachometerAlt className="me-2" />
+                        Admin Panel
                       </Link>
                     </li>
                   )}
-                  <li className="nav-item dropdown ms-2">
-                    <a
-                      className="nav-link dropdown-toggle d-flex align-items-center"
-                      href="#"
-                      id="navbarDropdown"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                      style={{
-                        backgroundColor: scrolled ? 'rgba(13, 110, 253, 0.1)' : 'rgba(255, 255, 255, 0.15)',
-                        borderRadius: '10px',
-                        padding: '0.5rem 1.25rem',
-                        boxShadow: scrolled ? '0 2px 5px rgba(13, 110, 253, 0.1)' : '0 2px 5px rgba(0, 0, 0, 0.2)'
-                      }}
-                    >
-                      <div className="user-avatar me-2" style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        background: scrolled ? 'linear-gradient(45deg, #0d6efd, #0dcaf0)' : '#fff',
-                        color: scrolled ? '#fff' : '#0d6efd',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        boxShadow: scrolled ? '0 2px 4px rgba(13, 110, 253, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
-                      }}>
+                  
+                  {/* Notification Bell */}
+                  <li className="nav-item mx-2">
+                    <button className="btn btn-link position-relative p-2"
+                            style={{
+                              color: scrolled ? '#667eea' : 'white',
+                              fontSize: '1.2rem',
+                              border: 'none'
+                            }}>
+                      <FaBell />
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                            style={{ fontSize: '0.6rem' }}>
+                        3
+                      </span>
+                    </button>
+                  </li>
+                  
+                  <li className="nav-item dropdown mx-1">
+                    <a className={`nav-link dropdown-toggle d-flex align-items-center fw-semibold rounded-pill px-3 py-2 ${
+                      scrolled ? 'text-dark' : 'text-white'
+                    }`}
+                       href="#" 
+                       id="navbarDropdown" 
+                       role="button" 
+                       data-bs-toggle="dropdown" 
+                       aria-expanded="false"
+                       style={{
+                         transition: 'all 0.3s ease',
+                         background: scrolled ? 'rgba(102, 126, 234, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                         backdropFilter: 'blur(10px)'
+                       }}>
+                      <div className="me-2 rounded-circle d-flex align-items-center justify-content-center"
+                           style={{
+                             width: '35px',
+                             height: '35px',
+                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                             color: 'white',
+                             fontSize: '0.9rem',
+                             fontWeight: 'bold'
+                           }}>
                         {user?.username?.charAt(0).toUpperCase() || <FaUser />}
                       </div>
-                      <span className={scrolled ? 'text-dark' : 'text-white'}>{user?.username || "User"}</span>
+                      <span className="d-none d-md-inline">{user?.username || "User"}</span>
                     </a>
+                    
                     <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0" 
                         style={{ 
-                          borderRadius: '12px', 
-                          marginTop: '12px',
+                          borderRadius: '20px', 
+                          marginTop: '0.5rem',
                           overflow: 'hidden',
-                          minWidth: '220px'
-                        }} 
-                        aria-labelledby="navbarDropdown">
+                          minWidth: '280px',
+                          background: 'white',
+                          boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+                        }}>
                       <li style={{ 
-                        padding: '1rem 1.25rem', 
-                        fontWeight: 'bold', 
-                        color: '#212529',
-                        background: 'linear-gradient(45deg, #f8f9fa, #e9ecef)',
-                        borderBottom: '1px solid #dee2e6'
+                        padding: '1.5rem 1.5rem 1rem', 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white'
                       }}>
                         <div className="d-flex align-items-center">
-                          <div className="me-2" style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            background: 'linear-gradient(45deg, #0d6efd, #0dcaf0)',
-                            color: '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 'bold',
-                            fontSize: '1.2rem'
-                          }}>
+                          <div className="me-3 rounded-circle d-flex align-items-center justify-content-center"
+                               style={{
+                                 width: '50px',
+                                 height: '50px',
+                                 background: 'rgba(255,255,255,0.2)',
+                                 color: 'white',
+                                 fontWeight: 'bold',
+                                 fontSize: '1.2rem'
+                               }}>
                             {user?.username?.charAt(0).toUpperCase() || <FaUser />}
                           </div>
                           <div>
-                            <div style={{ fontWeight: '600' }}>Hello, {user?.username || "User"}!</div>
-                            <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>Welcome back</div>
+                            <div style={{ fontWeight: '700', fontSize: '1.1rem' }}>
+                              {user?.username || "User"}
+                            </div>
+                            <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+                              {user?.email || "user@example.com"}
+                            </div>
                           </div>
                         </div>
                       </li>
+                      
                       <li>
-                        <Link className="dropdown-item py-2 d-flex align-items-center" to="/profile"
-                              style={{ transition: 'background-color 0.2s ease' }}
-                              onMouseOver={(e) => {e.currentTarget.style.backgroundColor = '#f8f9fa'}}
-                              onMouseOut={(e) => {e.currentTarget.style.backgroundColor = 'transparent'}}>
-                          <FaUser className="me-2 text-primary" /> My Profile
+                        <Link className="dropdown-item py-3 px-4 d-flex align-items-center" 
+                              to="/profile"
+                              style={{ 
+                                transition: 'all 0.2s ease',
+                                fontWeight: '500',
+                                fontSize: '0.95rem'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #667eea10, #764ba210)';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                              }}>
+                          <FaUser className="me-3 text-primary" style={{ fontSize: '1.1rem' }} />
+                          My Profile
                         </Link>
                       </li>
+                      
                       {!isAdmin && (
                         <li>
-                          <Link className="dropdown-item py-2 d-flex align-items-center" to="/cart"
-                                style={{ transition: 'background-color 0.2s ease' }}
-                                onMouseOver={(e) => {e.currentTarget.style.backgroundColor = '#f8f9fa'}}
-                                onMouseOut={(e) => {e.currentTarget.style.backgroundColor = 'transparent'}}>
-                            <FaShoppingCart className="me-2 text-primary" /> My Cart
+                          <Link className="dropdown-item py-3 px-4 d-flex align-items-center" 
+                                to="/cart"
+                                style={{ 
+                                  transition: 'all 0.2s ease',
+                                  fontWeight: '500',
+                                  fontSize: '0.95rem'
+                                }}
+                                onMouseOver={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, #667eea10, #764ba210)';
+                                }}
+                                onMouseOut={(e) => {
+                                  e.currentTarget.style.background = 'transparent';
+                                }}>
+                            <FaShoppingCart className="me-3 text-primary" style={{ fontSize: '1.1rem' }} />
+                            My Cart
                           </Link>
                         </li>
                       )}
-                      <li><hr className="dropdown-divider m-1" /></li>
+                      
+                      <li><hr className="dropdown-divider mx-3 my-2" style={{ borderColor: '#e5e7eb' }} /></li>
+                      
                       <li>
                         <button 
-                          className="dropdown-item py-2 d-flex align-items-center" 
+                          className="dropdown-item py-3 px-4 d-flex align-items-center w-100" 
                           onClick={handleLogout}
                           style={{ 
-                            color: '#dc3545',
-                            transition: 'background-color 0.2s ease' 
+                            color: '#ef4444',
+                            transition: 'all 0.2s ease',
+                            fontWeight: '500',
+                            border: 'none',
+                            background: 'none',
+                            fontSize: '0.95rem'
                           }}
-                          onMouseOver={(e) => {e.currentTarget.style.backgroundColor = '#f8d7da'}}
-                          onMouseOut={(e) => {e.currentTarget.style.backgroundColor = 'transparent'}}
-                        >
-                          <FaSignOutAlt className="me-2" /> Logout
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#fef2f2';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                          }}>
+                          <FaSignOutAlt className="me-3" style={{ fontSize: '1.1rem' }} />
+                          Sign Out
                         </button>
                       </li>
                     </ul>
@@ -272,18 +440,9 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-      {/* Spacer to create gap between navbar and content */}
-      <div className="navbar-spacer" style={{ 
-        height: '70px', 
-        width: '100%' 
-      }}></div>
-      {/* Additional decorative element to separate navbar from content */}
-      <div className="navbar-accent" style={{ 
-        height: '5px', 
-        background: 'linear-gradient(90deg, #0062E6, #33AEFF, #0dcaf0)',
-        marginBottom: '20px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-      }}></div>
+      
+      {/* Spacer untuk sticky navbar */}
+      <div style={{ height: '90px' }}></div>
     </>
   );
 }
