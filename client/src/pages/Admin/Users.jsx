@@ -219,7 +219,7 @@ export default function Users() {
                             data-bs-toggle="modal"
                             data-bs-target="#userFormModal"
                           >
-                            <i className="bi bi-pencil"></i>
+                            <i className="bi bi-pencil">Edit</i>
                           </button>
                           <button 
                             className="btn btn-sm btn-outline-danger"
@@ -228,7 +228,7 @@ export default function Users() {
                             data-bs-target="#deleteConfirmModal"
                             disabled={user.role === "Admin"}
                           >
-                            <i className="bi bi-trash"></i>
+                            <i className="bi bi-trash">Delete</i>
                           </button>
                         </td>
                       </tr>

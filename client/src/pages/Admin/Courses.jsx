@@ -303,13 +303,13 @@ export default function AdminCourses() {
                                 className="btn btn-sm btn-info"
                                 onClick={() => openFormModal(lecture)}
                               >
-                                <i className="fas fa-edit"></i>
+                                <i className="fas fa-edit">Edit</i>
                               </button>
                               <button 
                                 className="btn btn-sm btn-danger"
                                 onClick={() => openDeleteModal(lecture)}
                               >
-                                <i className="fas fa-trash"></i>
+                                <i className="fas fa-trash">Delete</i>
                               </button>
                             </div>
                           </td>

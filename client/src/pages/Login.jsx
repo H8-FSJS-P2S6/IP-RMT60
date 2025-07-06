@@ -16,12 +16,12 @@ export default function Login() {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const googleButtonRef = useRef(null);
-  
+
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
   const loading = useAppSelector(selectAuthLoading);
   const error = useAppSelector(selectAuthError);
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,19 +47,19 @@ export default function Login() {
       // Prevent navigation if we're already at the target location
       const from = location.state?.from?.pathname || (isAdmin ? "/admin/dashboard" : "/");
       const currentPath = location.pathname;
-      
+
       if (currentPath !== from) {
         navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, isAdmin, navigate, location]);
+  }, [isAuthenticated, isAdmin, navigate, location.state?.from?.pathname, location.pathname]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -92,9 +92,9 @@ export default function Login() {
 
         window.google.accounts.id.renderButton(
           googleButtonRef.current,
-          { 
-            theme: "outline", 
-            size: "large", 
+          {
+            theme: "outline",
+            size: "large",
             width: 320, // Changed from '100%' to a fixed number
             type: 'standard',
             shape: 'rectangular',

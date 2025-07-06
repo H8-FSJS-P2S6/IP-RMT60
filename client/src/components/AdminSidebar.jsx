@@ -1,5 +1,5 @@
 import { NavLink,useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { showToast } from "../utils/toast";
 
 export default function AdminSidebar() {

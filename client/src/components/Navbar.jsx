@@ -1,12 +1,12 @@
 import { Link } from "react-router";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useState, useEffect } from "react";
 import { FaGraduationCap, FaBook, FaTags, FaUser, FaShoppingCart, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaTachometerAlt, FaBell, FaSearch, FaPlay } from 'react-icons/fa';
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -15,14 +15,17 @@ export default function Navbar() {
         setScrolled(false);
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    // Use setTimeout to prevent navigation throttling
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
   };
   
   return (

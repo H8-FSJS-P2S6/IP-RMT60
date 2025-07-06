@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
@@ -6,28 +6,20 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Check if user is logged in on component mount
-  useEffect(() => {
-    // Check localStorage on initial load
-    checkAuthStatus();
-  }, []);
-
-  const isAuthenticated = !!user;
-  // Tambahkan useEffect untuk auto-redirect admin
-  useEffect(() => {
-    // Jika sudah terautentikasi dan sebagai admin, check path saat ini
-    if (isAuthenticated && user?.role === "Admin") {
-      const currentPath = window.location.pathname;
-      // Jika bukan di area admin, redirect
-      if (!currentPath.startsWith("/admin")) {
-        window.location.href = "/admin/dashboard";
-      }
-    }
-  }, [isAuthenticated, user]);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Function to check auth status that can be reused
-  const checkAuthStatus = () => {
+  const logout = useCallback(() => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setAuthChecked(false);
+
+    // Remove authorization header
+    delete axios.defaults.headers.common["Authorization"];
+  }, []);
+
+  const checkAuthStatus = useCallback(() => {
     const token = localStorage.getItem("access_token");
     const userData = localStorage.getItem("user");
 
@@ -47,7 +39,33 @@ export function AuthProvider({ children }) {
     }
 
     setLoading(false);
-  };
+    setAuthChecked(true);
+  }, [logout]);
+
+  // Check if user is logged in on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const isAuthenticated = !!user;
+  
+  // Optimized admin redirect with debouncing
+  useEffect(() => {
+    if (!authChecked || loading) return;
+    
+    const timeoutId = setTimeout(() => {
+      if (isAuthenticated && user?.role === "Admin") {
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith("/admin")) {
+          // Use replace instead of href to prevent throttling
+          window.history.replaceState(null, "", "/admin/dashboard");
+          window.location.reload();
+        }
+      }
+    }, 100); // Debounce navigation
+
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated, user, authChecked, loading]);
 
   const login = (userData, token) => {
     localStorage.setItem("access_token", token);
@@ -56,6 +74,15 @@ export function AuthProvider({ children }) {
 
     // Set authorization header
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    // Notify components about auth state change
+    const event = new Event("authStateChanged");
+    window.dispatchEvent(event);
+
+    // Force re-render of components that depend on auth state
+    setTimeout(() => {
+      setAuthChecked(true);
+    }, 50);
   };
 
   const googleLogin = (data) => {
@@ -79,15 +106,11 @@ export function AuthProvider({ children }) {
     axios.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${data.access_token}`;
-  };
-
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    setUser(null);
-
-    // Remove authorization header
-    delete axios.defaults.headers.common["Authorization"];
+    
+    // Force re-render of components that depend on auth state
+    setTimeout(() => {
+      setAuthChecked(true);
+    }, 50);
   };
 
   const isAdmin = user?.role === "Admin";
@@ -111,3 +134,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+export { AuthContext };

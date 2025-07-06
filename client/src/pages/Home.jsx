@@ -266,119 +266,75 @@ export default function Home() {
           </div>
         </div>
       </section>
-                      <small className="opacity-75">Students</small>
-                    </div>
+
+      {/* Enhanced Statistics Section */}
+      <section className="section-padding bg-light">
+        <div className="container">
+          <div className="row mb-5">
+            <div className="col-12 text-center">
+              <h2 className="section-title">Trusted by Industry Professionals</h2>
+              <p className="section-subtitle">Join thousands of professionals advancing their NDT expertise</p>
+            </div>
+          </div>
+          
+          <div className="row g-4">
+            <div className="col-md-3">
+              <div className="stats-card h-100">
+                <div className="position-relative mb-3">
+                  <div className="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style={{ width: '60px', height: '60px' }}>
+                    <i className="bi bi-journal-richtext fs-3 text-white"></i>
                   </div>
                 </div>
-                <div className="col-sm-4 mb-3 mb-sm-0">
-                  <div className="d-flex align-items-center justify-content-center justify-content-sm-start">
-                    <div className="bg-white bg-opacity-20 rounded-circle p-2 me-2">
-                      <i className="bi bi-book-fill"></i>
-                    </div>
-                    <div>
-                      <div className="fw-bold">{homeData.statistics.totalLectures}+</div>
-                      <small className="opacity-75">Courses</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-sm-4">
-                  <div className="d-flex align-items-center justify-content-center justify-content-sm-start">
-                    <div className="bg-white bg-opacity-20 rounded-circle p-2 me-2">
-                      <i className="bi bi-award-fill"></i>
-                    </div>
-                    <div>
-                      <div className="fw-bold">100%</div>
-                      <small className="opacity-75">Certified</small>
-                    </div>
-                  </div>
-                </div>
+                <div className="stats-number">{homeData.statistics.totalLectures}</div>
+                <h4 className="fw-bold mb-2">Expert Courses</h4>
+                <p className="text-muted mb-0">Comprehensive NDT training programs designed by industry experts</p>
               </div>
             </div>
             
-            <div className="col-lg-6 d-none d-lg-block">
-              <div className="position-relative">
-                <div className="hero-image-wrapper" style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(10deg)' }}>
-                  <img 
-                    src="https://mitech-ndt.co.id/wp-content/uploads/2021/02/Jenis-Pengujian-Non-Destructive-Test.jpg" 
-                    alt="NDT Learning Platform" 
-                    className="img-fluid rounded-modern shadow-modern"
-                    style={{ 
-                      borderRadius: 'var(--radius-xl)',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
-                    }}
-                  />
-                </div>
-                
-                {/* Floating Elements */}
-                <div className="position-absolute top-0 start-0 bg-white rounded-modern p-3 shadow-lg" 
-                     style={{ transform: 'translate(-20px, 50px)', animation: 'float 3s ease-in-out infinite' }}>
-                  <div className="d-flex align-items-center">
-                    <div className="bg-gradient-primary rounded-circle p-2 me-2">
-                      <i className="bi bi-check-circle-fill text-white"></i>
-                    </div>
-                    <div>
-                      <div className="fw-bold text-dark small">Expert Instructors</div>
-                      <div className="text-muted" style={{ fontSize: '0.75rem' }}>Industry Professionals</div>
-                    </div>
+            <div className="col-md-3">
+              <div className="stats-card h-100">
+                <div className="position-relative mb-3">
+                  <div className="bg-gradient-secondary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style={{ width: '60px', height: '60px' }}>
+                    <i className="bi bi-grid-3x3-gap fs-3 text-white"></i>
                   </div>
                 </div>
-                
-                <div className="position-absolute bottom-0 end-0 bg-white rounded-modern p-3 shadow-lg" 
-                     style={{ transform: 'translate(20px, -50px)', animation: 'float 3s ease-in-out infinite 1.5s' }}>
-                  <div className="d-flex align-items-center">
-                    <div className="bg-gradient-secondary rounded-circle p-2 me-2">
-                      <i className="bi bi-trophy-fill text-white"></i>
-                    </div>
-                    <div>
-                      <div className="fw-bold text-dark small">Certification</div>
-                      <div className="text-muted" style={{ fontSize: '0.75rem' }}>Industry Recognized</div>
-                    </div>
+                <div className="stats-number">{homeData.statistics.totalCategories}</div>
+                <h4 className="fw-bold mb-2">NDT Disciplines</h4>
+                <p className="text-muted mb-0">Specialized training across all major NDT methodologies</p>
+              </div>
+            </div>
+            
+            <div className="col-md-3">
+              <div className="stats-card h-100">
+                <div className="position-relative mb-3">
+                  <div className="bg-gradient-accent rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style={{ width: '60px', height: '60px' }}>
+                    <i className="bi bi-people fs-3 text-white"></i>
                   </div>
                 </div>
+                <div className="stats-number">{homeData.statistics.totalUsers}</div>
+                <h4 className="fw-bold mb-2">Active Learners</h4>
+                <p className="text-muted mb-0">Professional community members advancing their careers</p>
+              </div>
+            </div>
+            
+            <div className="col-md-3">
+              <div className="stats-card h-100">
+                <div className="position-relative mb-3">
+                  <div className="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style={{ width: '60px', height: '60px' }}>
+                    <i className="bi bi-award fs-3 text-white"></i>
+                  </div>
+                </div>
+                <div className="stats-number">100%</div>
+                <h4 className="fw-bold mb-2">Certification</h4>
+                <p className="text-muted mb-0">Industry-recognized certificates upon course completion</p>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Animated Background Elements */}
-        <div className="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style={{ zIndex: -1 }}>
-          <div className="position-absolute" 
-               style={{ 
-                 top: '20%', 
-                 right: '10%', 
-                 width: '100px', 
-                 height: '100px', 
-                 background: 'rgba(255, 255, 255, 0.1)', 
-                 borderRadius: '50%',
-                 animation: 'pulse 4s ease-in-out infinite'
-               }}></div>
-          <div className="position-absolute" 
-               style={{ 
-                 bottom: '30%', 
-                 left: '5%', 
-                 width: '150px', 
-                 height: '150px', 
-                 background: 'rgba(255, 255, 255, 0.05)', 
-                 borderRadius: '50%',
-                 animation: 'pulse 6s ease-in-out infinite 2s'
-               }}></div>
-        </div>
-
-        <style jsx>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-          }
-          
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 0.3; }
-          }
-          
-          .min-vh-80 {
-            min-height: 80vh;
-          }
-        `}</style>
       </section>
 
       {/* Enhanced Statistics Section */}
