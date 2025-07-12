@@ -35,6 +35,8 @@ async function authentication(req, res, next) {
       role: user.role
     };
     
+    console.log("Authentication middleware - req.user:", req.user);
+    
     next();
   } catch (err) {
     next(err);

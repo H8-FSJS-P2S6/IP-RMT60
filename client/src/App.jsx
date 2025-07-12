@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // Layouts
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
-import AdminLayout from "./layouts/AdminLayout";
+import ModernAdminLayout from "./layouts/ModernAdminLayout";
 
 // Regular Pages
 import Home from "./pages/Home";
@@ -25,12 +25,13 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PaymentResult from "./pages/PaymentResult";
 
-// Admin Pages
-import AdminDashboard from "./pages/Admin/Dashboard";
-import AdminUsers from "./pages/Admin/Users";
-import AdminCourses from "./pages/Admin/Courses";
-import AdminCategories from "./pages/Admin/Categories";
-import AdminPayments from "./pages/Admin/Payments";
+// Modern Admin Pages
+import ModernDashboard from "./pages/Admin/ModernDashboard";
+import ModernUsers from "./pages/Admin/ModernUsers";
+import ModernCourses from "./pages/Admin/ModernCourses";
+import ModernCategories from "./pages/Admin/ModernCategories";
+import ModernTransactions from "./pages/Admin/ModernTransactions";
+import ModernPayments from "./pages/Admin/ModernPayments";
 
 function AppRoutes() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -58,13 +59,14 @@ function AppRoutes() {
 
       {/* Admin routes */}
       <Route path="/admin/*" element={
-        isAuthenticated ? (isAdmin ? <AdminLayout /> : <Navigate to="/" />) : <Navigate to="/login" />
+        isAuthenticated ? (isAdmin ? <ModernAdminLayout /> : <Navigate to="/" />) : <Navigate to="/login" />
       }>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="courses" element={<AdminCourses />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="payments" element={<AdminPayments />} />
+        <Route path="dashboard" element={<ModernDashboard />} />
+        <Route path="users" element={<ModernUsers />} />
+        <Route path="courses" element={<ModernCourses />} />
+        <Route path="categories" element={<ModernCategories />} />
+        <Route path="transactions" element={<ModernTransactions />} />
+        <Route path="payments" element={<ModernPayments />} />
       </Route>
 
       {/* Regular user routes - redirect admin to admin dashboard */}

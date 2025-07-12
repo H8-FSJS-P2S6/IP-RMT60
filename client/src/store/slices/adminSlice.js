@@ -296,6 +296,9 @@ export const { clearAdminError, setPage, setSearch, setSuccess } = adminSlice.ac
 
 export default adminSlice.reducer;
 
+// Export fetchUsers as fetchAllUsers
+export { fetchUsers as fetchAllUsers };
+
 // Selectors
 export const selectDashboardStats = (state) => state.admin.stats;
 export const selectRecentUsers = (state) => state.admin.recentUsers;
@@ -310,6 +313,10 @@ export const selectUserError = (state) => state.admin.error;
 export const selectUserPagination = (state) => state.admin.pagination;
 export const selectUserSuccess = (state) => state.admin.success;
 export const selectUserSearchTerm = (state) => state.admin.searchTerm;
+export const selectUsersLoading = (state) => state.admin.loading;
+
+// Selector for all users
+export const selectAllUsers = (state) => state.admin.users;
 
 // Dashboard specific selectors
 export const selectDashboardLoading = (state) => state.admin.loading;

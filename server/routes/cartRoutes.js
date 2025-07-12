@@ -7,7 +7,7 @@ const authentication = require("../middlewares/authentication");
 router.use(authentication);
 router.get("/", CartController.getUserCart);
 router.post("/add", CartController.addToCart);
-router.delete("/:id", CartController.removeFromCart);
+router.delete("/:LectureId", CartController.removeFromCart);
 
 
 module.exports = router;

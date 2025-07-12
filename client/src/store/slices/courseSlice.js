@@ -293,6 +293,9 @@ export const {
 
 export default courseSlice.reducer;
 
+// Export fetchAdminCourses as fetchAllCourses for admin pages
+export { fetchAdminCourses as fetchAllCourses };
+
 // Selectors
 export const selectCourses = (state) => state.courses.list;
 export const selectCurrentCourse = (state) => state.courses.currentCourse;
@@ -302,3 +305,6 @@ export const selectCoursesPagination = (state) => state.courses.pagination;
 export const selectCoursesFilters = (state) => state.courses.filters;
 export const selectCoursesSort = (state) => state.courses.sort;
 export const selectCoursesSuccess = (state) => state.courses.success;
+
+// Export selectCourses as selectAllCourses for admin pages
+export { selectCourses as selectAllCourses };

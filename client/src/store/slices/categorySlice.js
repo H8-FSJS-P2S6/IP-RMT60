@@ -202,9 +202,15 @@ export const { clearCategoryError, clearCategorySuccess } = categorySlice.action
 
 export default categorySlice.reducer;
 
+// Export fetchAdminCategories as fetchAllCategories for admin pages
+export { fetchAdminCategories as fetchAllCategories };
+
 // Selectors
 export const selectCategories = (state) => state.categories.list;
 export const selectCurrentCategory = (state) => state.categories.currentCategory;
 export const selectCategoriesLoading = (state) => state.categories.loading;
 export const selectCategoriesError = (state) => state.categories.error;
 export const selectCategoriesSuccess = (state) => state.categories.success;
+
+// Export selectCategories as selectAllCategories for admin pages
+export { selectCategories as selectAllCategories };
