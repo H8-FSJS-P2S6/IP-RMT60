@@ -54,7 +54,7 @@ const fetchCourseById = async (id) => {
 };
 
 const addToCart = async (lectureId) => {
-  const { data } = await api.post("/carts", { lectureId });
+  const { data } = await api.post("/carts/add", { lectureId });
   return data;
 };
 

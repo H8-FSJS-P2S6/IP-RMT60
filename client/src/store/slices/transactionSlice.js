@@ -52,7 +52,7 @@ export const processPayment = createAsyncThunk(
   'transactions/processPayment',
   async (paymentData, { rejectWithValue }) => {
     try {
-      const response = await api.post('/payment/process', paymentData);
+      const response = await api.post('/payments/create', paymentData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Payment processing failed');
