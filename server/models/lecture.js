@@ -17,6 +17,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "LectureId",
         otherKey: "TransactionId",
       });
+      Lecture.hasMany(models.Lesson, {
+        foreignKey: "LectureId",
+        as: "lessons"
+      });
+      Lecture.hasMany(models.UserProgress, {
+        foreignKey: "LectureId",
+        as: "userProgresses"
+      });
     }
   }
   Lecture.init(
