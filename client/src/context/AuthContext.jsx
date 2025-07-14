@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
@@ -67,13 +67,25 @@ export function AuthProvider({ children }) {
     return () => clearTimeout(timeoutId);
   }, [isAuthenticated, user, authChecked, loading]);
 
-  const login = (userData, token) => {
-    localStorage.setItem("access_token", token);
+  const login = (data) => {
+    if (!data || !data.access_token) {
+      console.error("Invalid login data");
+      return;
+    }
+
+    const userData = data.user || {
+      id: data.id,
+      username: data.username || data.name,
+      email: data.email,
+      role: data.role,
+    };
+
+    localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
 
     // Set authorization header
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
 
     // Notify components about auth state change
     const event = new Event("authStateChanged");
@@ -91,21 +103,36 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // Pastikan data user lengkap dan valid
+    if (!data.user) {
+      console.error("User data missing in Google login response");
+      return;
+    }
+
     const userData = {
-      id: data.id,
-      username: data.username || data.name,
-      email: data.email,
-      role: data.role,
+      id: data.user.id,
+      username: data.user.username,
+      email: data.user.email,
+      role: data.user.role,
+      phoneNumber: data.user.phoneNumber,
+      address: data.user.address
     };
 
+    // Clear any existing user data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    
+    // Set new user data
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("user", JSON.stringify(userData));
+    
+    // Update state
     setUser(userData);
 
     // Set authorization header
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${data.access_token}`;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
+    
+    console.log("Google login successful, user data:", userData);
     
     // Force re-render of components that depend on auth state
     setTimeout(() => {
@@ -133,5 +160,5 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+// Export the AuthContext
 export { AuthContext };

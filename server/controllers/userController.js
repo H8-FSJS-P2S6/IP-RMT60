@@ -7,37 +7,57 @@ const client = new OAuth2Client();
 class UserController {
   static async googleLogin(req, res, next) {
     try {
-      const { id_token } = req.body;
+      const { token } = req.body; // Change from id_token to token
+      
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+
       const ticket = await client.verifyIdToken({
-        idToken: id_token,
+        idToken: token,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
+      
       const payload = ticket.getPayload();
+      console.log('Google payload:', payload);
 
-      console.log(payload);
+      if (!payload.email) {
+        return res.status(400).json({ message: "Email not found in Google token" });
+      }
 
+      // Cari user berdasarkan email dari Google
       let user = await User.findOne({ where: { email: payload.email } });
       if (!user) {
+        // Buat user baru jika belum ada
         user = await User.create({
-          username: payload.name,
+          username: payload.name || payload.email.split('@')[0],
           email: payload.email,
-          password: Math.random().toString(),
-          role: "User",
-          phoneNumber: payload.phoneNumber || "0808080808",
-          address: payload.address || "unknown",
+          password: Math.random().toString(), // Buat password random
+          role: "User", // Selalu set role User untuk login Google
+          phoneNumber: "0808080808",
+          address: "Not specified",
         });
       }
+      
+      // Buat token yang berisi ID user
       const access_token = generateToken({ id: user.id });
+      
+      // Refresh data user dari database untuk memastikan data terbaru
+      user = await User.findByPk(user.id);
+      
       res.status(200).json({
         access_token,
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          phoneNumber: user.phoneNumber,
+          address: user.address,
+        }
       });
     } catch (err) {
+      console.error('Google login error:', err);
       next(err);
     }
   }
@@ -98,10 +118,12 @@ class UserController {
 
       res.status(200).json({
         access_token,
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+        }
       });
     } catch (err) {
       next(err);

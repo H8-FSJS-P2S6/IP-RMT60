@@ -44,7 +44,7 @@ export default function ModernRegister() {
   const googleMutation = useMutation({
     mutationFn: googleLoginUser,
     onSuccess: (data) => {
-      authGoogleLogin(data.access_token, data.user);
+      authGoogleLogin(data);
       navigate(data.user.role === 'Admin' ? '/admin/dashboard' : '/', { replace: true });
     }
   });
@@ -77,23 +77,44 @@ export default function ModernRegister() {
   }, [googleMutation]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.google) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
+    const initializeGoogleSignIn = () => {
+      if (typeof window !== 'undefined' && window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true
+        });
 
-      if (googleButtonRef.current) {
         window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: "outline",
           size: "large",
-          width: "100%",
+          width: 320, // Use fixed width instead of percentage
           text: "signup_with",
-          shape: "rectangular"
+          shape: "rectangular",
+          logo_alignment: "left"
         });
       }
+    };
+
+    // Load Google Sign-In script if not already loaded
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.head.appendChild(script);
+      
+      return () => {
+        // Cleanup script on unmount
+        if (document.head.contains(script)) {
+          document.head.removeChild(script);
+        }
+      };
+    } else {
+      initializeGoogleSignIn();
     }
   }, [handleCredentialResponse]);
 

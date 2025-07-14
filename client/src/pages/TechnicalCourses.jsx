@@ -456,22 +456,22 @@ export default function TechnicalCourses() {
             </div>
 
             {/* Pagination */}
-            {coursesData && coursesData.pagination.totalPages > 1 && (
+            {coursesData && coursesData.totalPages && coursesData.totalPages > 1 && (
               <div className="flex items-center justify-center mt-12 space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => handleFilterChange('page', coursesData.pagination.currentPage - 1)} 
-                  disabled={coursesData.pagination.currentPage === 1}
+                  onClick={() => handleFilterChange('page', coursesData.currentPage - 1)} 
+                  disabled={coursesData.currentPage === 1}
                 >
                   Previous
                 </Button>
                 
-                {[...Array(coursesData.pagination.totalPages)].map((_, index) => {
+                {[...Array(coursesData.totalPages)].map((_, index) => {
                   const page = index + 1;
                   return (
                     <Button 
                       key={page} 
-                      variant={coursesData.pagination.currentPage === page ? "primary" : "outline"} 
+                      variant={coursesData.currentPage === page ? "primary" : "outline"} 
                       onClick={() => handleFilterChange('page', page)}
                     >
                       {page}
@@ -481,8 +481,8 @@ export default function TechnicalCourses() {
                 
                 <Button 
                   variant="outline" 
-                  onClick={() => handleFilterChange('page', coursesData.pagination.currentPage + 1)} 
-                  disabled={coursesData.pagination.currentPage === coursesData.pagination.totalPages}
+                  onClick={() => handleFilterChange('page', coursesData.currentPage + 1)} 
+                  disabled={coursesData.currentPage === coursesData.totalPages}
                 >
                   Next
                 </Button>

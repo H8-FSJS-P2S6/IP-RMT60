@@ -16,12 +16,12 @@ export default function Login() {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const googleButtonRef = useRef(null);
-
+  
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
   const loading = useAppSelector(selectAuthLoading);
   const error = useAppSelector(selectAuthError);
-
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,19 +47,19 @@ export default function Login() {
       // Prevent navigation if we're already at the target location
       const from = location.state?.from?.pathname || (isAdmin ? "/admin/dashboard" : "/");
       const currentPath = location.pathname;
-
+      
       if (currentPath !== from) {
         navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, isAdmin, navigate, location.state?.from?.pathname, location.pathname]);
+  }, [isAuthenticated, isAdmin, navigate, location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData({
+      ...formData,
       [name]: value,
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -88,14 +88,17 @@ export default function Login() {
         window.google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true
         });
 
         window.google.accounts.id.renderButton(
           googleButtonRef.current,
-          {
-            theme: "outline",
-            size: "large",
-            width: 320, // Changed from '100%' to a fixed number
+          { 
+            theme: "outline", 
+            size: "large", 
+            width: 320, // Use fixed width instead of percentage
             type: 'standard',
             shape: 'rectangular',
             text: 'continue_with',
@@ -112,7 +115,13 @@ export default function Login() {
       script.async = true;
       script.defer = true;
       script.onload = initializeGoogleSignIn;
-      document.body.appendChild(script);
+      document.head.appendChild(script);
+      
+      return () => {
+        if (document.head.contains(script)) {
+          document.head.removeChild(script);
+        }
+      };
     } else {
       initializeGoogleSignIn();
     }
@@ -129,17 +138,17 @@ export default function Login() {
               <h1 className="text-primary fw-bold">SNS NDT Learning</h1>
             </Link>
           </div>
-
+          
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="text-center mb-4 fw-bold text-primary">Login</h2>
-
+              
               {error && (
                 <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
-
+              
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
@@ -202,7 +211,7 @@ export default function Login() {
               <div 
                 ref={googleButtonRef} 
                 className="d-flex justify-content-center align-items-center"
-                style={{ minHeight: '40px' }} // Add minimum height to prevent layout shift
+                style={{ minHeight: '40px' }}
               ></div>
 
               <div className="text-center mt-4">
@@ -215,7 +224,7 @@ export default function Login() {
               </div>
             </div>
           </div>
-
+          
           <div className="text-center mt-4">
             <Link to="/" className="text-decoration-none">
               <i className="bi bi-arrow-left"></i> Back to Home
