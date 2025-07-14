@@ -1,74 +1,67 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  ShoppingBag, 
+  DollarSign, 
+  Search, 
+  Calendar, 
+  User, 
+  BookOpen, 
+  CreditCard, 
+  CheckCircle, 
+  Clock, 
+  XCircle, 
+  ArrowUpRight, 
+  FileText
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
 import {
   Table,
-  Card,
-  Button,
-  Space,
-  Tag,
-  Input,
-  Select,
-  Typography,
-  Row,
-  Col,
-  Statistic,
-  Badge,
-  Tooltip,
-  Avatar,
-  DatePicker,
-  Descriptions,
-  Modal
-} from 'antd';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import {
-  ShoppingOutlined,
-  DollarOutlined,
-  SearchOutlined,
-  ExportOutlined,
-  EyeOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  BookOutlined,
-  CreditCardOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import {
-  fetchAllTransactions,
-  selectAllTransactions,
-  selectTransactionsLoading,
-} from '../../store/slices/transactionSlice';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
+import { Badge } from "@/components/ui/Badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { Calendar as CalendarComponent } from "@/components/ui/Calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import api from '../../utils/api';
 
-const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-const { Option } = Select;
+const fetchTransactions = async () => {
+  const { data } = await api.get('/admin/transactions');
+  return data;
+};
 
 const ModernTransactions = () => {
-  const dispatch = useAppDispatch();
-  const transactions = useAppSelector(selectAllTransactions);
-  const loading = useAppSelector(selectTransactionsLoading);
-  
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [selectedDateRange, setSelectedDateRange] = useState({
+    from: undefined,
+    to: undefined,
+  });
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
-  useEffect(() => {
-    dispatch(fetchAllTransactions());
-  }, [dispatch]);
-
-  const handleSearch = (value) => {
-    setSearchText(value);
-  };
-
-  const handleStatusFilter = (value) => {
-    setSelectedStatus(value);
-  };
-
-  const handleDateRangeFilter = (dates) => {
-    setSelectedDateRange(dates);
-  };
+  const { data: transactions, isLoading, isError } = useQuery({ queryKey: ['transactions'], queryFn: fetchTransactions });
 
   const filteredTransactions = transactions?.filter(transaction => {
     const matchesSearch = transaction.id?.toString().includes(searchText) ||
@@ -78,11 +71,9 @@ const ModernTransactions = () => {
     const matchesStatus = selectedStatus === 'all' || transaction.status === selectedStatus;
     
     let matchesDateRange = true;
-    if (selectedDateRange && selectedDateRange.length === 2) {
+    if (selectedDateRange.from && selectedDateRange.to) {
       const transactionDate = new Date(transaction.createdAt);
-      const startDate = selectedDateRange[0].toDate();
-      const endDate = selectedDateRange[1].toDate();
-      matchesDateRange = transactionDate >= startDate && transactionDate <= endDate;
+      matchesDateRange = transactionDate >= selectedDateRange.from && transactionDate <= selectedDateRange.to;
     }
     
     return matchesSearch && matchesStatus && matchesDateRange;
@@ -93,138 +84,23 @@ const ModernTransactions = () => {
     setIsDetailModalVisible(true);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
-      case 'completed': return 'green';
-      case 'pending': return 'orange';
-      case 'failed': return 'red';
-      case 'cancelled': return 'default';
-      default: return 'default';
+      case 'completed': return 'default';
+      case 'pending': return 'secondary';
+      case 'failed': return 'destructive';
+      case 'cancelled': return 'outline';
+      default: return 'outline';
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'completed': return <CheckCircleOutlined />;
-      case 'pending': return <ClockCircleOutlined />;
-      case 'failed': return <ExclamationCircleOutlined />;
-      case 'cancelled': return <ExclamationCircleOutlined />;
-      default: return <ClockCircleOutlined />;
-    }
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  const columns = [
-    {
-      title: 'Transaction ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id) => (
-        <Text strong>#{id}</Text>
-      ),
-    },
-    {
-      title: 'Customer',
-      dataIndex: 'user',
-      key: 'user',
-      render: (user) => (
-        <Space>
-          <Avatar 
-            size="small" 
-            style={{ backgroundColor: '#1890ff' }}
-            icon={<UserOutlined />}
-          />
-          <div>
-            <Text strong>{user?.username}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {user?.email}
-            </Text>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Items',
-      dataIndex: 'items',
-      key: 'items',
-      render: (items) => (
-        <Space direction="vertical" size={0}>
-          {items?.slice(0, 2).map((item, index) => (
-            <Text key={index} style={{ fontSize: 12 }}>
-              <BookOutlined /> {item.lecture?.title}
-            </Text>
-          ))}
-          {items?.length > 2 && (
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              +{items.length - 2} more items
-            </Text>
-          )}
-        </Space>
-      ),
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'total',
-      key: 'total',
-      render: (total) => (
-        <Space>
-          <DollarOutlined style={{ color: '#52c41a' }} />
-          <Text strong>${total}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag 
-          color={getStatusColor(status)}
-          icon={getStatusIcon(status)}
-        >
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Payment Method',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
-      render: (method) => (
-        <Space>
-          <CreditCardOutlined />
-          <Text>{method || 'N/A'}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Date',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date) => (
-        <Space>
-          <CalendarOutlined />
-          <Text>{new Date(date).toLocaleDateString()}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="View Details">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
-              size="small"
-              onClick={() => handleViewDetails(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+  if (isError) {
+    return <div>Error loading transactions.</div>;
+  }
 
   const transactionStats = {
     total: transactions?.length || 0,
@@ -234,184 +110,232 @@ const ModernTransactions = () => {
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Transaction Management
-        </Title>
-        <Text type="secondary">
-          Monitor and manage all transactions
-        </Text>
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">Transactions</h1>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Transactions
+            </CardTitle>
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{transactionStats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Completed Transactions
+            </CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{transactionStats.completed}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Transactions</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{transactionStats.pending}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${transactionStats.totalRevenue.toFixed(2)}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Stats Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Transactions"
-              value={transactionStats.total}
-              prefix={<ShoppingOutlined style={{ color: '#1890ff' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Completed"
-              value={transactionStats.completed}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Pending"
-              value={transactionStats.pending}
-              prefix={<ClockCircleOutlined style={{ color: '#fa8c16' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Revenue"
-              value={transactionStats.totalRevenue}
-              prefix={<DollarOutlined style={{ color: '#eb2f96' }} />}
-              precision={2}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Main Content */}
-      <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={6}>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Transactions</CardTitle>
+          <CardDescription>
+            Monitor and manage all transactions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between mb-4">
+            <div className="relative w-1/3">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                type="search"
                 placeholder="Search transactions..."
-                prefix={<SearchOutlined />}
-                onChange={(e) => handleSearch(e.target.value)}
-                allowClear
+                className="w-full appearance-none bg-background pl-8 shadow-none"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
               />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Select
-                placeholder="Filter by status"
-                style={{ width: '100%' }}
-                onChange={handleStatusFilter}
-                defaultValue="all"
-              >
-                <Option value="all">All Status</Option>
-                <Option value="completed">Completed</Option>
-                <Option value="pending">Pending</Option>
-                <Option value="failed">Failed</Option>
-                <Option value="cancelled">Cancelled</Option>
+            </div>
+            <div className="flex gap-2">
+              <Select onValueChange={setSelectedStatus} defaultValue="all">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
               </Select>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <RangePicker
-                style={{ width: '100%' }}
-                onChange={handleDateRangeFilter}
-                placeholder={['Start Date', 'End Date']}
-              />
-            </Col>
-            <Col xs={24} md={6}>
-              <div style={{ textAlign: 'right' }}>
-                <Button 
-                  icon={<ExportOutlined />}
-                  type="default"
-                >
-                  Export
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </div>
-
-        <Table
-          columns={columns}
-          dataSource={filteredTransactions}
-          loading={loading}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} transactions`,
-          }}
-          scroll={{ x: 1000 }}
-        />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      !selectedDateRange.from && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {selectedDateRange.from ? (
+                      selectedDateRange.to ? (
+                        <>{format(selectedDateRange.from, "LLL dd, y")} - {format(selectedDateRange.to, "LLL dd, y")}</>
+                      ) : (
+                        format(selectedDateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    initialFocus
+                    mode="range"
+                    defaultMonth={selectedDateRange.from}
+                    selected={selectedDateRange}
+                    onSelect={setSelectedDateRange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button>
+                <FileText className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Transaction ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Items</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Payment Method</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTransactions?.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell className="font-medium">#{transaction.id}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{transaction.user?.username}</div>
+                    <div className="hidden text-sm text-muted-foreground md:inline">
+                      {transaction.user?.email}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {transaction.items?.slice(0, 2).map((item, index) => (
+                      <div key={index} className="text-sm">
+                        <BookOpen className="inline-block h-3 w-3 mr-1" /> {item.lecture?.title}
+                      </div>
+                    ))}
+                    {transaction.items?.length > 2 && (
+                      <div className="text-xs text-muted-foreground">
+                        +{transaction.items.length - 2} more items
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>${transaction.total}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(transaction.status)}>
+                      {transaction.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      {transaction.paymentMethod || 'N/A'}
+                    </div>
+                  </TableCell>
+                  <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(transaction)}>
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <div className="text-xs text-muted-foreground">
+            Showing <strong>1-10</strong> of <strong>{transactions?.length}</strong> transactions
+          </div>
+        </CardFooter>
       </Card>
 
-      {/* Transaction Detail Modal */}
-      <Modal
-        title={`Transaction Details - #${selectedTransaction?.id}`}
-        visible={isDetailModalVisible}
-        onCancel={() => setIsDetailModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        {selectedTransaction && (
-          <div>
-            <Descriptions
-              title="Transaction Information"
-              bordered
-              column={2}
-            >
-              <Descriptions.Item label="Transaction ID">
-                #{selectedTransaction.id}
-              </Descriptions.Item>
-              <Descriptions.Item label="Status">
-                <Tag 
-                  color={getStatusColor(selectedTransaction.status)}
-                  icon={getStatusIcon(selectedTransaction.status)}
-                >
-                  {selectedTransaction.status}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Customer">
-                {selectedTransaction.user?.username} ({selectedTransaction.user?.email})
-              </Descriptions.Item>
-              <Descriptions.Item label="Total Amount">
-                <Text strong>${selectedTransaction.total}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Payment Method">
-                {selectedTransaction.paymentMethod || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Date">
-                {new Date(selectedTransaction.createdAt).toLocaleString()}
-              </Descriptions.Item>
-            </Descriptions>
-
-            <Card 
-              title="Items" 
-              style={{ marginTop: 16 }}
-              size="small"
-            >
-              {selectedTransaction.items?.map((item, index) => (
-                <div key={index} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <Row justify="space-between" align="middle">
-                    <Col>
-                      <Space>
-                        <BookOutlined />
-                        <Text>{item.lecture?.title}</Text>
-                      </Space>
-                    </Col>
-                    <Col>
-                      <Text strong>${item.price}</Text>
-                    </Col>
-                  </Row>
+      <Dialog open={isDetailModalVisible} onOpenChange={setIsDetailModalVisible}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Transaction Details - #{selectedTransaction?.id}</DialogTitle>
+            <DialogDescription>
+              Detailed information about this transaction.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Transaction Information</h4>
+                  <div className="grid gap-1">
+                    <div><strong>Transaction ID:</strong> #{selectedTransaction.id}</div>
+                    <div><strong>Status:</strong> <Badge variant={getStatusVariant(selectedTransaction.status)}>{selectedTransaction.status}</Badge></div>
+                    <div><strong>Customer:</strong> {selectedTransaction.user?.username} ({selectedTransaction.user?.email})</div>
+                    <div><strong>Total Amount:</strong> ${selectedTransaction.total}</div>
+                    <div><strong>Payment Method:</strong> {selectedTransaction.paymentMethod || 'N/A'}</div>
+                    <div><strong>Date:</strong> {new Date(selectedTransaction.createdAt).toLocaleString()}</div>
+                  </div>
                 </div>
-              ))}
-            </Card>
-          </div>
-        )}
-      </Modal>
-    </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Items</h4>
+                  <div className="grid gap-2">
+                    {selectedTransaction.items?.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center border-b pb-2 last:border-b-0 last:pb-0">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          <span>{item.lecture?.title}</span>
+                        </div>
+                        <span>${item.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

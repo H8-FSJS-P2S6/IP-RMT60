@@ -1,264 +1,192 @@
-import { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Layout, 
+  Bell, 
+  Book, 
+  CreditCard, 
+  Home, 
   Menu, 
-  Button, 
-  Avatar, 
-  Dropdown, 
-  Typography, 
-  Space,
-  theme,
-  Badge,
-  Divider
-} from 'antd';
-import {
-  DashboardOutlined,
-  UserOutlined,
-  BookOutlined,
-  AppstoreOutlined,
-  ShoppingOutlined,
-  CreditCardOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  BellOutlined,
-  SettingOutlined,
-  LogoutOutlined,
-  FullscreenOutlined,
-  FullscreenExitOutlined
-} from '@ant-design/icons';
-import { useAuth } from '../hooks/useAuth';
-import { showToast } from '../utils/toast';
+  Package2, 
+  Search, 
+  ShoppingCart, 
+  Users 
+} from "lucide-react";
 
-const { Header, Sider, Content } = Layout;
-const { Text } = Typography;
+import { Button } from "@/components/ui/Button";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/Card";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/DropdownMenu";
+import { Input } from "@/components/ui/Input";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger 
+} from "@/components/ui/Sheet";
+import { useAuth } from '../hooks/useAuth';
 
 const ModernAdminLayout = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
-    showToast.success("Successfully logged out");
-    setTimeout(() => {
-      navigate("/login");
-    }, 100);
+    navigate("/login");
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
-
-  const menuItems = [
-    {
-      key: '/admin/dashboard',
-      icon: <DashboardOutlined />,
-      label: <Link to="/admin/dashboard">Dashboard</Link>,
-    },
-    {
-      key: '/admin/users',
-      icon: <UserOutlined />,
-      label: <Link to="/admin/users">Users</Link>,
-    },
-    {
-      key: '/admin/courses',
-      icon: <BookOutlined />,
-      label: <Link to="/admin/courses">Courses</Link>,
-    },
-    {
-      key: '/admin/categories',
-      icon: <AppstoreOutlined />,
-      label: <Link to="/admin/categories">Categories</Link>,
-    },
-    {
-      key: '/admin/transactions',
-      icon: <ShoppingOutlined />,
-      label: <Link to="/admin/transactions">Transactions</Link>,
-    },
-    {
-      key: '/admin/payments',
-      icon: <CreditCardOutlined />,
-      label: <Link to="/admin/payments">Payments</Link>,
-    },
-  ];
-
-  const userMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Profile',
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Logout',
-      onClick: handleLogout,
-    },
+  const navLinks = [
+    { to: "/admin/dashboard", icon: Home, label: "Dashboard" },
+    { to: "/admin/users", icon: Users, label: "Users" },
+    { to: "/admin/courses", icon: Book, label: "Courses" },
+    { to: "/admin/categories", icon: Package2, label: "Categories" },
+    { to: "/admin/transactions", icon: ShoppingCart, label: "Transactions" },
+    { to: "/admin/payments", icon: CreditCard, label: "Payments" },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider 
-        trigger={null} 
-        collapsible 
-        collapsed={collapsed}
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }}
-        theme="dark"
-      >
-        <div style={{ 
-          height: 64, 
-          margin: 16, 
-          background: 'rgba(255, 255, 255, 0.2)',
-          borderRadius: 8,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Text strong style={{ color: 'white', fontSize: collapsed ? 14 : 16 }}>
-            {collapsed ? 'SNS' : 'SNS Admin'}
-          </Text>
-        </div>
-        
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          style={{ borderRight: 0 }}
-        />
-        
-        <div style={{ 
-          position: 'absolute', 
-          bottom: 16, 
-          left: 16, 
-          right: 16 
-        }}>
-          <Divider style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }} />
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: '8px 0'
-          }}>
-            <Avatar 
-              size="small" 
-              style={{ backgroundColor: '#1890ff' }}
-              icon={<UserOutlined />}
-            />
-            {!collapsed && (
-              <div style={{ marginLeft: 8 }}>
-                <Text style={{ color: 'white', fontSize: 12 }}>
-                  {user?.email || 'admin@example.com'}
-                </Text>
-              </div>
-            )}
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <Link to="/" className="flex items-center gap-2 font-semibold">
+              <Package2 className="h-6 w-6" />
+              <span className="">SNS Admin</span>
+            </Link>
+            <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">Toggle notifications</span>
+            </Button>
+          </div>
+          <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
+                    location.pathname === link.to ? "bg-muted text-primary" : ""
+                  }`}
+                >
+                  <link.icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="mt-auto p-4">
+            <Card>
+              <CardHeader className="p-2 pt-0 md:p-4">
+                <CardTitle>Upgrade to Pro</CardTitle>
+                <CardDescription>
+                  Unlock all features and get unlimited access to our support team.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
+                <Button size="sm" className="w-full">
+                  Upgrade
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </Sider>
-      
-      <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>
-        <Header
-          style={{
-            padding: '0 16px',
-            background: colorBgContainer,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid #f0f0f0',
-          }}
-        >
-          <Space>
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: '16px',
-                width: 64,
-                height: 64,
-              }}
-            />
-          </Space>
-          
-          <Space size="large">
-            <Button
-              type="text"
-              icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-              onClick={toggleFullscreen}
-              style={{ fontSize: '16px' }}
-            />
-            
-            <Badge count={3} size="small">
+      </div>
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <Sheet>
+            <SheetTrigger asChild>
               <Button
-                type="text"
-                icon={<BellOutlined />}
-                style={{ fontSize: '16px' }}
-              />
-            </Badge>
-            
-            <Dropdown
-              menu={{
-                items: userMenuItems,
-              }}
-              placement="bottomRight"
-            >
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar 
-                  style={{ backgroundColor: '#1890ff' }}
-                  icon={<UserOutlined />}
+                variant="outline"
+                size="icon"
+                className="shrink-0 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+              <nav className="grid gap-2 text-lg font-medium">
+                <Link
+                  to="/"
+                  className="flex items-center gap-2 text-lg font-semibold"
+                >
+                  <Package2 className="h-6 w-6" />
+                  <span className="sr-only">SNS Admin</span>
+                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+                      location.pathname === link.to ? "bg-muted text-foreground" : ""
+                    }`}
+                  >
+                    <link.icon className="h-5 w-5" />
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="mt-auto">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upgrade to Pro</CardTitle>
+                    <CardDescription>
+                      Unlock all features and get unlimited access to our support team.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button size="sm" className="w-full">
+                      Upgrade
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <div className="w-full flex-1">
+            <form>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
                 />
-                <Text strong>{user?.username || 'Admin'}</Text>
-              </Space>
-            </Dropdown>
-          </Space>
-        </Header>
-        
-        <Content
-          style={{
-            margin: '24px 16px 0',
-            overflow: 'initial',
-          }}
-        >
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            <Outlet />
+              </div>
+            </form>
           </div>
-        </Content>
-      </Layout>
-    </Layout>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="rounded-full">
+                <Users className="h-5 w-5" />
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
   );
 };
 

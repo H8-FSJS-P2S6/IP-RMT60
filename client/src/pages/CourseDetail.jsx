@@ -12,6 +12,8 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [checkingPurchase, setCheckingPurchase] = useState(true);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -26,8 +28,25 @@ export default function CourseDetail() {
       }
     };
 
+    const checkPurchaseStatus = async () => {
+      if (!isAuthenticated) {
+        setCheckingPurchase(false);
+        return;
+      }
+      
+      try {
+        const { data } = await api.get(`/lessons/lecture/${id}`);
+        setHasPurchased(data.hasPurchased);
+      } catch (error) {
+        console.log("Error checking purchase status:", error);
+      } finally {
+        setCheckingPurchase(false);
+      }
+    };
+
     fetchCourseDetails();
-  }, [id]);
+    checkPurchaseStatus();
+  }, [id, isAuthenticated]);
 
   const formatToIDR = (price) => {
     return new Intl.NumberFormat('id-ID', {
@@ -195,30 +214,48 @@ export default function CourseDetail() {
             <div className="card-body">
               <h3 className="text-primary fw-bold mb-3">{formatToIDR(course.price)}</h3>
               
-              <button 
-                className="btn btn-primary w-100 py-2 mb-3"
-                onClick={handleAddToCart}
-                disabled={addingToCart}
-              >
-                {addingToCart ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-cart-plus me-2"></i>
-                    Add to Cart
-                  </>
-                )}
-              </button>
-              
-              <p className="text-center mb-3">or</p>
-              
-              <button className="btn btn-outline-primary w-100 py-2 mb-4">
-                <i className="bi bi-lightning-fill me-2"></i>
-                Buy Now
-              </button>
+              {checkingPurchase ? (
+                <div className="text-center py-3">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Checking...</span>
+                  </div>
+                </div>
+              ) : hasPurchased ? (
+                <button 
+                  className="btn btn-success w-100 py-2 mb-3"
+                  onClick={() => navigate(`/learn/${id}`)}
+                >
+                  <i className="bi bi-play-fill me-2"></i>
+                  Start Learning
+                </button>
+              ) : (
+                <>
+                  <button 
+                    className="btn btn-primary w-100 py-2 mb-3"
+                    onClick={handleAddToCart}
+                    disabled={addingToCart}
+                  >
+                    {addingToCart ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-cart-plus me-2"></i>
+                        Add to Cart
+                      </>
+                    )}
+                  </button>
+                  
+                  <p className="text-center mb-3">or</p>
+                  
+                  <button className="btn btn-outline-primary w-100 py-2 mb-4">
+                    <i className="bi bi-lightning-fill me-2"></i>
+                    Buy Now
+                  </button>
+                </>
+              )}
               
               <div className="d-flex justify-content-between small text-muted mb-2">
                 <span>This course includes:</span>

@@ -1,79 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  CreditCard, 
+  DollarSign, 
+  Search, 
+  Calendar, 
+  User, 
+  CheckCircle, 
+  Clock, 
+  XCircle, 
+  Banknote, 
+  Wallet, 
+  ArrowUpRight, 
+  FileText
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
 import {
   Table,
-  Card,
-  Button,
-  Space,
-  Tag,
-  Input,
-  Select,
-  Typography,
-  Row,
-  Col,
-  Statistic,
-  Badge,
-  Tooltip,
-  Avatar,
-  DatePicker,
-  Progress,
-  Alert
-} from 'antd';
-import {
-  CreditCardOutlined,
-  DollarOutlined,
-  SearchOutlined,
-  ExportOutlined,
-  EyeOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
-  BankOutlined,
-  WalletOutlined,
-  PayCircleOutlined,
-  RiseOutlined
-} from '@ant-design/icons';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import {
-  fetchAllPayments,
-  selectAllPayments,
-  selectPaymentsLoading,
-} from '../../store/slices/transactionSlice';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/Table";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/Select";
+import { Badge } from "../../components/ui/Badge";
+import { Progress } from "../../components/ui/Progress";
+import { Calendar as CalendarComponent } from "../../components/ui/Calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/Popover";
+import { format } from "date-fns";
+import { cn } from "../../lib/utils";
+import api from '../../utils/api';
 
-const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-const { Option } = Select;
+const fetchPayments = async () => {
+  const { data } = await api.get('/admin/payments');
+  return data;
+};
 
 const ModernPayments = () => {
-  const dispatch = useAppDispatch();
-  const payments = useAppSelector(selectAllPayments);
-  const loading = useAppSelector(selectPaymentsLoading);
-  
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedMethod, setSelectedMethod] = useState('all');
-  const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [date, setDate] = useState({
+    from: undefined,
+    to: undefined,
+  });
 
-  useEffect(() => {
-    dispatch(fetchAllPayments());
-  }, [dispatch]);
-
-  const handleSearch = (value) => {
-    setSearchText(value);
-  };
-
-  const handleStatusFilter = (value) => {
-    setSelectedStatus(value);
-  };
-
-  const handleMethodFilter = (value) => {
-    setSelectedMethod(value);
-  };
-
-  const handleDateRangeFilter = (dates) => {
-    setSelectedDateRange(dates);
-  };
+  const { data: payments, isLoading, isError } = useQuery({ queryKey: ['payments'], queryFn: fetchPayments });
 
   const filteredPayments = payments?.filter(payment => {
     const matchesSearch = payment.id?.toString().includes(searchText) ||
@@ -84,146 +65,41 @@ const ModernPayments = () => {
     const matchesMethod = selectedMethod === 'all' || payment.paymentMethod === selectedMethod;
     
     let matchesDateRange = true;
-    if (selectedDateRange && selectedDateRange.length === 2) {
+    if (date.from && date.to) {
       const paymentDate = new Date(payment.createdAt);
-      const startDate = selectedDateRange[0].toDate();
-      const endDate = selectedDateRange[1].toDate();
-      matchesDateRange = paymentDate >= startDate && paymentDate <= endDate;
+      matchesDateRange = paymentDate >= date.from && paymentDate <= date.to;
     }
     
     return matchesSearch && matchesStatus && matchesMethod && matchesDateRange;
   });
 
-  const getStatusColor = (status) => {
+  const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
-      case 'success': return 'green';
-      case 'pending': return 'orange';
-      case 'failed': return 'red';
-      case 'cancelled': return 'default';
-      default: return 'default';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'success': return <CheckCircleOutlined />;
-      case 'pending': return <ClockCircleOutlined />;
-      case 'failed': return <ExclamationCircleOutlined />;
-      case 'cancelled': return <ExclamationCircleOutlined />;
-      default: return <ClockCircleOutlined />;
+      case 'success': return 'default';
+      case 'pending': return 'secondary';
+      case 'failed': return 'destructive';
+      case 'cancelled': return 'outline';
+      default: return 'outline';
     }
   };
 
   const getMethodIcon = (method) => {
     switch (method?.toLowerCase()) {
-      case 'credit_card': return <CreditCardOutlined />;
-      case 'bank_transfer': return <BankOutlined />;
-      case 'e_wallet': return <WalletOutlined />;
-      case 'paypal': return <PayCircleOutlined />;
-      default: return <CreditCardOutlined />;
+      case 'credit_card': return <CreditCard className="h-4 w-4" />;
+      case 'bank_transfer': return <Banknote className="h-4 w-4" />;
+      case 'e_wallet': return <Wallet className="h-4 w-4" />;
+      case 'paypal': return <FileText className="h-4 w-4" />;
+      default: return <CreditCard className="h-4 w-4" />;
     }
   };
 
-  const columns = [
-    {
-      title: 'Payment ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id) => (
-        <Text strong>#{id}</Text>
-      ),
-    },
-    {
-      title: 'Transaction',
-      dataIndex: 'transactionId',
-      key: 'transactionId',
-      render: (transactionId) => (
-        <Text>TXN-{transactionId}</Text>
-      ),
-    },
-    {
-      title: 'Customer',
-      dataIndex: 'user',
-      key: 'user',
-      render: (user) => (
-        <Space>
-          <Avatar 
-            size="small" 
-            style={{ backgroundColor: '#1890ff' }}
-            icon={<UserOutlined />}
-          />
-          <div>
-            <Text strong>{user?.username}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {user?.email}
-            </Text>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'amount',
-      key: 'amount',
-      render: (amount) => (
-        <Space>
-          <DollarOutlined style={{ color: '#52c41a' }} />
-          <Text strong>${amount}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Method',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
-      render: (method) => (
-        <Space>
-          {getMethodIcon(method)}
-          <Text>{method?.replace('_', ' ').toUpperCase()}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag 
-          color={getStatusColor(status)}
-          icon={getStatusIcon(status)}
-        >
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Date',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date) => (
-        <Space>
-          <CalendarOutlined />
-          <Text>{new Date(date).toLocaleDateString()}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: () => (
-        <Space>
-          <Tooltip title="View Details">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
-              size="small"
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading payments.</div>;
+  }
 
   const paymentStats = {
     total: payments?.length || 0,
@@ -239,208 +115,221 @@ const ModernPayments = () => {
     paypal: payments?.filter(p => p.paymentMethod === 'paypal')?.length || 0,
   };
 
-  const successRate = payments?.length > 0 ? (paymentStats.success / payments.length) * 100 : 0;
+  
 
   return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Payment Management
-        </Title>
-        <Text type="secondary">
-          Monitor and manage all payment transactions
-        </Text>
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">Payments</h1>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Payments
+            </CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{paymentStats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Successful Payments
+            </CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{paymentStats.success}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{paymentStats.pending}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${paymentStats.totalRevenue.toFixed(2)}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Alert for payment insights */}
-      <Alert
-        message="Payment Insights"
-        description={`Success Rate: ${successRate.toFixed(1)}% | Most used method: Credit Card | Peak hours: 2-4 PM`}
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
-
-      {/* Stats Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Payments"
-              value={paymentStats.total}
-              prefix={<CreditCardOutlined style={{ color: '#1890ff' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Successful"
-              value={paymentStats.success}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Pending"
-              value={paymentStats.pending}
-              prefix={<ClockCircleOutlined style={{ color: '#fa8c16' }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Revenue"
-              value={paymentStats.totalRevenue}
-              prefix={<DollarOutlined style={{ color: '#eb2f96' }} />}
-              precision={2}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Payment Methods Stats */}
-      <Card title="Payment Methods Distribution" style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <div style={{ textAlign: 'center' }}>
-              <Progress
-                type="circle"
-                percent={Math.round((methodStats.credit_card / payments?.length) * 100) || 0}
-                format={() => `${methodStats.credit_card}`}
-                strokeColor="#1890ff"
-                size={80}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Text strong>Credit Card</Text>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <div style={{ textAlign: 'center' }}>
-              <Progress
-                type="circle"
-                percent={Math.round((methodStats.bank_transfer / payments?.length) * 100) || 0}
-                format={() => `${methodStats.bank_transfer}`}
-                strokeColor="#52c41a"
-                size={80}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Text strong>Bank Transfer</Text>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <div style={{ textAlign: 'center' }}>
-              <Progress
-                type="circle"
-                percent={Math.round((methodStats.e_wallet / payments?.length) * 100) || 0}
-                format={() => `${methodStats.e_wallet}`}
-                strokeColor="#fa8c16"
-                size={80}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Text strong>E-Wallet</Text>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <div style={{ textAlign: 'center' }}>
-              <Progress
-                type="circle"
-                percent={Math.round((methodStats.paypal / payments?.length) * 100) || 0}
-                format={() => `${methodStats.paypal}`}
-                strokeColor="#eb2f96"
-                size={80}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Text strong>PayPal</Text>
-              </div>
-            </div>
-          </Col>
-        </Row>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Payment Methods Distribution</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex flex-col items-center">
+            <Progress value={Math.round((methodStats.credit_card / payments?.length) * 100) || 0} className="w-[80px] h-[80px]" />
+            <div className="mt-2 text-sm font-medium">Credit Card</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <Progress value={Math.round((methodStats.bank_transfer / payments?.length) * 100) || 0} className="w-[80px] h-[80px]" />
+            <div className="mt-2 text-sm font-medium">Bank Transfer</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <Progress value={Math.round((methodStats.e_wallet / payments?.length) * 100) || 0} className="w-[80px] h-[80px]" />
+            <div className="mt-2 text-sm font-medium">E-Wallet</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <Progress value={Math.round((methodStats.paypal / payments?.length) * 100) || 0} className="w-[80px] h-[80px]" />
+            <div className="mt-2 text-sm font-medium">PayPal</div>
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Main Content */}
-      <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={5}>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Payments</CardTitle>
+          <CardDescription>
+            Manage your payment transactions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between mb-4">
+            <div className="relative w-1/3">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                type="search"
                 placeholder="Search payments..."
-                prefix={<SearchOutlined />}
-                onChange={(e) => handleSearch(e.target.value)}
-                allowClear
+                className="w-full appearance-none bg-background pl-8 shadow-none"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
               />
-            </Col>
-            <Col xs={24} sm={12} md={5}>
-              <Select
-                placeholder="Filter by status"
-                style={{ width: '100%' }}
-                onChange={handleStatusFilter}
-                defaultValue="all"
-              >
-                <Option value="all">All Status</Option>
-                <Option value="success">Success</Option>
-                <Option value="pending">Pending</Option>
-                <Option value="failed">Failed</Option>
-                <Option value="cancelled">Cancelled</Option>
+            </div>
+            <div className="flex gap-2">
+              <Select onValueChange={setSelectedStatus} defaultValue="all">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
               </Select>
-            </Col>
-            <Col xs={24} sm={12} md={5}>
-              <Select
-                placeholder="Filter by method"
-                style={{ width: '100%' }}
-                onChange={handleMethodFilter}
-                defaultValue="all"
-              >
-                <Option value="all">All Methods</Option>
-                <Option value="credit_card">Credit Card</Option>
-                <Option value="bank_transfer">Bank Transfer</Option>
-                <Option value="e_wallet">E-Wallet</Option>
-                <Option value="paypal">PayPal</Option>
+              <Select onValueChange={setSelectedMethod} defaultValue="all">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Methods</SelectItem>
+                  <SelectItem value="credit_card">Credit Card</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="e_wallet">E-Wallet</SelectItem>
+                  <SelectItem value="paypal">PayPal</SelectItem>
+                </SelectContent>
               </Select>
-            </Col>
-            <Col xs={24} sm={12} md={5}>
-              <RangePicker
-                style={{ width: '100%' }}
-                onChange={handleDateRangeFilter}
-                placeholder={['Start Date', 'End Date']}
-              />
-            </Col>
-            <Col xs={24} md={4}>
-              <div style={{ textAlign: 'right' }}>
-                <Button 
-                  icon={<ExportOutlined />}
-                  type="default"
-                >
-                  Export
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </div>
-
-        <Table
-          columns={columns}
-          dataSource={filteredPayments}
-          loading={loading}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} payments`,
-          }}
-          scroll={{ x: 1000 }}
-        />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      !date.from && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {date.from ? (
+                      date.to ? (
+                        <>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>
+                      ) : (
+                        format(date.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date.from}
+                    selected={date}
+                    onSelect={setDate}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button>
+                <FileText className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Payment ID</TableHead>
+                <TableHead>Transaction ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPayments?.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell className="font-medium">#{payment.id}</TableCell>
+                  <TableCell>TXN-{payment.transactionId}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{payment.user?.username}</div>
+                    <div className="hidden text-sm text-muted-foreground md:inline">
+                      {payment.user?.email}
+                    </div>
+                  </TableCell>
+                  <TableCell>${payment.amount}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getMethodIcon(payment.paymentMethod)}
+                      {payment.paymentMethod?.replace('_', ' ').toUpperCase()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(payment.status)}>
+                      {payment.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{new Date(payment.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm">
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <div className="text-xs text-muted-foreground">
+            Showing <strong>1-10</strong> of <strong>{payments?.length}</strong> payments
+          </div>
+        </CardFooter>
       </Card>
-    </div>
+    </>
   );
 };
 
 export default ModernPayments;
+
+

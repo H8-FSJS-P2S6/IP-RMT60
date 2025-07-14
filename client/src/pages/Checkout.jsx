@@ -51,11 +51,11 @@ export default function Checkout() {
       const response = await dispatch(createPayment()).unwrap();
       if (response.payment.token) {
         window.snap.pay(response.payment.token, {
-          onSuccess: (result) =>
+          onSuccess: () =>
             navigate(`/payment/success?order_id=${response.transaction.invoice_number}`),
-          onPending: (result) =>
+          onPending: () =>
             navigate(`/payment/pending?order_id=${response.transaction.invoice_number}`),
-          onError: (result) =>
+          onError: () =>
             navigate(`/payment/failed?order_id=${response.transaction.invoice_number}`),
           onClose: () => {
             alert('You closed the payment window. Please complete your payment to access the courses.');
