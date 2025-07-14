@@ -409,7 +409,7 @@ const ModernCourses = () => {
       {/* Create/Edit Course Modal */}
       <Modal
         title={editingCourse ? 'Edit Course' : 'Create New Course'}
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
         okText={editingCourse ? 'Update' : 'Create'}

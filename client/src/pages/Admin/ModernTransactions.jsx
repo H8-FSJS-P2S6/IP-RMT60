@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { 
   ShoppingBag, 
   DollarSign, 
@@ -18,6 +18,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
@@ -47,8 +48,24 @@ import { cn } from "@/lib/utils";
 import api from '../../utils/api';
 
 const fetchTransactions = async () => {
-  const { data } = await api.get('/admin/transactions');
-  return data;
+  try {
+    const response = await api.get('/admin/transactions');
+    return response.data; // Return the data directly
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    // Return empty array to avoid filter errors
+    return [];
+  }
+};
+
+const exportTransactions = async () => {
+  try {
+    const response = await api.get('/admin/transactions/export');
+    return response.data;
+  } catch (error) {
+    console.error("Error exporting transactions:", error);
+    throw error;
+  }
 };
 
 const ModernTransactions = () => {
@@ -63,12 +80,41 @@ const ModernTransactions = () => {
 
   const { data: transactions, isLoading, isError } = useQuery({ queryKey: ['transactions'], queryFn: fetchTransactions });
 
-  const filteredTransactions = transactions?.filter(transaction => {
-    const matchesSearch = transaction.id?.toString().includes(searchText) ||
-                         transaction.user?.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-                         transaction.user?.email?.toLowerCase().includes(searchText.toLowerCase());
+  const exportMutation = useMutation({
+    mutationFn: exportTransactions,
+    onSuccess: (data) => {
+      // Create blob and download
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    onError: (error) => {
+      console.error('Export failed:', error);
+      alert('Failed to export transactions. Please try again.');
+    }
+  });
+
+  // Make sure transactions is always an array even when it's undefined or null
+  const transactionsArray = Array.isArray(transactions) ? transactions : [];
+  
+  const filteredTransactions = transactionsArray.filter(transaction => {
+    // Safely access properties with optional chaining and provide fallbacks
+    const id = transaction?.id?.toString() || '';
+    const username = transaction?.user?.username || transaction?.User?.username || '';
+    const email = transaction?.user?.email || transaction?.User?.email || '';
     
-    const matchesStatus = selectedStatus === 'all' || transaction.status === selectedStatus;
+    const matchesSearch = id.includes(searchText) ||
+                         username.toLowerCase().includes(searchText.toLowerCase()) ||
+                         email.toLowerCase().includes(searchText.toLowerCase());
+    
+    const status = (transaction?.status || '').toLowerCase();
+    const matchesStatus = selectedStatus === 'all' || status === selectedStatus.toLowerCase();
     
     let matchesDateRange = true;
     if (selectedDateRange.from && selectedDateRange.to) {
@@ -99,14 +145,30 @@ const ModernTransactions = () => {
   }
 
   if (isError) {
-    return <div>Error loading transactions.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <FileText className="h-16 w-16 text-gray-400 mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">Failed to load transactions</h2>
+        <p className="text-muted-foreground mb-4">
+          There was an error loading the transaction data. This might be because the transaction
+          service is not yet fully implemented.
+        </p>
+        <div className="flex gap-2">
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const transactionStats = {
-    total: transactions?.length || 0,
-    completed: transactions?.filter(t => t.status === 'completed')?.length || 0,
-    pending: transactions?.filter(t => t.status === 'pending')?.length || 0,
-    totalRevenue: transactions?.filter(t => t.status === 'completed')?.reduce((sum, t) => sum + t.total, 0) || 0,
+    total: transactionsArray.length,
+    completed: transactionsArray.filter(t => (t.status || '').toLowerCase() === 'completed').length,
+    pending: transactionsArray.filter(t => (t.status || '').toLowerCase() === 'pending').length,
+    totalRevenue: transactionsArray
+      .filter(t => (t.status || '').toLowerCase() === 'completed')
+      .reduce((sum, t) => sum + (t.total || t.total_amount || 0), 0),
   };
 
   return (
@@ -221,9 +283,12 @@ const ModernTransactions = () => {
                   />
                 </PopoverContent>
               </Popover>
-              <Button>
+              <Button 
+                onClick={() => exportMutation.mutate()}
+                disabled={exportMutation.isPending}
+              >
                 <FileText className="h-4 w-4 mr-2" />
-                Export
+                {exportMutation.isPending ? 'Exporting...' : 'Export'}
               </Button>
             </div>
           </div>
@@ -243,13 +308,13 @@ const ModernTransactions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions?.map((transaction) => (
+              {filteredTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">#{transaction.id}</TableCell>
                   <TableCell>
-                    <div className="font-medium">{transaction.user?.username}</div>
+                    <div className="font-medium">{transaction.user?.username || transaction.User?.username}</div>
                     <div className="hidden text-sm text-muted-foreground md:inline">
-                      {transaction.user?.email}
+                      {transaction.user?.email || transaction.User?.email}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -264,16 +329,16 @@ const ModernTransactions = () => {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>${transaction.total}</TableCell>
+                  <TableCell>${transaction.total || transaction.total_amount || 0}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(transaction.status)}>
-                      {transaction.status}
+                      {transaction.status || 'Unknown'}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <CreditCard className="h-4 w-4" />
-                      {transaction.paymentMethod || 'N/A'}
+                      {transaction.paymentMethod || transaction.payment_method || 'N/A'}
                     </div>
                   </TableCell>
                   <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
@@ -289,7 +354,7 @@ const ModernTransactions = () => {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>{transactions?.length}</strong> transactions
+            Showing <strong>1-{Math.min(filteredTransactions.length, 10)}</strong> of <strong>{filteredTransactions.length}</strong> transactions
           </div>
         </CardFooter>
       </Card>
@@ -309,11 +374,11 @@ const ModernTransactions = () => {
                   <h4 className="font-semibold mb-2">Transaction Information</h4>
                   <div className="grid gap-1">
                     <div><strong>Transaction ID:</strong> #{selectedTransaction.id}</div>
-                    <div><strong>Status:</strong> <Badge variant={getStatusVariant(selectedTransaction.status)}>{selectedTransaction.status}</Badge></div>
-                    <div><strong>Customer:</strong> {selectedTransaction.user?.username} ({selectedTransaction.user?.email})</div>
-                    <div><strong>Total Amount:</strong> ${selectedTransaction.total}</div>
-                    <div><strong>Payment Method:</strong> {selectedTransaction.paymentMethod || 'N/A'}</div>
-                    <div><strong>Date:</strong> {new Date(selectedTransaction.createdAt).toLocaleString()}</div>
+                    <div><strong>Status:</strong> <Badge variant={getStatusVariant(selectedTransaction.status)}>{selectedTransaction.status || 'Unknown'}</Badge></div>
+                    <div><strong>Customer:</strong> {selectedTransaction.user?.username || selectedTransaction.User?.username || 'N/A'} ({selectedTransaction.user?.email || selectedTransaction.User?.email || 'N/A'})</div>
+                    <div><strong>Total Amount:</strong> ${selectedTransaction.total || selectedTransaction.total_amount || 0}</div>
+                    <div><strong>Payment Method:</strong> {selectedTransaction.paymentMethod || selectedTransaction.payment_method || 'N/A'}</div>
+                    <div><strong>Date:</strong> {selectedTransaction.createdAt ? new Date(selectedTransaction.createdAt).toLocaleString() : 'N/A'}</div>
                   </div>
                 </div>
                 <div>

@@ -18,6 +18,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../../components/ui/Card";
@@ -41,8 +42,14 @@ import { cn } from "../../lib/utils";
 import api from '../../utils/api';
 
 const fetchPayments = async () => {
-  const { data } = await api.get('/admin/payments');
-  return data;
+  try {
+    const response = await api.get('/admin/payments');
+    return response.data; // Return the data directly
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    // Return empty array to avoid filter errors
+    return [];
+  }
 };
 
 const ModernPayments = () => {
@@ -56,13 +63,24 @@ const ModernPayments = () => {
 
   const { data: payments, isLoading, isError } = useQuery({ queryKey: ['payments'], queryFn: fetchPayments });
 
-  const filteredPayments = payments?.filter(payment => {
-    const matchesSearch = payment.id?.toString().includes(searchText) ||
-                         payment.user?.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-                         payment.transactionId?.toString().includes(searchText);
+  // Make sure payments is always an array
+  const paymentsArray = Array.isArray(payments) ? payments : [];
+
+  const filteredPayments = paymentsArray.filter(payment => {
+    // Safely access properties with optional chaining and provide fallbacks
+    const id = payment?.id?.toString() || '';
+    const transactionId = payment?.transactionId?.toString() || '';
+    const username = payment?.user?.username || '';
     
-    const matchesStatus = selectedStatus === 'all' || payment.status === selectedStatus;
-    const matchesMethod = selectedMethod === 'all' || payment.paymentMethod === selectedMethod;
+    const matchesSearch = id.includes(searchText) ||
+                         username.toLowerCase().includes(searchText.toLowerCase()) ||
+                         transactionId.includes(searchText);
+    
+    const status = (payment?.status || '').toLowerCase();
+    const matchesStatus = selectedStatus === 'all' || status === selectedStatus.toLowerCase();
+    
+    const paymentMethod = (payment?.paymentMethod || '').toLowerCase();
+    const matchesMethod = selectedMethod === 'all' || paymentMethod === selectedMethod.toLowerCase();
     
     let matchesDateRange = true;
     if (date.from && date.to) {
@@ -75,8 +93,10 @@ const ModernPayments = () => {
 
   const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
-      case 'success': return 'default';
+      case 'completed': return 'default';
+      case 'success': return 'default'; 
       case 'pending': return 'secondary';
+      case 'processing': return 'secondary';
       case 'failed': return 'destructive';
       case 'cancelled': return 'outline';
       default: return 'outline';
@@ -84,13 +104,11 @@ const ModernPayments = () => {
   };
 
   const getMethodIcon = (method) => {
-    switch (method?.toLowerCase()) {
-      case 'credit_card': return <CreditCard className="h-4 w-4" />;
-      case 'bank_transfer': return <Banknote className="h-4 w-4" />;
-      case 'e_wallet': return <Wallet className="h-4 w-4" />;
-      case 'paypal': return <FileText className="h-4 w-4" />;
-      default: return <CreditCard className="h-4 w-4" />;
-    }
+    const methodLower = method?.toLowerCase() || '';
+    if (methodLower.includes('credit') || methodLower.includes('card')) return <CreditCard className="h-4 w-4" />;
+    if (methodLower.includes('bank') || methodLower.includes('transfer')) return <Banknote className="h-4 w-4" />;
+    if (methodLower.includes('wallet') || methodLower.includes('paypal') || methodLower.includes('qris')) return <Wallet className="h-4 w-4" />;
+    return <CreditCard className="h-4 w-4" />;
   };
 
   if (isLoading) {
@@ -98,14 +116,27 @@ const ModernPayments = () => {
   }
 
   if (isError) {
-    return <div>Error loading payments.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <FileText className="h-16 w-16 text-gray-400 mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">Failed to load payments</h2>
+        <p className="text-muted-foreground mb-4">
+          There was an error loading the payment data.
+        </p>
+        <Button onClick={() => window.location.reload()}>
+          Try again
+        </Button>
+      </div>
+    );
   }
 
   const paymentStats = {
-    total: payments?.length || 0,
-    success: payments?.filter(p => p.status === 'success')?.length || 0,
-    pending: payments?.filter(p => p.status === 'pending')?.length || 0,
-    totalRevenue: payments?.filter(p => p.status === 'success')?.reduce((sum, p) => sum + p.amount, 0) || 0,
+    total: paymentsArray.length,
+    success: paymentsArray.filter(p => (p.status || '').toLowerCase() === 'completed' || (p.status || '').toLowerCase() === 'success').length,
+    pending: paymentsArray.filter(p => (p.status || '').toLowerCase() === 'pending' || (p.status || '').toLowerCase() === 'processing').length,
+    totalRevenue: paymentsArray
+      .filter(p => (p.status || '').toLowerCase() === 'completed' || (p.status || '').toLowerCase() === 'success')
+      .reduce((sum, p) => sum + (p.amount || 0), 0),
   };
 
   const methodStats = {

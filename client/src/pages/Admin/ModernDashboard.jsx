@@ -40,18 +40,44 @@ const fetchDashboardData = async () => {
 };
 
 const ModernDashboard = () => {
-  const { data, isLoading, isError } = useQuery({ 
+  const { data, isLoading, isError, error } = useQuery({ 
     queryKey: ['dashboardData'], 
-    queryFn: fetchDashboardData 
+    queryFn: fetchDashboardData,
+    retry: 1,
+    onError: (err) => {
+      console.error("Dashboard data fetch error:", err);
+    }
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading dashboard data...</p>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
-    return <div>Error fetching data</div>;
+    return (
+      <div className="border border-red-200 bg-red-50 p-4 rounded-md my-4">
+        <h3 className="text-red-800 font-medium">Error fetching dashboard data</h3>
+        <p className="text-red-600 mt-2">{error?.message || "Please try again later"}</p>
+      </div>
+    );
   }
+  
+  // Pastikan data tersedia dengan nilai default
+  const dashboardData = {
+    totalRevenue: data?.totalRevenue || 0,
+    totalUsers: data?.totalUsers || 0,
+    totalCourses: data?.totalCourses || 0,
+    totalOrders: data?.totalOrders || 0,
+    recentUsers: data?.recentUsers || [],
+    recentOrders: data?.recentOrders || []
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,7 +90,9 @@ const ModernDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.totalRevenue}</div>
+            <div className="text-2xl font-bold">
+              ${dashboardData.totalRevenue.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
             </p>
@@ -73,12 +101,12 @@ const ModernDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Subscriptions
+              Total Users
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{data.totalUsers}</div>
+            <div className="text-2xl font-bold">+{dashboardData.totalUsers}</div>
             <p className="text-xs text-muted-foreground">
               +180.1% from last month
             </p>
@@ -90,7 +118,7 @@ const ModernDashboard = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{data.totalOrders}</div>
+            <div className="text-2xl font-bold">+{dashboardData.totalOrders}</div>
             <p className="text-xs text-muted-foreground">
               +19% from last month
             </p>
@@ -143,12 +171,12 @@ const ModernDashboard = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.recentOrders.map((order) => (
+                {dashboardData.recentOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
-                      <div className="font-medium">{order.User.name}</div>
+                      <div className="font-medium">{order.User?.username || 'User'}</div>
                       <div className="hidden text-sm text-muted-foreground md:inline">
-                        {order.User.email}
+                        {order.User?.email || 'email@example.com'}
                       </div>
                     </TableCell>
                     <TableCell className="hidden xl:table-column">
@@ -156,13 +184,13 @@ const ModernDashboard = () => {
                     </TableCell>
                     <TableCell className="hidden xl:table-column">
                       <Badge className="text-xs" variant="outline">
-                        {order.status}
+                        {order.status || 'Pending'}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-right">${order.total}</TableCell>
+                    <TableCell className="text-right">${order.totalAmount || order.total || 0}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -174,14 +202,14 @@ const ModernDashboard = () => {
             <CardTitle>Recent Sales</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-8">
-            {data.recentUsers.map((user) => (
+            {dashboardData.recentUsers.map((user) => (
               <div key={user.id} className="flex items-center gap-4">
                 <Avatar className="hidden h-9 w-9 sm:flex">
                   <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                  <AvatarFallback>{user.username?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-1">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-sm font-medium leading-none">{user.username}</p>
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>

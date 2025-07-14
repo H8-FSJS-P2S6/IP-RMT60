@@ -12,6 +12,7 @@ router.use(authentication);
 router.use(adminAuthorization);
 
 // Dashboard APIs
+router.get("/dashboard", AdminController.getDashboard); // Endpoint gabungan untuk dashboard
 router.get("/statistics", AdminController.getStatistics);
 router.get("/recent-users", AdminController.getRecentUsers); // Ubah nama route untuk menghindari konflik
 router.get("/orders", AdminController.getRecentOrders);
@@ -35,5 +36,17 @@ router.get("/users", UserController.getAllUsers);
 router.post("/users", UserController.createUser);
 router.put("/users/:id", UserController.updateUser);
 router.delete("/users/:id", UserController.deleteUser);
+
+// Transactions routes
+router.get("/transactions/export", AdminController.exportTransactions); // Place export route before the :id route
+router.get("/transactions", AdminController.getTransactions);
+router.get("/transactions/:id", AdminController.getTransactionById);
+router.put("/transactions/:id", AdminController.updateTransaction);
+
+// Payments routes
+router.get("/payments", AdminController.getPayments);
+router.get("/payments/export", AdminController.exportPayments);
+router.get("/payments/:id", AdminController.getPaymentById);
+router.put("/payments/:id", AdminController.updatePayment);
 
 module.exports = router;

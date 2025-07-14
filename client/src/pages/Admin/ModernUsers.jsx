@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   File, 
   PlusCircle, 
-  Search 
+  Search,
+  Users,
+  MoreHorizontal
 } from "lucide-react";
 import { 
   Card, 
@@ -44,8 +46,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/Badge";
 import api from '../../utils/api';
 
-const fetchUsers = async () => {
-  const { data } = await api.get('/admin/users');
+const fetchUsers = async (page = 1, limit = 10) => {
+  const { data } = await api.get(`/admin/users?page=${page}&limit=${limit}`);
   return data;
 };
 
@@ -70,8 +72,17 @@ const ModernUsers = () => {
   const [selectedRole, setSelectedRole] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
-  const { data: users, isLoading } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
+  const { data, isLoading } = useQuery({ 
+    queryKey: ['users', currentPage, pageSize], 
+    queryFn: () => fetchUsers(currentPage, pageSize)
+  });
+  
+  // Ekstrak array users dan pagination info dari response API
+  const users = data?.users || [];
+  const totalPages = data?.totalPages || 1;
 
   const createMutation = useMutation({ 
     mutationFn: createUser, 
@@ -216,10 +227,33 @@ const ModernUsers = () => {
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
           <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>{users?.length}</strong> users
+            Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, data?.totalItems || 0)}</strong> of <strong>{data?.totalItems || 0}</strong> users
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage <= 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center justify-center text-sm">
+                Page {currentPage} of {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </CardFooter>
       </Card>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
