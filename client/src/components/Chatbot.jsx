@@ -13,7 +13,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: 'Halo! Saya SNS Assistant 🤖\n\nSaya siap membantu Anda dengan informasi tentang:\n• Kursus NDT dan harga\n• Jadwal pelatihan\n• Sertifikasi ASNT\n• Proses pendaftaran\n\nAda yang bisa saya bantu?',
+      text: 'Hello! I am SNS Assistant 🤖\n\nI am ready to help you with information about:\n• NDT courses and prices\n• Training schedules\n• ASNT certifications\n• Registration process\n\nHow can I help you today?',
       timestamp: new Date(),
       type: 'welcome'
     }

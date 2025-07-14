@@ -26,6 +26,13 @@ import {
 import api from "../utils/api";
 import { Button } from "@/components/ui/Button";
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 const fetchHomeData = async () => {
   const { data } = await api.get('/public/homepage-bundle');
   return data;
@@ -488,8 +495,8 @@ export default function TechnicalHome() {
                   
                   <div className="flex items-center justify-between">
                     <div className="text-2xl font-bold text-orange-600 font-mono">
-                      ${lecture.price}
-                    </div>
+                        {formatToIDR(lecture.price)}
+                      </div>
                     <Link
                       to={`/courses/${lecture.id}`}
                       className="bg-slate-900 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors font-mono text-sm"

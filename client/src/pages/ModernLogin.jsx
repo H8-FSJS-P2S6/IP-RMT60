@@ -43,27 +43,27 @@ export default function ModernLogin() {
     onSuccess: (data) => {
       console.log("Google login success data:", data);
       
-      // Pastikan ada data user sebelum melakukan login
+      // Ensure user data exists before logging in
       if (!data || !data.user) {
         console.error("Missing user data in response");
         return;
       }
       
-      // Lakukan login dengan data dari server
+      // Perform login with data from the server
       authGoogleLogin(data);
       
-      // Redirect berdasarkan role user
+      // Redirect based on user role
       const redirectPath = data.user.role === 'Admin' ? '/admin/dashboard' : '/';
       console.log(`Redirecting to: ${redirectPath}`);
       
-      // Beri waktu singkat untuk pemrosesan sebelum navigasi
+      // Give a short time for processing before navigation
       setTimeout(() => {
         navigate(redirectPath, { replace: true });
       }, 100);
     },
     onError: (error) => {
       console.error("Google login error:", error);
-      alert("Login dengan Google gagal. Silakan coba lagi atau gunakan email/password.");
+      alert("Google login failed. Please try again or use email/password.");
     }
   });
 
@@ -78,7 +78,7 @@ export default function ModernLogin() {
   };
 
   const handleCredentialResponse = useCallback((response) => {
-    // Log untuk debugging
+    // Log for debugging
     console.log("Google credential response received");
     
     if (!response || !response.credential) {
@@ -86,7 +86,7 @@ export default function ModernLogin() {
       return;
     }
     
-    // Kirim token ke backend
+    // Send token to backend
     googleMutation.mutate(response.credential);
   }, [googleMutation]);
 

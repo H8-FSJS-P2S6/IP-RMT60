@@ -35,6 +35,13 @@ import {
   selectCategories
 } from "../store/slices/courseSlice";
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 export default function Courses() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -59,14 +66,6 @@ export default function Courses() {
       sort
     }));
   }, [dispatch, pagination.currentPage, filters, sort]);
-
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

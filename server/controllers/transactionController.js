@@ -2,7 +2,7 @@ const { Transaction, TransactionDetail, Lecture, User, sequelize } = require("..
 const { v4: uuidv4 } = require('uuid');
 
 class TransactionController {
-  // Mendapatkan semua transaksi untuk admin
+  // Get all transactions for admin
   static async getAllTransactions(req, res, next) {
     try {
       const { page = 1, limit = 10, status } = req.query;
@@ -37,7 +37,7 @@ class TransactionController {
     }
   }
   
-  // Mendapatkan transaksi milik user yang sedang login
+  // Get transactions for the logged-in user
   static async getUserTransactions(req, res, next) {
     try {
       const UserId = req.user.id;
@@ -60,7 +60,7 @@ class TransactionController {
     }
   }
   
-  // Mendapatkan detail transaksi
+  // Get transaction details
   static async getTransactionById(req, res, next) {
     try {
       const { id } = req.params;
@@ -82,7 +82,7 @@ class TransactionController {
         throw { name: "NotFound", message: "Transaction not found" };
       }
       
-      // Cek apakah transaksi milik user yang sedang login atau admin
+      // Check if the transaction belongs to the logged-in user or an admin
       if (transaction.UserId !== req.user.id && req.user.role !== 'Admin') {
         throw { name: "Forbidden", message: "You don't have permission to access this transaction" };
       }
@@ -93,7 +93,7 @@ class TransactionController {
     }
   }
   
-  // Membuat transaksi baru dari cart
+  // Create a new transaction from the cart
   static async createTransaction(req, res, next) {
     const t = await sequelize.transaction();
     
@@ -158,7 +158,7 @@ class TransactionController {
     }
   }
   
-  // Update status transaksi (admin only)
+  // Update transaction status (admin only)
   static async updateTransactionStatus(req, res, next) {
     try {
       const { id } = req.params;
@@ -170,7 +170,7 @@ class TransactionController {
         throw { name: "NotFound", message: "Transaction not found" };
       }
       
-      // Validasi status
+      // Validate status
       const validStatus = ['Pending', 'Processing', 'Completed', 'Cancelled'];
       if (!validStatus.includes(status)) {
         throw { name: "BadRequest", message: "Invalid status" };

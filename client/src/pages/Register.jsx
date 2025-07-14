@@ -17,7 +17,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect jika pengguna sudah login
+  // Redirect if user is already logged in
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
@@ -40,7 +40,7 @@ export default function Register() {
     try {
       await api.post("/users/register", formData);
       
-      // Redirect ke halaman login setelah berhasil register
+      // Redirect to login page after successful registration
       navigate("/login", { 
         state: { 
           message: "Registration successful! Please login with your new account." 

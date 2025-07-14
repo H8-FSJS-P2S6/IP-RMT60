@@ -3,9 +3,9 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Cart extends Model {
     static associate(models) {
-      // Relasi Cart → User (Many-to-One)
+      // Cart → User relationship (Many-to-One)
       Cart.belongsTo(models.User);
-      // Relasi Cart → Lecture (Many-to-One)
+      // Cart → Lecture relationship (Many-to-One)
       Cart.belongsTo(models.Lecture);
     }
   }

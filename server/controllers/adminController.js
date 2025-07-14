@@ -395,12 +395,12 @@ class AdminController {
 
   static async getDashboard(req, res, next) {
     try {
-      // Mengambil semua data yang diperlukan untuk dashboard dalam satu endpoint
+      // Fetch all necessary data for the dashboard in a single endpoint
       const totalUsers = await User.count();
       const totalCourses = await Lecture.count();
       const totalCategories = await Category.count();
       
-      // Data revenue dan orders
+      // Revenue and orders data
       let totalOrders = 0;
       let totalRevenue = 0;
       
@@ -416,14 +416,14 @@ class AdminController {
         totalRevenue = 25000000;
       }
       
-      // Data user terbaru
+      // Latest user data
       const recentUsers = await User.findAll({
         attributes: ['id', 'username', 'email', 'role', 'createdAt'],
         order: [['createdAt', 'DESC']],
         limit: 5
       });
       
-      // Data order terbaru
+      // Latest order data
       let recentOrders;
       try {
         recentOrders = await Transaction.findAll({
@@ -435,7 +435,7 @@ class AdminController {
           limit: 5
         });
       } catch (err) {
-        // Data dummy untuk orders
+        // Dummy data for orders
         recentOrders = Array.from({ length: 5 }).map((_, index) => ({
           id: index + 1,
           User: { 
@@ -448,7 +448,7 @@ class AdminController {
         }));
       }
       
-      // Menggabungkan semua data
+      // Combine all data
       res.json({
         totalUsers,
         totalCourses,
@@ -469,7 +469,7 @@ class AdminController {
       const totalCourses = await Lecture.count();
       const totalCategories = await Category.count();
       
-      // Jika model Transaction belum ada, gunakan data dummy
+      // If the Transaction model is not yet available, use dummy data
       let totalOrders = 0;
       let revenue = 0;
       
@@ -517,7 +517,7 @@ class AdminController {
     try {
       const limit = parseInt(req.query.limit) || 5;
       
-      // Jika model Transaction belum ada, gunakan data dummy
+      // If the Transaction model is not yet available, use dummy data
       try {
         const orders = await Transaction.findAll({
           include: [{
@@ -530,7 +530,7 @@ class AdminController {
         
         res.json(orders);
       } catch (err) {
-        // Data dummy
+        // Dummy data
         const dummyOrders = Array.from({ length: limit }).map((_, index) => ({
           id: index + 1,
           User: { 
@@ -573,7 +573,7 @@ class AdminController {
 
   static async getMonthlySales(req, res, next) {
     try {
-      // Jika Transaction model belum siap, gunakan data dummy
+      // If the Transaction model is not ready, use dummy data
       try {
         const currentYear = new Date().getFullYear();
         
@@ -606,7 +606,7 @@ class AdminController {
         
         res.json(monthlySales);
       } catch (err) {
-        // Data dummy untuk 6 bulan terakhir
+        // Dummy data for the last 6 months
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         
         const dummyData = months.map((month, index) => ({

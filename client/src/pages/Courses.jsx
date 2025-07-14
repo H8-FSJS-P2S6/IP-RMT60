@@ -20,6 +20,13 @@ import { addToCart } from "../store/slices/cartSlice";
 import { selectIsAuthenticated } from "../store/slices/authSlice";
 import { toast } from "react-toastify";
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 export default function Courses() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated); 
@@ -70,14 +77,6 @@ export default function Courses() {
       position: "top-right",
       autoClose: 2000,
     });
-  };
-
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(price);
   };
 
   return (
@@ -174,7 +173,7 @@ export default function Courses() {
                     />
                   </div>
                   <div className="input-group">
-                    <span className="input-group-text">Rp</span>
+                    <span className="input-group-text">$</span>
                     <input
                       type="number"
                       className="form-control"

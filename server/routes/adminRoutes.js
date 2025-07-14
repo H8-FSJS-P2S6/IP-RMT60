@@ -12,9 +12,9 @@ router.use(authentication);
 router.use(adminAuthorization);
 
 // Dashboard APIs
-router.get("/dashboard", AdminController.getDashboard); // Endpoint gabungan untuk dashboard
+router.get("/dashboard", AdminController.getDashboard); // Combined endpoint for dashboard
 router.get("/statistics", AdminController.getStatistics);
-router.get("/recent-users", AdminController.getRecentUsers); // Ubah nama route untuk menghindari konflik
+router.get("/recent-users", AdminController.getRecentUsers); // Change route name to avoid conflicts
 router.get("/orders", AdminController.getRecentOrders);
 router.get("/categories/stats", AdminController.getCategoriesStats);
 router.get("/orders/monthly", AdminController.getMonthlySales);

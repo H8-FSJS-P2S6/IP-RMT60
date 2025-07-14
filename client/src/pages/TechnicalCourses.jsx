@@ -31,8 +31,22 @@ import api from "../utils/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Checkbox } from "@/components/ui/Checkbox";
+
+const formatIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
 
 const fetchCourses = async (filters) => {
   const { data } = await api.get("/public/lectures", { params: filters });
@@ -378,7 +392,7 @@ export default function TechnicalCourses() {
                             </div>
                             
                             <div className="text-right">
-                              <div className="text-2xl font-bold text-slate-900 font-mono">${course.price}</div>
+                              <div className="text-2xl font-bold text-slate-900 font-mono">{formatToIDR(course.price)}</div>
                               <Button className="mt-2">
                                 Enroll Now
                               </Button>
@@ -392,64 +406,64 @@ export default function TechnicalCourses() {
 
                 return (
                   <Card key={course.id} className="hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer" onClick={() => handleCourseClick(course.id)}>
-                    <CardHeader className={`h-2 bg-gradient-to-r ${methodInfo.color}`}></CardHeader>
-                    <CardContent className="p-0">
-                      <div className="relative h-48 bg-slate-100">
-                        {course.imgUrl ? (
-                          <img 
-                            src={course.imgUrl} 
-                            alt={course.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className={`w-full h-full bg-gradient-to-br ${methodInfo.color} flex items-center justify-center`}>
-                            <Icon className="h-16 w-16 text-white" />
-                          </div>
-                        )}
-                        <div className="absolute top-4 right-4 bg-slate-900 text-orange-400 px-2 py-1 rounded-lg font-mono text-sm font-bold">
-                          {methodInfo.code}
-                        </div>
+                  <CardHeader className={`h-2 bg-gradient-to-r ${methodInfo.color}`}></CardHeader>
+                  <CardContent className="p-0">
+                    <div className="relative h-48 bg-slate-100">
+                    {course.imgUrl ? (
+                      <img 
+                      src={course.imgUrl} 
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${methodInfo.color} flex items-center justify-center`}>
+                      <Icon className="h-16 w-16 text-white" />
                       </div>
-                      
-                      <div className="p-6">
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 font-mono group-hover:text-orange-600 transition-colors">
-                          {course.title}
-                        </h3>
-                        <p className="text-slate-600 text-sm mb-4 line-clamp-3">
-                          {course.description}
-                        </p>
+                    )}
+                    <div className="absolute top-4 right-4 bg-slate-900 text-orange-400 px-2 py-1 rounded-lg font-mono text-sm font-bold">
+                      {methodInfo.code}
+                    </div>
+                    </div>
+                    
+                    <div className="p-6">
+                    <h3 className="text-xl font-bold text-slate-900 mb-3 font-mono group-hover:text-orange-600 transition-colors">
+                      {course.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm mb-4 line-clamp-3">
+                      {course.description}
+                    </p>
 
-                        {/* Course Stats */}
-                        <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
-                          <div className="flex items-center space-x-1 font-mono">
-                            <Clock className="h-4 w-4" />
-                            <span>24h</span>
-                          </div>
-                          <div className="flex items-center space-x-1 font-mono">
-                            <Users className="h-4 w-4" />
-                            <span>1.2k</span>
-                          </div>
-                          <div className="flex items-center space-x-1 font-mono">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span>4.8</span>
-                          </div>
-                          <div className="flex items-center space-x-1 font-mono">
-                            <Award className="h-4 w-4" />
-                            <span>Cert</span>
-                          </div>
-                        </div>
-
-                        {/* Price and Action */}
-                        <div className="flex items-center justify-between">
-                          <div className="text-2xl font-bold text-slate-900 font-mono">
-                            ${course.price}
-                          </div>
-                          <Button>
-                            Enroll Now
-                          </Button>
-                        </div>
+                    {/* Course Stats */}
+                    <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
+                      <div className="flex items-center space-x-1 font-mono">
+                      <Clock className="h-4 w-4" />
+                      <span>24h</span>
                       </div>
-                    </CardContent>
+                      <div className="flex items-center space-x-1 font-mono">
+                      <Users className="h-4 w-4" />
+                      <span>1.2k</span>
+                      </div>
+                      <div className="flex items-center space-x-1 font-mono">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span>4.8</span>
+                      </div>
+                      <div className="flex items-center space-x-1 font-mono">
+                      <Award className="h-4 w-4" />
+                      <span>Cert</span>
+                      </div>
+                    </div>
+
+                    {/* Price and Action */}
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-slate-900 font-mono">
+                        {formatIDR(course.price)}
+                        </div>
+                      <Button>
+                      Enroll Now
+                      </Button>
+                    </div>
+                    </div>
+                  </CardContent>
                   </Card>
                 );
               })}

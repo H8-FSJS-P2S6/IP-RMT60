@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "TransactionId",
       });
 
-      // Transaction juga bisa memiliki asosiasi many-to-many dengan Lecture melalui TransactionDetail
+      // Transaction can also have a many-to-many association with Lecture through TransactionDetail
       Transaction.belongsToMany(models.Lecture, {
         through: models.TransactionDetail,
         foreignKey: "TransactionId",

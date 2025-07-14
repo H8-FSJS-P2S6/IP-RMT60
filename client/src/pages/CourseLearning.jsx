@@ -6,6 +6,13 @@ import CourseCurriculum from '../components/CourseCurriculum';
 import api from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 const CourseLearning = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -68,14 +75,6 @@ const CourseLearning = () => {
     } catch (error) {
       console.error('Error updating progress:', error);
     }
-  };
-
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
   };
 
   if (loading) {

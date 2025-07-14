@@ -143,7 +143,7 @@ class UserController {
     }
   }
 
-  // Untuk mendapatkan semua pengguna dengan pagination
+  // To get all users with pagination
   static async getAllUsers(req, res, next) {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -180,7 +180,7 @@ class UserController {
     }
   }
 
-  // Untuk membuat pengguna baru
+  // To create a new user
   static async createUser(req, res, next) {
     try {
       const { username, email, role, phoneNumber, address } = req.body;
@@ -213,7 +213,7 @@ class UserController {
     }
   }
 
-  // Untuk update pengguna
+  // To update a user
   static async updateUser(req, res, next) {
     try {
       const { id } = req.params;
@@ -243,7 +243,7 @@ class UserController {
     }
   }
 
-  // Untuk menghapus pengguna
+  // To delete a user
   static async deleteUser(req, res, next) {
     try {
       const { id } = req.params;

@@ -29,6 +29,13 @@ import {
 import api from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 const NDTCourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -260,10 +267,10 @@ const NDTCourseDetail = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <div className="text-3xl font-bold text-gray-900">
-                        ${course.price}
+                        {formatToIDR(course.price)}
                       </div>
                       <div className="text-gray-500 text-sm">
-                        <span className="line-through">${(course.price * 1.5).toFixed(0)}</span>
+                        <span className="line-through">{formatToIDR(course.price * 1.5)}</span>
                         <span className="text-green-600 font-medium ml-2">33% off</span>
                       </div>
                     </div>
@@ -669,7 +676,7 @@ const NDTCourseDetail = () => {
                           <Star className="h-3 w-3 text-yellow-400" />
                           <span className="text-xs text-gray-500">{course.rating}</span>
                         </div>
-                        <span className="text-sm font-bold text-blue-600">${course.price}</span>
+                        <span className="text-sm font-bold text-blue-600">{formatToIDR(course.price)}</span>
                       </div>
                     </div>
                   </div>

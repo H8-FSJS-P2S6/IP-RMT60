@@ -52,7 +52,7 @@ export default function Footer() {
               </li>
               <li className="mb-2 d-flex">
                 <i className="bi bi-telephone me-2"></i>
-                <span className="text-muted">+62 21 1234 5678</span>
+                <span className="text-muted">+1 (555) 123-4567</span>
               </li>
               <li className="mb-2 d-flex">
                 <i className="bi bi-envelope me-2"></i>

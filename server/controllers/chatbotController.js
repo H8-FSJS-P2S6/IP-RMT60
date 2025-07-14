@@ -6,12 +6,12 @@ class ChatbotController {
       const { message } = req.body;
 
       if (!message || message.trim().length === 0) {
-        throw { name: "BadRequest", message: "Pesan tidak boleh kosong" };
+        throw { name: "BadRequest", message: "Message cannot be empty" };
       }
 
       // Validate message length
       if (message.length > 1000) {
-        throw { name: "BadRequest", message: "Pesan terlalu panjang. Maksimal 1000 karakter." };
+        throw { name: "BadRequest", message: "Message too long. Maximum 1000 characters." };
       }
 
       // Log user interaction for analytics (optional)
@@ -32,12 +32,12 @@ class ChatbotController {
       console.error("Chatbot error:", error);
       
       // Provide user-friendly error messages
-      let errorMessage = "Maaf, saya sedang mengalami gangguan teknis. Silakan coba lagi nanti.";
+      let errorMessage = "Sorry, I am experiencing technical difficulties. Please try again later.";
       
       if (error.name === "BadRequest") {
         errorMessage = error.message;
       } else if (error.message && error.message.includes("API")) {
-        errorMessage = "Layanan chatbot sedang tidak tersedia. Silakan hubungi admin untuk bantuan langsung.";
+        errorMessage = "The chatbot service is currently unavailable. Please contact an admin for direct assistance.";
       }
       
       res.status(200).json({ 

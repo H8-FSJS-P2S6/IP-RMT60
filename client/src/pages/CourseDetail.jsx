@@ -4,6 +4,13 @@ import api from "../utils/api";
 import { useAuth } from "../hooks/useAuth";
 import { showToast } from '../utils/toast';
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -47,14 +54,6 @@ export default function CourseDetail() {
     fetchCourseDetails();
     checkPurchaseStatus();
   }, [id, isAuthenticated]);
-
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {

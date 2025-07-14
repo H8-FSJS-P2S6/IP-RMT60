@@ -19,6 +19,7 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react';
+import { formatToIDR } from "../utils/formatter";
 import api from '../utils/api';
 
 const NDTCategories = () => {
@@ -348,8 +349,8 @@ const NDTCategories = () => {
                           
                           <div className="text-right">
                             <div className="text-2xl font-bold text-blue-600">
-                              ${lecture.price}
-                            </div>
+                                {formatToIDR(lecture.price)}
+                              </div>
                           </div>
                         </div>
                         
@@ -446,7 +447,7 @@ const NDTCategories = () => {
                     
                     <div className="flex items-center justify-between">
                       <div className="text-2xl font-bold text-blue-600">
-                        ${lecture.price}
+                        {formatToIDR(lecture.price)}
                       </div>
                       <button
                         onClick={() => navigate(`/course/${lecture.id}`)}

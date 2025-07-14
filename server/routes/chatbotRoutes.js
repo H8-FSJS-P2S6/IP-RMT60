@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ChatbotController = require('../controllers/chatbotController');
 
-// Route untuk chatbot - tidak memerlukan autentikasi agar dapat diakses oleh semua pengunjung
+// Route for chatbot - does not require authentication so it can be accessed by all visitors
 router.post('/send', ChatbotController.sendMessage);
 
 // Health check endpoint

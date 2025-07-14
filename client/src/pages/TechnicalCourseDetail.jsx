@@ -48,6 +48,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/Accordion";
 import VideoPlayerModern from "../components/VideoPlayerModern";
 
+// Utility function to format price to Indonesian Rupiah
+const formatToIDR = (price) => {
+  if (!price) return 'Rp 0';
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(price);
+};
+
 const fetchCourseById = async (id) => {
   const { data } = await api.get(`/public/lectures/${id}`);
   return data;
@@ -259,7 +269,7 @@ export default function TechnicalCourseDetail() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" onClick={handleAddToCart} disabled={mutation.isLoading}>
                   <CreditCard className="h-6 w-6 mr-3" />
-                  <span>{mutation.isLoading ? "Adding to cart..." : `Enroll Now - ${lecture.price}`}</span>
+                  <span>{mutation.isLoading ? "Adding to cart..." : `Enroll Now - ${formatToIDR(lecture.price)}`}</span>
                 </Button>
                 
                 <Button size="lg" variant="outline" onClick={handleWishlist}>
@@ -626,9 +636,9 @@ export default function TechnicalCourseDetail() {
                 <h4 className="font-bold text-slate-900 mb-4 font-mono">Related Courses</h4>
                 <div className="space-y-4">
                   {[
-                    { title: "Advanced UT Techniques", price: "$299", rating: 4.7 },
-                    { title: "RT Safety & Radiation", price: "$249", rating: 4.9 },
-                    { title: "MT Equipment Calibration", price: "$199", rating: 4.6 }
+                    { title: "Advanced UT Techniques", price: "Rp 2.990.000", rating: 4.7 },
+                    { title: "RT Safety & Radiation", price: "Rp 2.490.000", rating: 4.9 },
+                    { title: "MT Equipment Calibration", price: "Rp 1.990.000", rating: 4.6 }
                   ].map((course, index) => (
                     <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                       <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center">
