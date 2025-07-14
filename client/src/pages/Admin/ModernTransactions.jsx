@@ -359,10 +359,12 @@ const ModernTransactions = () => {
         </CardFooter>
       </Card>
 
-      <Dialog open={isDetailModalVisible} onOpenChange={setIsDetailModalVisible}>
+      <Dialog open={isDetailModalVisible && selectedTransaction} onOpenChange={setIsDetailModalVisible}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>Transaction Details - #{selectedTransaction?.id}</DialogTitle>
+            <DialogTitle>
+              Transaction Details - #{selectedTransaction?.id || 'Loading...'}
+            </DialogTitle>
             <DialogDescription>
               Detailed information about this transaction.
             </DialogDescription>

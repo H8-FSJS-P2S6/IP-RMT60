@@ -1,69 +1,67 @@
-const { sendMessageToDialogflow } = require("../helpers/dialogflow");
-const { Lecture, Category, Op } = require("../models");
+const { sendMessageToGemini } = require("../helpers/gemini");
 
 class ChatbotController {
   static async sendMessage(req, res, next) {
     try {
-      const { message, sessionId } = req.body;
+      const { message } = req.body;
 
-      if (!message) {
-        throw { name: "BadRequest", message: "Message is required" };
+      if (!message || message.trim().length === 0) {
+        throw { name: "BadRequest", message: "Pesan tidak boleh kosong" };
       }
 
-      // Kirim ke Dialogflow
-      const dialogflowResponse = await sendMessageToDialogflow(
-        message,
-        sessionId
-      );
-
-      // Jika intent adalah pencarian kursus, kita bisa menambahkan data dari database
-      if (dialogflowResponse.intent === "course_info" || dialogflowResponse.intent === "course_search") {
-        // Extract course type parameter - handle different Dialogflow parameter structures
-        let courseType;
-        
-        // Check parameters structure and extract course type
-        if (dialogflowResponse.parameters && dialogflowResponse.parameters['course-type']) {
-          const param = dialogflowResponse.parameters['course-type'];
-          courseType = param.stringValue || param.listValue?.values?.[0]?.stringValue || param;
-        }
-
-        if (courseType) {
-          console.log(`Searching for courses with technique like: ${courseType}`);
-          
-          // Cari data kursus dari database berdasarkan parameter
-          const courses = await Lecture.findAll({
-            where: {
-              [Op.or]: [
-                { technique: { [Op.iLike]: `%${courseType}%` } },
-                { name: { [Op.iLike]: `%${courseType}%` } }
-              ]
-            },
-            include: [{ model: Category, as: "category" }],
-            limit: 3,
-          });
-
-          console.log(`Found ${courses.length} courses matching "${courseType}"`);
-
-          // Tambahkan data kursus ke respons
-          if (courses.length > 0) {
-            dialogflowResponse.courses = courses.map((course) => ({
-              id: course.id,
-              name: course.name,
-              technique: course.technique,
-              price: course.price,
-              category: course.category?.name,
-            }));
-          } else {
-            // No courses found
-            dialogflowResponse.noCourses = true;
-          }
-        }
+      // Validate message length
+      if (message.length > 1000) {
+        throw { name: "BadRequest", message: "Pesan terlalu panjang. Maksimal 1000 karakter." };
       }
 
-      res.status(200).json(dialogflowResponse);
+      // Log user interaction for analytics (optional)
+      console.log(`Chatbot query: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`);
+
+      const geminiResponse = await sendMessageToGemini(message);
+
+      // Ensure response is not empty
+      if (!geminiResponse || geminiResponse.trim().length === 0) {
+        throw new Error("Empty response from AI");
+      }
+
+      res.status(200).json({ 
+        text: geminiResponse,
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
-      console.log("Chatbot error", error);
-      next(error);
+      console.error("Chatbot error:", error);
+      
+      // Provide user-friendly error messages
+      let errorMessage = "Maaf, saya sedang mengalami gangguan teknis. Silakan coba lagi nanti.";
+      
+      if (error.name === "BadRequest") {
+        errorMessage = error.message;
+      } else if (error.message && error.message.includes("API")) {
+        errorMessage = "Layanan chatbot sedang tidak tersedia. Silakan hubungi admin untuk bantuan langsung.";
+      }
+      
+      res.status(200).json({ 
+        text: errorMessage,
+        timestamp: new Date().toISOString(),
+        isError: true
+      });
+    }
+  }
+
+  // Health check endpoint for chatbot
+  static async healthCheck(req, res) {
+    try {
+      res.status(200).json({ 
+        status: "healthy", 
+        service: "SNS Chatbot",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Chatbot service unavailable",
+        timestamp: new Date().toISOString()
+      });
     }
   }
 }

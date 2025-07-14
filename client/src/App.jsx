@@ -35,6 +35,7 @@ import ModernAdminCourses from "./pages/Admin/ModernCourses";
 import ModernAdminCategories from "./pages/Admin/ModernCategories";
 import ModernTransactions from "./pages/Admin/ModernTransactions";
 import ModernPayments from "./pages/Admin/ModernPayments";
+import ChatbotManagement from "./pages/Admin/ChatbotManagement";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ function AppRoutes() {
         <Route path="categories" element={<ModernAdminCategories />} />
         <Route path="transactions" element={<ModernTransactions />} />
         <Route path="payments" element={<ModernPayments />} />
+        <Route path="chatbot" element={<ChatbotManagement />} />
       </Route>
 
       {/* User routes - redirect admin to admin dashboard */}

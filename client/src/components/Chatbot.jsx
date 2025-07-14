@@ -1,24 +1,35 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
-import '../styles/chatbot.css'; // Kita akan buat file CSS ini
+import '../styles/chatbot.css';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/Sheet";
+import { Badge } from "@/components/ui/Badge";
+import { MessageSquare, Send, X, Loader2, Bot, User, Clock, HelpCircle, DollarSign, BookOpen, Phone } from "lucide-react";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: 'Halo! Saya SNS Assistant. Ada yang bisa saya bantu tentang kursus NDT?',
-      timestamp: new Date()
+      text: 'Halo! Saya SNS Assistant 🤖\n\nSaya siap membantu Anda dengan informasi tentang:\n• Kursus NDT dan harga\n• Jadwal pelatihan\n• Sertifikasi ASNT\n• Proses pendaftaran\n\nAda yang bisa saya bantu?',
+      timestamp: new Date(),
+      type: 'welcome'
     }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    setSessionId(`user-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
-  }, []);
+  // Quick reply options
+  const quickReplies = [
+    { text: "Lihat daftar kursus", icon: BookOpen },
+    { text: "Tanya harga kursus", icon: DollarSign },
+    { text: "Info pendaftaran", icon: HelpCircle },
+    { text: "Hubungi admin", icon: Phone }
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -34,44 +45,58 @@ export default function Chatbot() {
     setInput(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleQuickReply = (replyText) => {
+    setInput(replyText);
+    handleSubmit(null, replyText);
+  };
+
+  const handleSubmit = async (e, quickReplyText = null) => {
+    if (e) e.preventDefault();
     
-    if (!input.trim()) return;
+    const messageText = quickReplyText || input.trim();
+    if (!messageText) return;
     
     const userMessage = {
       sender: 'user',
-      text: input,
+      text: messageText,
       timestamp: new Date()
     };
     
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+    setIsTyping(true);
     
     try {
+      // Simulate typing delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const response = await api.post('/chatbot/send', {
-        message: userMessage.text,
-        sessionId
+        message: messageText,
       });
       
+      setIsTyping(false);
+      
+      // Simulate gradual message appearance
+      const botResponse = response.data.text;
       setMessages(prev => [
         ...prev,
         {
           sender: 'bot',
-          text: response.data.text,
-          courses: response.data.courses, // Jika ada data kursus
+          text: botResponse,
           timestamp: new Date()
         }
       ]);
     } catch (error) {
       console.error('Error sending message to chatbot:', error);
+      setIsTyping(false);
       setMessages(prev => [
         ...prev,
         {
           sender: 'bot',
-          text: 'Maaf, saya mengalami kendala teknis. Silakan coba lagi nanti.',
-          timestamp: new Date()
+          text: 'Maaf, saya sedang mengalami gangguan teknis. Silakan coba lagi nanti atau hubungi admin kami untuk bantuan langsung.',
+          timestamp: new Date(),
+          type: 'error'
         }
       ]);
     } finally {
@@ -80,142 +105,194 @@ export default function Chatbot() {
   };
 
   const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   };
 
-  return (
-    <div className="chatbot-container">
-      {/* Enhanced toggle button */}
-      <div className="chatbot-toggle-wrapper">
-        {!isOpen && (
-          <div className="chat-bubble-animation">
-            <div className="chat-bubble bubble-1"></div>
-            <div className="chat-bubble bubble-2"></div>
-            <div className="chat-bubble bubble-3"></div>
-          </div>
-        )}
-        <button 
-          className={`chatbot-toggle ${isOpen ? 'active' : ''}`}
-          onClick={handleToggleChat}
-          aria-label={isOpen ? "Close chat" : "Open chat"}
-        >
-          <div className="toggle-content">
-            {isOpen ? (
-              <i className="bi bi-x-lg"></i>
-            ) : (
-              <>
-                <i className="bi bi-chat-dots-fill"></i>
-                <span className="chat-notification"></span>
-              </>
-            )}
-          </div>
-          <div className="toggle-text">{isOpen ? 'Close' : 'Chat'}</div>
-          <div className="toggle-ripple"></div>
-        </button>
-      </div>
-      
-      {/* Chat window */}
-      <div className={`chatbot-box ${isOpen ? 'open' : ''}`}>
-        <div className="chatbot-header">
-          <div className="chatbot-title">
-            <img 
-              src="/technical-support.png" 
-              alt="SNS NDT" 
-              className="chatbot-avatar"
-            />
-            <div>
-              <h5>SNS Assistant</h5>
-              <span className="chatbot-status">Online</span>
-            </div>
-          </div>
-          <button 
-            className="chatbot-close" 
-            onClick={handleToggleChat}
-          >
-            <i className="bi bi-x"></i>
-          </button>
-        </div>
-        
-        <div className="chatbot-messages">
-          {messages.map((msg, index) => (
-            <div 
-              key={index} 
-              className={`message-container ${msg.sender === 'user' ? 'user-message' : 'bot-message'}`}
-            >
-              {msg.sender === 'bot' && (
-                <div className="bot-avatar">
-                  <img src="/technical-support.png" alt="Bot" />
-                </div>
-              )}
-              
-              <div className="message-content">
-                <div className="message-bubble">
-                  <p>{msg.text}</p>
-                  <span className="message-time">{formatTime(msg.timestamp)}</span>
-                </div>
-                
-                {/* Tampilkan course cards jika ada */}
-                {msg.courses && msg.courses.length > 0 && (
-                  <div className="course-cards">
-                    {msg.courses.map(course => (
-                      <div key={course.id} className="course-card">
-                        <h6>{course.technique}</h6>
-                        <p>{course.name}</p>
-                        <p className="course-price">
-                          {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            maximumFractionDigits: 0
-                          }).format(course.price)}
-                        </p>
-                        <a 
-                          href={`/courses/${course.id}`}
-                          className="btn btn-sm btn-primary"
-                        >
-                          Lihat Detail
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-          
-          {/* Loading indicator */}
-          {loading && (
-            <div className="message-container bot-message">
-              <div className="bot-avatar">
-                <img src="/technical-support.png" alt="Bot" />
-              </div>
-              <div className="message-content">
-                <div className="message-bubble typing">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            </div>
+  const renderMessage = (msg) => {
+    const isUser = msg.sender === 'user';
+    const isWelcome = msg.type === 'welcome';
+    const isError = msg.type === 'error';
+    
+    return (
+      <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse chat-message-user' : 'chat-message-bot'}`}>
+        {/* Avatar */}
+        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+          isUser ? 'bg-blue-500' : 'bg-primary'
+        }`}>
+          {isUser ? (
+            <User className="w-4 h-4 text-white" />
+          ) : (
+            <Bot className="w-4 h-4 text-white" />
           )}
         </div>
         
-        <form className="chatbot-input-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Tulis pesan..."
-            value={input}
-            onChange={handleInputChange}
-            disabled={loading}
-          />
-          <button 
-            type="submit" 
-            disabled={!input.trim() || loading}
-          >
-            <i className="bi bi-send-fill"></i>
-          </button>
-        </form>
+        {/* Message bubble */}
+        <div className={`max-w-[75%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+          <div className={`px-4 py-3 rounded-2xl ${
+            isUser 
+              ? 'bg-blue-500 text-white rounded-tr-md' 
+              : isWelcome
+                ? 'chat-welcome text-white rounded-tl-md'
+                : isError
+                  ? 'bg-red-50 border border-red-200 text-red-800 rounded-tl-md'
+                  : 'bg-white border shadow-sm rounded-tl-md'
+          }`}>
+            <div className="text-sm whitespace-pre-wrap break-words">
+              {msg.text}
+            </div>
+          </div>
+          
+          {/* Timestamp */}
+          <div className={`flex items-center gap-1 text-xs text-gray-500 ${isUser ? 'flex-row-reverse' : ''}`}>
+            <Clock className="w-3 h-3" />
+            <span>{formatTime(msg.timestamp)}</span>
+          </div>
+        </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-[1000]">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="default"
+            size="lg"
+            className="rounded-full w-16 h-16 shadow-xl bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 flex flex-col items-center justify-center group transition-all duration-300 hover:scale-105"
+            onClick={handleToggleChat}
+          >
+            <MessageSquare className="h-7 w-7 transition-transform group-hover:scale-110" />
+            <span className="sr-only">Buka Chat Assistant</span>
+            
+            {/* Notification dot */}
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center notification-dot">
+              <span className="text-xs text-white font-bold">!</span>
+            </div>
+          </Button>
+        </SheetTrigger>
+        
+        <SheetContent side="right" className="flex flex-col w-full max-w-md p-0 sm:max-w-md">
+          <Card className="flex flex-col flex-1 border-none shadow-none rounded-none h-full">
+            {/* Header */}
+            <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white p-4 flex flex-row items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                  <img 
+                    src="/technical-support.png" 
+                    alt="SNS NDT" 
+                    className="w-8 h-8 rounded-full"
+                  />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-semibold">SNS Assistant</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <CardDescription className="text-white/90 text-sm">
+                      Online - Siap membantu
+                    </CardDescription>
+                  </div>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleToggleChat} 
+                className="text-white hover:bg-white/20 rounded-full"
+              >
+                <X className="h-5 w-5" />
+                <span className="sr-only">Tutup chat</span>
+              </Button>
+            </CardHeader>
+            
+            {/* Messages */}
+            <CardContent className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 min-h-0 chat-messages">
+              {messages.map((msg, index) => (
+                <div key={index}>
+                  {renderMessage(msg)}
+                </div>
+              ))}
+              
+              {/* Typing indicator */}
+              {isTyping && (
+                <div className="flex items-start gap-3 chat-typing">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="bg-white border shadow-sm rounded-2xl rounded-tl-md px-4 py-3 flex items-center gap-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                    <span className="text-xs text-gray-500 ml-2">SNS Assistant sedang mengetik...</span>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </CardContent>
+            
+            {/* Quick replies */}
+            {messages.length === 1 && !loading && (
+              <div className="p-4 bg-white border-t">
+                <p className="text-sm text-gray-600 mb-3">Pilihan cepat:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickReplies.map((reply, index) => {
+                    const IconComponent = reply.icon;
+                    return (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuickReply(reply.text)}
+                        className="flex items-center gap-2 text-xs h-auto py-2 px-3 hover:bg-blue-50 hover:border-blue-300"
+                      >
+                        <IconComponent className="w-3 h-3" />
+                        <span className="truncate">{reply.text}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Input form */}
+            <form onSubmit={handleSubmit} className="p-4 border-t bg-white">
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  placeholder="Ketik pesan Anda..."
+                  value={input}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  className="flex-1 rounded-full border-gray-300 focus:border-primary focus:ring-primary"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!input.trim() || loading} 
+                  size="icon"
+                  className="rounded-full bg-primary hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Kirim pesan</span>
+                </Button>
+              </div>
+              
+              {/* Footer info */}
+              <div className="mt-2 text-center">
+                <p className="text-xs text-gray-500">
+                  Powered by SNS NDT Academy • Respons otomatis dengan AI
+                </p>
+              </div>
+            </form>
+          </Card>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
