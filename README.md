@@ -155,7 +155,7 @@ This is the server-side API documentation for the SNS NDT Learning Platform, bui
   {
     "id": 1,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Ultrasonic Testing (UT)",
     "technique": "Ultrasonic Testing (UT)",
     "CategoryId": 1,
     "experience_years": 20,
@@ -191,7 +191,7 @@ This is the server-side API documentation for the SNS NDT Learning Platform, bui
 {
   "id": 1,
   "name": "Saenal Aladin Rapi",
-  "title": "Lead NDT Instructor",
+  "title": "Ultrasonic Testing (UT)",
   "technique": "Ultrasonic Testing (UT)",
   "CategoryId": 1,
   "experience_years": 20,
@@ -1178,7 +1178,7 @@ These endpoints require both authentication and admin authorization.
   {
     "id": 1,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Ultrasonic Testing (UT)",
     "technique": "Ultrasonic Testing (UT)",
     "CategoryId": 1,
     "experience_years": 20,
@@ -1243,7 +1243,7 @@ These endpoints require both authentication and admin authorization.
   "data": {
     "id": 11,
     "name": "New Instructor",
-    "title": "Lead NDT Instructor",
+    "title": "Ultrasonic Testing (UT)",
     "technique": "New Technique",
     "CategoryId": 1,
     "experience_years": 15,
