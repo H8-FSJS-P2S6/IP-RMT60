@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Play, 
@@ -42,6 +42,7 @@ import {
   ThumbsUp
 } from "lucide-react";
 import api from "../utils/api";
+import { checkCourseAccess } from "../utils/courseAccess";
 import { useAuth } from "../hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -71,12 +72,22 @@ const addToCart = async (lectureId) => {
 export default function TechnicalCourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const { data: lecture, isLoading } = useQuery({ 
     queryKey: ['course', id], 
     queryFn: () => fetchCourseById(id) 
   });
+
+  // Check if user has access to this course
+  const { data: courseAccess, isLoading: accessLoading } = useQuery({
+    queryKey: ['courseAccess', id],
+    queryFn: () => checkCourseAccess(id),
+    enabled: isAuthenticated && !!id,
+    retry: false
+  });
+
+  const hasAccess = courseAccess?.hasAccess || false;
 
   const mutation = useMutation({ 
     mutationFn: addToCart, 
@@ -267,10 +278,23 @@ export default function TechnicalCourseDetail() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" onClick={handleAddToCart} disabled={mutation.isLoading}>
-                  <CreditCard className="h-6 w-6 mr-3" />
-                  <span>{mutation.isLoading ? "Adding to cart..." : `Enroll Now - ${formatToIDR(lecture.price)}`}</span>
-                </Button>
+                {hasAccess ? (
+                  // User has access - show Start Learning button
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate(`/learn/${id}`)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Play className="h-6 w-6 mr-3" />
+                    <span>Start Learning</span>
+                  </Button>
+                ) : (
+                  // User doesn't have access - show Enroll button
+                  <Button size="lg" onClick={handleAddToCart} disabled={mutation.isLoading}>
+                    <CreditCard className="h-6 w-6 mr-3" />
+                    <span>{mutation.isLoading ? "Adding to cart..." : `Enroll Now - ${formatToIDR(lecture.price)}`}</span>
+                  </Button>
+                )}
                 
                 <Button size="lg" variant="outline" onClick={handleWishlist}>
                   <Heart className={`h-5 w-5 mr-2 ${isWishlisted ? 'fill-current text-red-500' : ''}`} />
@@ -287,15 +311,43 @@ export default function TechnicalCourseDetail() {
             {/* Video Preview */}
             <div className="lg:col-span-1">
               <div className="bg-slate-800 rounded-2xl overflow-hidden">
-                <VideoPlayerModern 
-                  src={lecture.videoUrl}
-                  title={lecture.title}
-                  className="w-full aspect-video"
-                />
+                {hasAccess ? (
+                  // User has access - show full video
+                  <VideoPlayerModern 
+                    src={lecture.videoUrl}
+                    title={lecture.title}
+                    className="w-full aspect-video"
+                  />
+                ) : (
+                  // User doesn't have access - show preview only
+                  <div className="relative w-full aspect-video bg-slate-900 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                    <VideoPlayerModern 
+                      src={lecture.videoUrl}
+                      title={`${lecture.title} - Preview`}
+                      className="w-full h-full opacity-50"
+                      previewOnly={true}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <Lock className="h-16 w-16 text-orange-400 mx-auto mb-4" />
+                        <h3 className="text-white text-xl font-bold mb-2">Course Locked</h3>
+                        <p className="text-slate-300 mb-4">Purchase this course to unlock full access</p>
+                        <Button onClick={handleAddToCart} disabled={mutation.isLoading}>
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Enroll Now
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-slate-300 font-mono text-sm">Course Preview</span>
+                    <span className="text-slate-300 font-mono text-sm">
+                      {hasAccess ? 'Full Course Access' : 'Course Preview'}
+                    </span>
                     <div className="flex items-center space-x-1">
+                      {hasAccess && <CheckCircle className="h-4 w-4 text-green-400" />}
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
                       <span className="text-white font-mono">4.8</span>
                       <span className="text-slate-400 text-sm">(342 reviews)</span>

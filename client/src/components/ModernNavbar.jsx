@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Target, Menu, X, Search, ShoppingCart, User, LogOut, ShieldCheck } from 'lucide-react';
+import { Target, Menu, X, Search, ShoppingCart, User, LogOut, ShieldCheck, Package, BookOpen } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from './ui/Button';
 
@@ -70,6 +70,20 @@ const ModernNavbar = () => {
                         Admin
                       </Link>
                     )}
+                    <Link
+                      to="/orders"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <Package className="mr-2 h-4 w-4" />
+                      Pesanan Saya
+                    </Link>
+                    <Link
+                      to="/my-courses"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Kursus Saya
+                    </Link>
                     <Link
                       to="/profile"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -142,6 +156,20 @@ const ModernNavbar = () => {
                       Admin
                     </Link>
                   )}
+                  <Link
+                    to="/orders"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Pesanan Saya
+                  </Link>
+                  <Link
+                    to="/my-courses"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Kursus Saya
+                  </Link>
                   <Link
                     to="/profile"
                     className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"

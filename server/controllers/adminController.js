@@ -1,4 +1,4 @@
-const { User, Category, Lecture, Transaction, sequelize } = require("../models");
+const { User, Category, Lecture, Transaction, TransactionDetail, sequelize } = require("../models");
 const { Op } = require("sequelize");
 
 class AdminController {
@@ -393,6 +393,153 @@ class AdminController {
     }
   }
 
+  static async getPendingPayments(req, res, next) {
+    try {
+      const pendingPayments = await Transaction.findAll({
+        where: { 
+          status: 'Pending',
+          payment_method: 'Manual_Transfer'
+        },
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'email']
+          },
+          {
+            model: TransactionDetail,
+            include: [{
+              model: Lecture,
+              attributes: ['name', 'price']
+            }]
+          }
+        ],
+        order: [['createdAt', 'ASC']] // Oldest first for priority
+      });
+
+      res.json({
+        message: "Pending payments retrieved successfully",
+        payments: pendingPayments,
+        total: pendingPayments.length
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async approvePayment(req, res, next) {
+    try {
+      const { invoice_number } = req.params;
+      const { note } = req.body; // Optional admin note
+
+      const transaction = await Transaction.findOne({
+        where: { 
+          invoice_number,
+          payment_method: 'Manual_Transfer',
+          status: 'Pending'
+        },
+        include: [{
+          model: User,
+          attributes: ['username', 'email']
+        }]
+      });
+
+      if (!transaction) {
+        throw { name: "NotFound", message: "Pending transaction not found" };
+      }
+
+      await transaction.update({ 
+        status: 'Completed',
+        admin_note: note || `Approved by ${req.user.username} on ${new Date().toISOString()}`
+      });
+
+      res.json({
+        message: "Payment approved successfully",
+        transaction: {
+          invoice_number: transaction.invoice_number,
+          user: transaction.User.username,
+          amount: transaction.total_amount,
+          status: transaction.status,
+          approved_by: req.user.username,
+          approved_at: new Date()
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async rejectPayment(req, res, next) {
+    try {
+      const { invoice_number } = req.params;
+      const { reason } = req.body; // Required rejection reason
+
+      const transaction = await Transaction.findOne({
+        where: { 
+          invoice_number,
+          payment_method: 'Manual_Transfer',
+          status: 'Pending'
+        },
+        include: [{
+          model: User,
+          attributes: ['username', 'email']
+        }]
+      });
+
+      if (!transaction) {
+        throw { name: "NotFound", message: "Pending transaction not found" };
+      }
+
+      await transaction.update({ 
+        status: 'Cancelled',
+        admin_note: `Rejected by ${req.user.username}: ${reason || 'No reason provided'}`
+      });
+
+      res.json({
+        message: "Payment rejected successfully",
+        transaction: {
+          invoice_number: transaction.invoice_number,
+          user: transaction.User.username,
+          amount: transaction.total_amount,
+          status: transaction.status,
+          rejected_by: req.user.username,
+          rejected_at: new Date(),
+          reason: reason || 'No reason provided'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPaymentStats(req, res, next) {
+    try {
+      const stats = await Transaction.findAll({
+        attributes: [
+          'status',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+          [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_amount']
+        ],
+        group: ['status']
+      });
+
+      const formattedStats = stats.reduce((acc, stat) => {
+        acc[stat.status] = {
+          count: parseInt(stat.dataValues.count),
+          total_amount: parseInt(stat.dataValues.total_amount) || 0
+        };
+        return acc;
+      }, {});
+
+      res.json({
+        message: "Payment statistics retrieved successfully",
+        stats: formattedStats
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Dashboard and Statistics Methods
   static async getDashboard(req, res, next) {
     try {
       // Fetch all necessary data for the dashboard in a single endpoint

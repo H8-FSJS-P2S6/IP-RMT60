@@ -64,7 +64,7 @@ const ModernAdminCourses = () => {
               <TableRow key={course.id}>
                 <TableCell className="font-medium">{course.title}</TableCell>
                 <TableCell>{course.Category.name}</TableCell>
-                <TableCell>${course.price}</TableCell>
+                <TableCell>Rp{course.price}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     course.status === 'Published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'

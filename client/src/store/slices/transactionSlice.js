@@ -25,7 +25,8 @@ export const fetchTransactions = createAsyncThunk(
       if (params.startDate) queryParams.append('startDate', params.startDate);
       if (params.endDate) queryParams.append('endDate', params.endDate);
       
-      const response = await api.get(`/transactions?${queryParams.toString()}`);
+      // Use user-specific endpoint for regular users
+      const response = await api.get(`/transactions/user?${queryParams.toString()}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
@@ -60,8 +61,22 @@ export const processPayment = createAsyncThunk(
   }
 );
 
+// Manual payment processing
+export const processManualPayment = createAsyncThunk(
+  'transactions/processManualPayment',
+  async (paymentData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/payments/manual/create', paymentData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Manual payment processing failed');
+    }
+  }
+);
+
 // Alias for backward compatibility
 export { processPayment as createPayment };
+export { processManualPayment as createManualPayment };
 
 // Admin thunks
 export const fetchAllTransactions = createAsyncThunk(
@@ -202,6 +217,23 @@ const transactionSlice = createSlice({
         state.success = true;
       })
       .addCase(processPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.paymentStatus = 'failed';
+      })
+      
+      // Process Manual Payment
+      .addCase(processManualPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(processManualPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentTransaction = action.payload.transaction;
+        state.paymentStatus = 'manual_success';
+        state.success = true;
+      })
+      .addCase(processManualPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.paymentStatus = 'failed';

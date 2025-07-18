@@ -184,7 +184,7 @@ const ModernCourses = () => {
       render: (price) => (
         <Space>
           <DollarOutlined style={{ color: '#52c41a' }} />
-          <Text strong>${price}</Text>
+          <Text strong>Rp{price}</Text>
         </Space>
       ),
     },

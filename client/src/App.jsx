@@ -26,7 +26,10 @@ import ModernCourseLearning from "./pages/ModernCourseLearning";
 import NotFound from "./pages/NotFound";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import CheckoutHybrid from "./pages/CheckoutHybrid";
+import UserOrders from "./pages/UserOrders";
 import PaymentResult from "./pages/PaymentResult";
+import MyCourses from "./pages/MyCourses";
 
 // Modern Admin Pages
 import ModernDashboard from "./pages/Admin/ModernDashboard";
@@ -35,6 +38,7 @@ import ModernAdminCourses from "./pages/Admin/ModernCourses";
 import ModernAdminCategories from "./pages/Admin/ModernCategories";
 import ModernTransactions from "./pages/Admin/ModernTransactions";
 import ModernPayments from "./pages/Admin/ModernPayments";
+import AdminPayments from "./pages/Admin/AdminPayments";
 import ChatbotManagement from "./pages/Admin/ChatbotManagement";
 
 const queryClient = new QueryClient();
@@ -73,7 +77,7 @@ function AppRoutes() {
         <Route path="courses" element={<ModernAdminCourses />} />
         <Route path="categories" element={<ModernAdminCategories />} />
         <Route path="transactions" element={<ModernTransactions />} />
-        <Route path="payments" element={<ModernPayments />} />
+        <Route path="payments" element={<AdminPayments />} />
         <Route path="chatbot" element={<ChatbotManagement />} />
       </Route>
 
@@ -91,7 +95,10 @@ function AppRoutes() {
         {/* Protected user routes */}
         <Route element={isAuthenticated ? <Outlet /> : <Navigate to="/login" />}>
           <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
+          <Route path="checkout" element={<CheckoutHybrid />} />
+          <Route path="checkout/legacy" element={<Checkout />} />
+          <Route path="orders" element={<UserOrders />} />
+          <Route path="my-courses" element={<MyCourses />} />
           <Route path="profile" element={<TechnicalProfile />} />
           <Route path="learn/:id" element={<ModernCourseLearning />} />
         </Route>

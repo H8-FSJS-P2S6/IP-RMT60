@@ -45,8 +45,59 @@ router.put("/transactions/:id", AdminController.updateTransaction);
 
 // Payments routes
 router.get("/payments", AdminController.getPayments);
+router.get("/payments/pending", AdminController.getPendingPayments);
+router.get("/payments/stats", AdminController.getPaymentStats);
+router.patch("/payments/approve/:invoice_number", AdminController.approvePayment);
+router.patch("/payments/reject/:invoice_number", AdminController.rejectPayment);
 router.get("/payments/export", AdminController.exportPayments);
 router.get("/payments/:id", AdminController.getPaymentById);
 router.put("/payments/:id", AdminController.updatePayment);
+
+// Test route for creating sample data (development only)
+router.post("/test/create-sample-transaction", async (req, res) => {
+  try {
+    const { Transaction, TransactionDetail, User } = require("../models");
+    const { userId, lectureId } = req.body;
+    
+    if (!userId || !lectureId) {
+      return res.status(400).json({ message: "userId and lectureId are required" });
+    }
+    
+    // Check if user exists
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Create a completed transaction for testing
+    const transaction = await Transaction.create({
+      UserId: userId,
+      total_amount: 100000,
+      status: 'Completed',
+      payment_method: 'Manual_Transfer',
+      invoice_number: `INV-TEST-${Date.now()}`
+    });
+
+    // Add the lecture to the transaction
+    await TransactionDetail.create({
+      TransactionId: transaction.id,
+      LectureId: lectureId,
+      price: 100000
+    });
+
+    res.json({
+      message: "Sample completed transaction created for testing",
+      transaction: {
+        id: transaction.id,
+        userId: transaction.UserId,
+        status: transaction.status,
+        invoice_number: transaction.invoice_number
+      }
+    });
+  } catch (error) {
+    console.error('Error creating sample transaction:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;
