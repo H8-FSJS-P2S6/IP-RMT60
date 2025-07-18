@@ -1,22 +1,30 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { Lecture, Category } = require("../models");
+const { Lecture, Category, Lesson } = require("../models");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Knowledge base for SNS NDT Academy
+// Enhanced knowledge base for SNS NDT Academy
 const createSystemPrompt = (lectures, categories) => {
-  const lectureInfo = lectures.map(lecture => ({
-    id: lecture.id,
-    instructor: lecture.name,
-    technique: lecture.technique,
-    category: lecture.Category?.name || 'Unknown',
-    price: lecture.price,
-    description: lecture.description,
-    availability: lecture.availability,
-    experience: lecture.experience_years,
-    certifications: lecture.certifications
-  }));
+  // Detailed lecture info including lessons
+  const lectureInfo = lectures.map(lecture => {
+    const lessonTitles = lecture.Lessons && lecture.Lessons.length > 0
+      ? lecture.Lessons.map(l => l.title).join(', ')
+      : 'Details not available';
+
+    return {
+      id: lecture.id,
+      instructor: lecture.name,
+      technique: lecture.technique,
+      category: lecture.Category?.name || 'Unknown',
+      price: lecture.price,
+      description: lecture.description,
+      availability: lecture.availability,
+      experience: lecture.experience_years,
+      certifications: lecture.certifications,
+      lessons: lessonTitles
+    };
+  });
 
   const categoryInfo = categories.map(cat => ({
     name: cat.name,
@@ -24,72 +32,91 @@ const createSystemPrompt = (lectures, categories) => {
     techniques: cat.techniques
   }));
 
-  return `You are SNS Assistant, an AI chatbot for SNS NDT Academy, a professional Non-Destructive Testing (NDT) training institution. You are knowledgeable, helpful, and professional.
+  // Restructured and more detailed prompt
+  return `You are SNS Assistant, an expert AI chatbot for SNS NDT Academy, a premier Non-Destructive Testing (NDT) training institution. Your goal is to be knowledgeable, helpful, and professional.
 
-**ABOUT SNS NDT ACADEMY:**
-- A leading NDT training institution.
-- Specializes in Non-Destructive Testing certification and training.
-- Offers comprehensive courses for oil, gas, petrochemical, aerospace, and automotive industries.
-- All instructors are ASNT Level III certified professionals.
+**Institutional Profile:**
+- **Name:** SNS NDT Academy
+- **Specialization:** Non-Destructive Testing (NDT) certification and training.
+- **Target Industries:** Oil & Gas, Petrochemical, Aerospace, Automotive.
+- **Instructor Quality:** All instructors are ASNT Level III certified professionals.
 
-**AVAILABLE COURSE CATEGORIES:**
+**Available Course Categories:**
 ${categoryInfo.map(cat => `
-- ${cat.name}: ${cat.description}
-  Techniques: ${cat.techniques.join(', ')}`).join('\n')}
+- **${cat.name}**: ${cat.description}
+  *Techniques Covered*: ${cat.techniques.join(', ')}`).join('\n')}
 
-**AVAILABLE COURSES:**
-**AVAILABLE COURSES:**
+**Detailed Course Offerings:**
 ${lectureInfo.map(course => `
-- ${course.technique} (ID: ${course.id})
-  Instructor: ${course.instructor} (${course.experience} years experience)
-  Category: ${course.category}
-  Price: ${course.price.toLocaleString('en-US')}
-  Status: ${course.availability}
-  Description: ${course.description}
-  Certifications: ${course.certifications?.join(', ') || 'N/A'}`).join('\n')}
-**YOUR ROLE:**
-- Answer questions about courses, pricing, schedules, and enrollment.
-- Provide detailed information about NDT techniques and their applications.
-- Help users choose the right course based on their needs.
-- Explain certification processes and requirements.
-- Assist with general inquiries about the academy.
+---
+- **Course ID:** ${course.id}
+- **Course Name:** ${course.technique}
+- **Instructor:** ${course.instructor} (${course.experience} years of experience)
+- **Category:** ${course.category}
+- **Price:** ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(course.price)}
+- **Availability:** ${course.availability}
+- **Certifications:** ${course.certifications?.join(', ') || 'N/A'}
+- **Description:** ${course.description}
+- **Curriculum Overview:** ${course.lessons}
+---`).join('\n')}
 
-**RESPONSE GUIDELINES:**
-- Always respond in English.
-- Be professional, friendly, and informative.
-- Provide specific course details when asked about pricing or availability.
-- If asked about courses not in the list, politely explain what we actually offer.
-- For complex technical questions, provide accurate NDT knowledge.
-- For enrollment or payment questions, direct users to contact admin.
-- Always format prices in USD with proper thousand separators.
+**Your Role & Guidelines:**
+1.  **Primary Function:** Answer user questions about courses (content, price, schedule), NDT techniques, enrollment, and certification.
+2.  **Tone:** Maintain a professional, friendly, and informative tone. All responses must be in English.
+3.  **Data Usage:** Base your answers on the detailed information provided above. For questions about topics not covered, politely state that the information is not available or guide the user to what you *do* know.
+4.  **Pricing:** Always format prices in USD with thousand separators (e.g., $1,500).
+5.  **Enrollment/Payment:** For direct enrollment or payment queries, guide the user to contact an administrator for the next steps. Do not process payments or registrations yourself.
+6.  **Be Specific:** When asked about a course, use the detailed information, including the curriculum overview, to give a comprehensive answer.
 
-Remember: You represent SNS NDT Academy professionally. Always be helpful and provide accurate information about our courses and services.`;
+You are the front-line representative of SNS NDT Academy. Your accuracy and professionalism are key.`;
 };
 
 async function sendMessageToGemini(message) {
   try {
-    // Fetch current course and category data
-    const lectures = await Lecture.findAll({
-      include: [{ model: Category }]
-    });
-    const categories = await Category.findAll();
+    // Fetch all necessary data in parallel for efficiency
+    const [lectures, categories] = await Promise.all([
+      Lecture.findAll({
+        include: [
+          { model: Category, attributes: ['name'] },
+          { model: Lesson, attributes: ['title'] }
+        ]
+      }),
+      Category.findAll()
+    ]);
+
+    if (!lectures || lectures.length === 0) {
+      console.error("No lecture data found in the database.");
+      throw new Error("Course data is currently unavailable.");
+    }
 
     const systemPrompt = createSystemPrompt(lectures, categories);
     
-    // Combine system prompt with user message
     const fullPrompt = `${systemPrompt}
 
-User Question: ${message}
+User Question: "${message}"
 
-Please respond as SNS Assistant in English:`;
+SNS Assistant Response:`;
 
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const text = response.text();
+    
+    if (!text || text.trim().length === 0) {
+      console.warn("Received empty response from Gemini API for prompt:", message);
+      throw new Error("Empty response from AI");
+    }
+
     return text;
   } catch (error) {
-    console.error("Error communicating with Gemini API:", error);
-    throw new Error("Sorry, I am experiencing technical difficulties. Please try again later.");
+    // Log the detailed error for debugging
+    console.error("Error in sendMessageToGemini:", {
+      message: error.message,
+      stack: error.stack,
+      originalUserMessage: message
+    });
+    
+    // Return a more specific error to the controller
+    throw new Error(`Failed to get a response from the AI service. Reason: ${error.message}`);
   }
 }
 

@@ -29,18 +29,15 @@ class ChatbotController {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error("Chatbot error:", error);
-      
-      // Provide user-friendly error messages
-      let errorMessage = "Sorry, I am experiencing technical difficulties. Please try again later.";
-      
-      if (error.name === "BadRequest") {
-        errorMessage = error.message;
-      } else if (error.message && error.message.includes("API")) {
-        errorMessage = "The chatbot service is currently unavailable. Please contact an admin for direct assistance.";
-      }
-      
-      res.status(200).json({ 
+      console.error("Chatbot controller error:", error.message);
+
+      const errorMessage = error.name === "BadRequest" 
+        ? error.message
+        : `Sorry, I encountered an issue. ${error.message}`;
+
+      // It's good practice to send a 200 status even for handled errors
+      // to avoid the client treating it as a failed HTTP request.
+      res.status(200).json({
         text: errorMessage,
         timestamp: new Date().toISOString(),
         isError: true
