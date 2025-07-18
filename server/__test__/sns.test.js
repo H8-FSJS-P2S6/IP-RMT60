@@ -46,7 +46,7 @@ const safeTest = (name, testFn) => {
   });
 };
 
-// Fungsi untuk men-generate token
+// Function to generate token
 function signToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET || "secret-key", {
     expiresIn: "1d",
@@ -62,7 +62,7 @@ let transactionId;
 
 beforeAll(async () => {
   try {
-    // Reset database sebelum testing
+    // Reset database before testing
     await sequelize.queryInterface.bulkDelete("TransactionDetails", null, { truncate: true, cascade: true, restartIdentity: true });
     await sequelize.queryInterface.bulkDelete("Transactions", null, { truncate: true, cascade: true, restartIdentity: true });
     await sequelize.queryInterface.bulkDelete("Carts", null, { truncate: true, cascade: true, restartIdentity: true });
@@ -197,7 +197,7 @@ afterAll(async () => {
 });
 
 describe("User Routes - Authentication (POST /api/users)", () => {
-  test("Berhasil register user baru", async () => {
+  test("Successfully register new user", async () => {
     const newUser = {
       username: "newuser",
       email: "newuser@example.com",
@@ -213,7 +213,7 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response.body).toHaveProperty("role", "User");
   });
 
-  test("Gagal register karena email sudah terdaftar", async () => {
+  test("Failed to register due to email already exists", async () => {
     // Use a different email that's guaranteed to already exist
     const existingUser = {
       username: "existinguser",
@@ -229,10 +229,10 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response).toBeDefined();
   });
 
-  test("Gagal register karena data tidak lengkap", async () => {
+  test("Failed to register due to incomplete data", async () => {
     const incompleteUser = {
       email: "incomplete@example.com",
-      // username hilang
+      // username missing
       password: "incomplete123",
     };
     const response = await request(app).post("/api/users/register").send(incompleteUser);
@@ -240,7 +240,7 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil login dan mengembalikan access_token", async () => {
+  test("Successfully login and return access_token", async () => {
     const loginData = {
       email: "admin@example.com",
       password: "admin123",
@@ -250,14 +250,14 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response.body).toHaveProperty("access_token", expect.any(String));
   });
 
-  test("Gagal login karena email tidak diberikan", async () => {
+  test("Failed to login due to missing email", async () => {
     const loginData = { password: "admin123" };
     const response = await request(app).post("/api/users/login").send(loginData);
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message", "Email and password are required");
   });
 
-  test("Gagal login karena password salah", async () => {
+  test("Failed to login due to wrong password", async () => {
     const loginData = {
       email: "admin@example.com",
       password: "wrongpassword",
@@ -267,7 +267,7 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response.body).toHaveProperty("message", "Invalid email or password");
   });
 
-  test("Gagal login karena user tidak terdaftar", async () => {
+  test("Failed to login due to user not registered", async () => {
     const loginData = {
       email: "nonexistent@example.com",
       password: "anypassword",
@@ -278,7 +278,7 @@ describe("User Routes - Authentication (POST /api/users)", () => {
     expect(response.status).toBeLessThan(500);
   });
 
-  test("Berhasil update profil user", async () => {
+  test("Successfully update user profile", async () => {
     const updatedProfile = {
       username: "updateduser",
       phoneNumber: "9876543210",
@@ -345,7 +345,7 @@ describe("User Routes - Authentication (POST /api/users)", () => {
 
 // Remaining tests unchanged
 describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
-  test("Berhasil mendapatkan semua kategori (public)", async () => {
+  test("Successfully get all categories (public)", async () => {
     const response = await request(app).get("/api/categories");
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
@@ -353,20 +353,20 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body[0]).toHaveProperty("name");
   });
 
-  test("Berhasil mendapatkan kategori by ID", async () => {
+  test("Successfully get category by ID", async () => {
     const response = await request(app).get(`/api/categories/${categoryId}`);
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("id", categoryId);
     expect(response.body).toHaveProperty("name");
   });
 
-  test("Gagal mendapatkan kategori dengan ID yang tidak ada", async () => {
+  test("Failed to get category with non-existent ID", async () => {
     const response = await request(app).get(`/api/categories/9999`);
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil membuat kategori baru (admin)", async () => {
+  test("Successfully create new category (admin)", async () => {
     const newCategory = {
       name: "Science",
       description: "Science courses",
@@ -380,7 +380,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("name", newCategory.name);
   });
 
-  test("Gagal membuat kategori karena tidak login", async () => {
+  test("Failed to create category because not logged in", async () => {
     const newCategory = {
       name: "Science",
       description: "Science courses",
@@ -391,7 +391,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("message", "Authentication token required");
   });
 
-  test("Gagal membuat kategori karena bukan admin", async () => {
+  test("Failed to create category because not admin", async () => {
     const newCategory = {
       name: "Science",
       description: "Science courses",
@@ -405,7 +405,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("message", "Admin access required");
   });
 
-  test("Gagal membuat kategori karena validasi", async () => {
+  test("Failed to create category due to validation", async () => {
     const invalidCategory = {
       description: "Missing name",
       techniques: ["Test"],
@@ -418,7 +418,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil update kategori (admin)", async () => {
+  test("Successfully update category (admin)", async () => {
     const catResponse = await request(app).get("/api/categories");
     const categoryId = catResponse.body[0].id;
 
@@ -452,7 +452,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil hapus kategori (admin)", async () => {
+  test("Successfully delete category (admin)", async () => {
     const newCategory = {
       name: "Category to Delete",
       description: "Will be deleted",
@@ -470,7 +470,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("message", expect.any(String));
   });
 
-  test("Gagal hapus kategori karena ID tidak ditemukan", async () => {
+  test("Failed to delete category because ID not found", async () => {
     const response = await request(app)
       .delete(`/api/categories/9999`)
       .set("Authorization", `Bearer ${adminToken}`);
@@ -481,7 +481,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
 
 // Remaining tests unchanged
 describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
-  test("Berhasil mendapatkan semua lecture (public)", async () => {
+  test("Successfully get all lectures (public)", async () => {
     const response = await request(app).get("/api/lectures");
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
@@ -489,20 +489,20 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
     expect(response.body[0]).toHaveProperty("title");
   });
 
-  test("Berhasil mendapatkan lecture by ID", async () => {
+  test("Successfully get lecture by ID", async () => {
     const response = await request(app).get(`/api/lectures/${lectureId}`);
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("id", lectureId);
     expect(response.body).toHaveProperty("title");
   });
 
-  test("Gagal mendapatkan lecture dengan ID yang tidak ada", async () => {
+  test("Failed to get lecture with non-existent ID", async () => {
     const response = await request(app).get(`/api/lectures/9999`);
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil membuat lecture baru (admin)", async () => {
+  test("Successfully create new lecture (admin)", async () => {
     const catResponse = await request(app).get("/api/categories");
     const categoryId = catResponse.body[0].id;
 
@@ -526,7 +526,7 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
     expect(response.body).toHaveProperty("title", newLecture.title);
   });
 
-  test("Gagal membuat lecture karena validasi gagal", async () => {
+  test("Failed to create lecture due to validation failure", async () => {
     const newLecture = {
       name: "Jane Doe",
       technique: "Deep Learning",
@@ -541,7 +541,7 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
     expect(response.body.message).toContain("null");
   });
 
-  test("Berhasil update lecture (admin)", async () => {
+  test("Successfully update lecture (admin)", async () => {
     const lectureRes = await request(app).get("/api/lectures");
     const lectureId = lectureRes.body[0].id;
 
@@ -571,7 +571,7 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil hapus lecture (admin)", async () => {
+  test("Successfully delete lecture (admin)", async () => {
     const catResponse = await request(app).get("/api/categories");
     const categoryId = catResponse.body[0].id;
 
@@ -603,7 +603,7 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
 
 // Remaining tests unchanged
 describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
-  test("Berhasil mendapatkan cart user", async () => {
+  test("Successfully get user cart", async () => {
     const response = await request(app)
       .get("/api/carts")
       .set("Authorization", `Bearer ${userToken}`);
@@ -611,21 +611,21 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
     expect(response.body).toBeInstanceOf(Array);
   });
 
-  test("Berhasil menambah ke cart", async () => {
+  test("Successfully add to cart", async () => {
     const lectureRes = await request(app).get("/api/lectures");
 
     if (lectureRes.body.length === 0) {
-      console.log("Tidak ada lecture untuk ditambahkan ke cart, melewati test");
+      console.log("No lectures to add to cart, skipping test");
       return;
     }
 
     const lectureId = lectureRes.body[0].id;
 
-    // Pertama, coba format payload standar
+    // First, try standard payload format
     const cartItem = { LectureId: lectureId };
 
     try {
-      // Mencoba berbagai endpoint dan format yang mungkin digunakan oleh API
+      // Try various endpoints and formats that might be used by the API
 
       // Cara 1: Coba dengan endpoint standar
       let response = await request(app)
@@ -633,7 +633,7 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
         .set("Authorization", `Bearer ${userToken}`)
         .send(cartItem);
 
-      // Jika endpoint standar gagal, coba endpoint alternatif
+      // If standard endpoint fails, try alternative endpoint
       if (response.status === 404) {
         response = await request(app)
           .post("/api/carts/add")
@@ -641,7 +641,7 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
           .send(cartItem);
       }
 
-      // Jika masih gagal, coba dengan format payload berbeda
+      // If still fails, try with different payload format
       if (response.status === 404) {
         response = await request(app)
           .post("/api/carts")
@@ -649,17 +649,17 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
           .send({ lectureId: lectureId });
       }
 
-      // Untuk kebutuhan test coverage, terima status 404 juga sebagai "expected"
+      // For test coverage purposes, accept status 404 as "expected" as well
       expect([200, 201, 404]).toContain(response.status);
 
-      // Jika sukses, body harusnya terdefinisi
+      // If successful, the body should be defined
       if ([200, 201].includes(response.status)) {
         expect(response.body).toBeDefined();
       }
     } catch (error) {
-      // Jika terjadi error tidak terduga, abaikan untuk keperluan coverage
+      // If an unexpected error occurs, ignore it for coverage purposes
       console.log("Error saat menambah item ke cart:", error.message);
-      // Test dianggap lulus untuk tujuan coverage
+      // Test is considered passed for coverage purposes
     }
   });
 

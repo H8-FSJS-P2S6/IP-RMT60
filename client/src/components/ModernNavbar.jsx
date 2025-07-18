@@ -75,14 +75,14 @@ const ModernNavbar = () => {
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <Package className="mr-2 h-4 w-4" />
-                      Pesanan Saya
+                      My Orders
                     </Link>
                     <Link
                       to="/my-courses"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <BookOpen className="mr-2 h-4 w-4" />
-                      Kursus Saya
+                      My Courses
                     </Link>
                     <Link
                       to="/profile"
@@ -161,14 +161,14 @@ const ModernNavbar = () => {
                     className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => setIsOpen(false)}
                   >
-                    Pesanan Saya
+                    My Orders
                   </Link>
                   <Link
                     to="/my-courses"
                     className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => setIsOpen(false)}
                   >
-                    Kursus Saya
+                    My Courses
                   </Link>
                   <Link
                     to="/profile"

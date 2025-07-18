@@ -17,11 +17,11 @@ const formatToIDR = (price) => {
 
 const getStatusBadge = (status) => {
   const statusConfig = {
-    'Pending': { class: 'bg-warning text-dark', text: 'Menunggu Pembayaran' },
-    'Processing': { class: 'bg-info text-white', text: 'Diproses' },
-    'Completed': { class: 'bg-success text-white', text: 'Selesai' },
-    'Cancelled': { class: 'bg-danger text-white', text: 'Dibatalkan' },
-    'Refunded': { class: 'bg-secondary text-white', text: 'Dikembalikan' },
+    'Pending': { class: 'bg-warning text-dark', text: 'Pending Payment' },
+    'Processing': { class: 'bg-info text-white', text: 'Processing' },
+    'Completed': { class: 'bg-success text-white', text: 'Completed' },
+    'Cancelled': { class: 'bg-danger text-white', text: 'Cancelled' },
+    'Refunded': { class: 'bg-secondary text-white', text: 'Refunded' },
   };
   
   const config = statusConfig[status] || { class: 'bg-secondary text-white', text: status };
@@ -34,7 +34,7 @@ const getStatusBadge = (status) => {
 
 const getPaymentMethodBadge = (method) => {
   const methodConfig = {
-    'Manual_Transfer': { class: 'bg-primary text-white', text: 'Transfer Manual', icon: 'bi-bank' },
+    'Manual_Transfer': { class: 'bg-primary text-white', text: 'Manual Transfer', icon: 'bi-bank' },
     'Midtrans': { class: 'bg-success text-white', text: 'Payment Gateway', icon: 'bi-credit-card' },
   };
   
@@ -63,13 +63,13 @@ export default function UserOrders() {
   };
 
   const generateWhatsAppMessage = (transaction) => {
-    const message = `Halo, saya ingin menanyakan status pembayaran untuk:
+    const message = `Hello, I would like to inquire about the payment status for:
     
 📝 Invoice: ${transaction.invoice_number}
 💰 Total: ${formatToIDR(transaction.total_amount)}
-📅 Tanggal: ${new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+📅 Date: ${new Date(transaction.createdAt).toLocaleDateString('en-US')}
 
-Terima kasih.`;
+Thank you.`;
     
     return `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
   };
@@ -91,14 +91,14 @@ Terima kasih.`;
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Pesanan Saya</h2>
+            <h2>My Orders</h2>
             <div className="dropdown">
               <button 
                 className="btn btn-outline-secondary dropdown-toggle" 
                 type="button" 
                 data-bs-toggle="dropdown"
               >
-                {selectedStatus ? getStatusBadge(selectedStatus) : 'Semua Status'}
+                {selectedStatus ? getStatusBadge(selectedStatus) : 'All Status'}
               </button>
               <ul className="dropdown-menu">
                 <li>
@@ -106,7 +106,7 @@ Terima kasih.`;
                     className="dropdown-item" 
                     onClick={() => handleStatusFilter('')}
                   >
-                    Semua Status
+                    All Status
                   </button>
                 </li>
                 <li>
@@ -114,7 +114,7 @@ Terima kasih.`;
                     className="dropdown-item" 
                     onClick={() => handleStatusFilter('Pending')}
                   >
-                    Menunggu Pembayaran
+                    Pending Payment
                   </button>
                 </li>
                 <li>
@@ -122,7 +122,7 @@ Terima kasih.`;
                     className="dropdown-item" 
                     onClick={() => handleStatusFilter('Processing')}
                   >
-                    Diproses
+                    Processing
                   </button>
                 </li>
                 <li>
@@ -130,7 +130,7 @@ Terima kasih.`;
                     className="dropdown-item" 
                     onClick={() => handleStatusFilter('Completed')}
                   >
-                    Selesai
+                    Completed
                   </button>
                 </li>
               </ul>
@@ -147,10 +147,10 @@ Terima kasih.`;
             <div className="card">
               <div className="card-body text-center py-5">
                 <i className="bi bi-receipt-cutoff display-1 text-muted mb-3"></i>
-                <h4>Belum Ada Pesanan</h4>
-                <p className="text-muted">Anda belum memiliki pesanan apapun.</p>
+                <h4>No Orders Yet</h4>
+                <p className="text-muted">You don't have any orders yet.</p>
                 <a href="/courses" className="btn btn-primary">
-                  Jelajahi Kursus
+                  Explore Courses
                 </a>
               </div>
             </div>
@@ -164,7 +164,7 @@ Terima kasih.`;
                         <strong>Invoice:</strong> {transaction.invoice_number}
                       </small>
                       <small className="text-muted">
-                        {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                        {new Date(transaction.createdAt).toLocaleDateString('en-US')}
                       </small>
                     </div>
                     <div className="card-body">
@@ -204,10 +204,10 @@ Terima kasih.`;
                             className="btn btn-success btn-sm"
                           >
                             <i className="bi bi-whatsapp me-2"></i>
-                            Konfirmasi Pembayaran
+                            Confirm Payment
                           </a>
                           <small className="text-muted text-center">
-                            Kirim bukti transfer via WhatsApp
+                            Send transfer proof via WhatsApp
                           </small>
                         </div>
                       )}
@@ -228,7 +228,7 @@ Terima kasih.`;
                         <div className="text-center">
                           <small className="text-info">
                             <i className="bi bi-clock me-1"></i>
-                            Pembayaran sedang diverifikasi
+                            Payment is being verified
                           </small>
                         </div>
                       )}
@@ -237,7 +237,7 @@ Terima kasih.`;
                         <div className="text-center">
                           <small className="text-danger">
                             <i className="bi bi-x-circle me-1"></i>
-                            Pesanan dibatalkan
+                            Order cancelled
                           </small>
                         </div>
                       )}

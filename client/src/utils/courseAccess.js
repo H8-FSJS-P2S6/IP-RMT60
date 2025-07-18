@@ -13,7 +13,7 @@ export const checkCourseAccess = async (courseId) => {
     if (error.response?.status === 403) {
       return {
         hasAccess: false,
-        message: error.response.data.message || 'Anda belum membeli course ini'
+        message: error.response.data.message || 'You have not purchased this course'
       };
     }
     throw error;

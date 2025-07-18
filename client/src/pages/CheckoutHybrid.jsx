@@ -82,7 +82,7 @@ export default function CheckoutHybrid() {
 
   const handleGatewayPayment = async () => {
     // This will be enabled later
-    alert('Payment Gateway sedang dalam tahap pengembangan. Silakan gunakan Transfer Manual untuk sementara.');
+    alert('Payment Gateway is under development. Please use Manual Transfer for now.');
     return;
     
     /* COMMENTED FOR FUTURE USE
@@ -119,7 +119,7 @@ export default function CheckoutHybrid() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Nomor rekening berhasil disalin!');
+    alert('Account number copied successfully!');
   };
 
   if (cartLoading) {
@@ -159,22 +159,22 @@ export default function CheckoutHybrid() {
               <div className="card-header bg-success text-white">
                 <h5 className="mb-0">
                   <i className="bi bi-check-circle me-2"></i>
-                  Pesanan Berhasil Dibuat!
+                  Order Created Successfully!
                 </h5>
               </div>
               <div className="card-body">
                 <div className="alert alert-info">
                   <h6>Invoice: <strong>{manualPaymentData.transaction.invoice_number}</strong></h6>
-                  <p className="mb-0">Total Pembayaran: <strong>{formatToIDR(manualPaymentData.transaction.total_amount)}</strong></p>
+                  <p className="mb-0">Total Payment: <strong>{formatToIDR(manualPaymentData.transaction.total_amount)}</strong></p>
                 </div>
 
-                <h6>Informasi Pembayaran:</h6>
+                <h6>Payment Information:</h6>
                 <div className="card mb-3">
                   <div className="card-body">
                     <div className="row">
                       <div className="col-md-6">
                         <strong>Bank:</strong> {manualPaymentData.payment.bank_details.bank_name}<br/>
-                        <strong>No. Rekening:</strong> 
+                        <strong>Account Number:</strong> 
                         <span className="ms-2">
                           {manualPaymentData.payment.bank_details.account_number}
                           <button 
@@ -184,18 +184,18 @@ export default function CheckoutHybrid() {
                             Copy
                           </button>
                         </span><br/>
-                        <strong>Atas Nama:</strong> {manualPaymentData.payment.bank_details.account_name}
+                        <strong>Account Name:</strong> {manualPaymentData.payment.bank_details.account_name}
                       </div>
                       <div className="col-md-6">
                         <div className="text-danger">
-                          <strong>⏰ Batas Pembayaran: 24 jam</strong>
+                          <strong>⏰ Payment Deadline: 24 hours</strong>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <h6>Langkah Pembayaran:</h6>
+                <h6>Payment Steps:</h6>
                 <ol>
                   {manualPaymentData.payment.instructions.map((instruction, index) => (
                     <li key={index}>{instruction}</li>
@@ -210,13 +210,13 @@ export default function CheckoutHybrid() {
                     className="btn btn-success btn-lg"
                   >
                     <i className="bi bi-whatsapp me-2"></i>
-                    Lanjut ke WhatsApp
+                    Continue to WhatsApp
                   </a>
                   <button 
                     className="btn btn-outline-primary"
                     onClick={() => navigate('/user/orders')}
                   >
-                    Lihat Pesanan Saya
+                    View My Orders
                   </button>
                 </div>
               </div>
@@ -233,14 +233,14 @@ export default function CheckoutHybrid() {
         <div className="col-lg-8">
           <div className="card mb-4">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Ringkasan Pesanan</h5>
+              <h5 className="mb-0">Order Summary</h5>
             </div>
             <div className="card-body">
               <table className="table table-borderless">
                 <thead>
                   <tr>
                     <th scope="col">Course</th>
-                    <th scope="col" className="text-end">Harga</th>
+                    <th scope="col" className="text-end">Price</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -272,7 +272,7 @@ export default function CheckoutHybrid() {
           {/* Payment Method Selection */}
           <div className="card mb-3">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Pilih Metode Pembayaran</h5>
+              <h5 className="mb-0">Choose Payment Method</h5>
             </div>
             <div className="card-body">
               <div className="form-check mb-3">
@@ -287,13 +287,13 @@ export default function CheckoutHybrid() {
                 />
                 <label className="form-check-label" htmlFor="manualPayment">
                   <div>
-                    <strong>Transfer Manual</strong>
+                    <strong>Manual Transfer</strong>
                     <div className="text-success small">
                       <i className="bi bi-check-circle me-1"></i>
-                      Tersedia Sekarang
+                      Available Now
                     </div>
                     <small className="text-muted">
-                      Transfer bank + konfirmasi via WhatsApp
+                      Bank transfer + WhatsApp confirmation
                     </small>
                   </div>
                 </label>
@@ -317,7 +317,7 @@ export default function CheckoutHybrid() {
                       Coming Soon
                     </div>
                     <small className="text-muted">
-                      Kartu kredit, e-wallet, bank transfer otomatis
+                      Credit card, e-wallet, automatic bank transfer
                     </small>
                   </div>
                 </label>
@@ -335,7 +335,7 @@ export default function CheckoutHybrid() {
                 <div>
                   <div className="alert alert-info small">
                     <i className="bi bi-info-circle me-2"></i>
-                    Transfer manual membutuhkan konfirmasi dalam 1x24 jam
+                    Manual transfer requires confirmation within 24 hours
                   </div>
                   <div className="d-grid">
                     <button
@@ -350,12 +350,12 @@ export default function CheckoutHybrid() {
                             role="status"
                             aria-hidden="true"
                           ></span>
-                          Memproses...
+                          Processing...
                         </span>
                       ) : (
                         <span>
                           <i className="bi bi-whatsapp me-2"></i>
-                          Lanjut ke WhatsApp
+                          Continue to WhatsApp
                         </span>
                       )}
                     </button>
@@ -365,7 +365,7 @@ export default function CheckoutHybrid() {
                 <div>
                   <div className="alert alert-warning small">
                     <i className="bi bi-exclamation-triangle me-2"></i>
-                    Fitur Payment Gateway sedang dalam pengembangan
+                    Payment Gateway feature is under development
                   </div>
                   <div className="d-grid">
                     <button
@@ -374,7 +374,7 @@ export default function CheckoutHybrid() {
                       disabled={true}
                     >
                       <i className="bi bi-lock me-2"></i>
-                      Segera Hadir
+                      Coming Soon
                     </button>
                   </div>
                 </div>
@@ -400,11 +400,11 @@ export default function CheckoutHybrid() {
                   </div>
                   <div className="mb-2">
                     <i className="bi bi-clock me-2 text-warning"></i>
-                    Verifikasi 1x24 jam
+                    Verification 1x24 hours
                   </div>
                   <div className="mb-2">
                     <i className="bi bi-whatsapp me-2 text-success"></i>
-                    Konfirmasi via WhatsApp
+                    Confirmation via WhatsApp
                   </div>
                 </div>
               </div>

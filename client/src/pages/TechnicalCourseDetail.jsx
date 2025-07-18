@@ -292,7 +292,7 @@ export default function TechnicalCourseDetail() {
                   // User doesn't have access - show Enroll button
                   <Button size="lg" onClick={handleAddToCart} disabled={mutation.isLoading}>
                     <CreditCard className="h-6 w-6 mr-3" />
-                    <span>{mutation.isLoading ? "Adding to cart..." : `Enroll Now - ${formatToIDR(lecture.price)}`}</span>
+                    <span>{mutation.isLoading ? "Adding to Cart..." : `Enroll Now - ${formatToIDR(lecture.price)}`}</span>
                   </Button>
                 )}
                 
@@ -688,9 +688,9 @@ export default function TechnicalCourseDetail() {
                 <h4 className="font-bold text-slate-900 mb-4 font-mono">Related Courses</h4>
                 <div className="space-y-4">
                   {[
-                    { title: "Advanced UT Techniques", price: "Rp 2.990.000", rating: 4.7 },
-                    { title: "RT Safety & Radiation", price: "Rp 2.490.000", rating: 4.9 },
-                    { title: "MT Equipment Calibration", price: "Rp 1.990.000", rating: 4.6 }
+                    { title: "Advanced UT Techniques", price: 2990000, rating: 4.7 },
+                    { title: "RT Safety & Radiation", price: 2490000, rating: 4.9 },
+                    { title: "MT Equipment Calibration", price: 1990000, rating: 4.6 }
                   ].map((course, index) => (
                     <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                       <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center">
@@ -703,7 +703,7 @@ export default function TechnicalCourseDetail() {
                             <Star className="h-3 w-3 text-yellow-400 fill-current" />
                             <span className="text-xs text-slate-500 font-mono">{course.rating}</span>
                           </div>
-                          <span className="font-bold text-orange-600 text-sm font-mono">{course.price}</span>
+                          <span className="font-bold text-orange-600 text-sm font-mono">{formatToIDR(course.price)}</span>
                         </div>
                       </div>
                     </div>

@@ -14,10 +14,10 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
 
   const quickReplies = [
-    { text: "Lihat daftar kursus", icon: <BookOpen className="w-4 h-4" /> },
-    { text: "Tanya harga kursus", icon: <DollarSign className="w-4 h-4" /> },
-    { text: "Info pendaftaran", icon: <HelpCircle className="w-4 h-4" /> },
-    { text: "Hubungi admin", icon: <Phone className="w-4 h-4" /> }
+    { text: "View course list", icon: <BookOpen className="w-4 h-4" /> },
+    { text: "Ask course price", icon: <DollarSign className="w-4 h-4" /> },
+    { text: "Registration info", icon: <HelpCircle className="w-4 h-4" /> },
+    { text: "Contact admin", icon: <Phone className="w-4 h-4" /> }
   ];
 
   useEffect(() => {

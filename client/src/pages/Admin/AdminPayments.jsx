@@ -11,10 +11,10 @@ const formatToIDR = (price) => {
 
 const getStatusBadge = (status) => {
   const statusConfig = {
-    'Pending': { class: 'warning', text: 'Menunggu Pembayaran' },
-    'Processing': { class: 'info', text: 'Diproses' },
-    'Completed': { class: 'success', text: 'Selesai' },
-    'Cancelled': { class: 'danger', text: 'Dibatalkan' },
+    'Pending': { class: 'warning', text: 'Pending Payment' },
+    'Processing': { class: 'info', text: 'Processing' },
+    'Completed': { class: 'success', text: 'Completed' },
+    'Cancelled': { class: 'danger', text: 'Cancelled' },
   };
   
   const config = statusConfig[status] || { class: 'secondary', text: status };
@@ -43,7 +43,7 @@ export default function AdminPayments() {
       const response = await api.get('/admin/payments/pending');
       setPendingPayments(response.data.payments);
     } catch (error) {
-      setError(error.response?.data?.message || 'Gagal memuat pembayaran pending');
+      setError(error.response?.data?.message || 'Failed to load pending payments');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export default function AdminPayments() {
   };
 
   const handleApprove = async (invoiceNumber) => {
-    if (!window.confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')) {
+    if (!window.confirm('Are you sure you want to approve this payment?')) {
       return;
     }
 
@@ -74,16 +74,16 @@ export default function AdminPayments() {
       await fetchPendingPayments();
       await fetchPaymentStats();
       
-      alert('Pembayaran berhasil disetujui!');
+      alert('Payment approved successfully!');
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menyetujui pembayaran');
+      alert(error.response?.data?.message || 'Failed to approve payment');
     } finally {
       setActionLoading(prev => ({ ...prev, [invoiceNumber]: null }));
     }
   };
 
   const handleReject = async (invoiceNumber) => {
-    const reason = window.prompt('Alasan penolakan:');
+    const reason = window.prompt('Rejection reason:');
     if (!reason) return;
 
     try {
@@ -97,16 +97,16 @@ export default function AdminPayments() {
       await fetchPendingPayments();
       await fetchPaymentStats();
       
-      alert('Pembayaran berhasil ditolak!');
+      alert('Payment rejected successfully!');
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menolak pembayaran');
+      alert(error.response?.data?.message || 'Failed to reject payment');
     } finally {
       setActionLoading(prev => ({ ...prev, [invoiceNumber]: null }));
     }
   };
 
   const openWhatsApp = (userPhone, invoiceNumber) => {
-    const message = `Halo! Terkait pembayaran dengan invoice ${invoiceNumber}, mohon kirimkan bukti transfer untuk verifikasi. Terima kasih.`;
+    const message = `Hello! Regarding payment with invoice ${invoiceNumber}, please send transfer proof for verification. Thank you.`;
     const whatsappUrl = `https://wa.me/${userPhone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -130,7 +130,7 @@ export default function AdminPayments() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>
               <i className="bi bi-credit-card me-2"></i>
-              Manajemen Pembayaran
+              Payment Management
             </h2>
             <button 
               className="btn btn-outline-primary"
@@ -159,7 +159,7 @@ export default function AdminPayments() {
                   <i className="bi bi-clock-history display-4 text-warning"></i>
                   <h5 className="card-title mt-2">Pending</h5>
                   <p className="card-text">
-                    <strong>{stats.Pending?.count || 0}</strong> pembayaran<br/>
+                    <strong>{stats.Pending?.count || 0}</strong> payments<br/>
                     <small className="text-muted">
                       {formatToIDR(stats.Pending?.total_amount || 0)}
                     </small>
@@ -173,7 +173,7 @@ export default function AdminPayments() {
                   <i className="bi bi-check-circle display-4 text-success"></i>
                   <h5 className="card-title mt-2">Completed</h5>
                   <p className="card-text">
-                    <strong>{stats.Completed?.count || 0}</strong> pembayaran<br/>
+                    <strong>{stats.Completed?.count || 0}</strong> payments<br/>
                     <small className="text-muted">
                       {formatToIDR(stats.Completed?.total_amount || 0)}
                     </small>
@@ -187,7 +187,7 @@ export default function AdminPayments() {
                   <i className="bi bi-gear display-4 text-info"></i>
                   <h5 className="card-title mt-2">Processing</h5>
                   <p className="card-text">
-                    <strong>{stats.Processing?.count || 0}</strong> pembayaran<br/>
+                    <strong>{stats.Processing?.count || 0}</strong> payments<br/>
                     <small className="text-muted">
                       {formatToIDR(stats.Processing?.total_amount || 0)}
                     </small>
@@ -216,15 +216,15 @@ export default function AdminPayments() {
             <div className="card-header">
               <h5 className="card-title mb-0">
                 <i className="bi bi-hourglass-split me-2"></i>
-                Pembayaran Menunggu Verifikasi ({pendingPayments.length})
+                Pending Payments ({pendingPayments.length})
               </h5>
             </div>
             <div className="card-body">
               {pendingPayments.length === 0 ? (
                 <div className="text-center py-4">
                   <i className="bi bi-check-circle display-1 text-success"></i>
-                  <h4 className="mt-3">Tidak Ada Pembayaran Pending</h4>
-                  <p className="text-muted">Semua pembayaran sudah diverifikasi</p>
+                  <h4 className="mt-3">No Pending Payments</h4>
+                  <p className="text-muted">All payments have been verified</p>
                 </div>
               ) : (
                 <div className="table-responsive">
