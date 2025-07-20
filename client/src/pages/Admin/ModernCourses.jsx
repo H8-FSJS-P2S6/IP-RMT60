@@ -67,6 +67,8 @@ const ModernCourses = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -93,6 +95,7 @@ const ModernCourses = () => {
     setEditingCourse(null);
     setIsModalVisible(true);
     form.resetFields();
+    setVideoFile(null); // Reset video file
   };
 
   const handleEditCourse = (course) => {
@@ -106,7 +109,9 @@ const ModernCourses = () => {
       difficulty: course.difficulty,
       duration: course.duration,
       imageUrl: course.imageUrl,
+      videoUrl: course.videoUrl, // Populate videoUrl
     });
+    setVideoFile(null); // Reset video file
   };
 
   const handleDeleteCourse = async (courseId) => {
@@ -122,17 +127,55 @@ const ModernCourses = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      
+      let finalValues = { ...values };
+
+      if (videoFile) {
+        setIsUploadingVideo(true);
+        message.loading('Uploading video...', 0);
+        try {
+          // 1. Get the signed URL for upload from our server
+          const { data: { url, id } } = await api.post('/videos/upload');
+
+          // 2. Upload the video file directly to Mux
+          await fetch(url, {
+            method: 'PUT',
+            body: videoFile,
+            headers: {
+              'Content-Type': videoFile.type,
+            },
+          });
+          finalValues.videoUrl = `https://stream.mux.com/${id}.m3u8`;
+          message.success('Video uploaded successfully!');
+        } catch (videoUploadError) {
+          console.error('Error uploading video to Mux:', videoUploadError);
+          message.error('Failed to upload video.');
+          setIsUploadingVideo(false);
+          return; // Stop the process if video upload fails
+        } finally {
+          setIsUploadingVideo(false);
+        }
+      } else if (values.videoUrl) {
+        // If no new video is uploaded, but a videoUrl is provided in the form
+        finalValues.videoUrl = values.videoUrl;
+      } else if (editingCourse && editingCourse.videoUrl) {
+        // If no new video is uploaded and no videoUrl is provided in the form, retain existing videoUrl
+        finalValues.videoUrl = editingCourse.videoUrl;
+      } else {
+        // If no video is provided at all (for new course or clearing existing video)
+        finalValues.videoUrl = null;
+      }
+
       if (editingCourse) {
-        await dispatch(updateCourse({ id: editingCourse.id, ...values })).unwrap();
+        await dispatch(updateCourse({ id: editingCourse.id, ...finalValues })).unwrap();
         message.success('Course updated successfully');
       } else {
-        await dispatch(createCourse(values)).unwrap();
+        await dispatch(createCourse(finalValues)).unwrap();
         message.success('Course created successfully');
       }
       
       setIsModalVisible(false);
       form.resetFields();
+      setVideoFile(null); // Clear video file state after successful submission
     } catch (err) {
       console.error('Save course error:', err);
       message.error('Failed to save course');
@@ -518,6 +561,43 @@ const ModernCourses = () => {
               placeholder="Enter image URL" 
               prefix={<UploadOutlined />}
             />
+          </Form.Item>
+
+          <Form.Item
+            label="Course Video URL (Mux Playback ID)"
+            name="videoUrl"
+            rules={[
+              { type: 'url', message: 'Please enter a valid URL!' }
+            ]}
+          >
+            <Input 
+              placeholder="Enter Mux Playback URL (e.g., https://stream.mux.com/YOUR_ID.m3u8)" 
+              prefix={<PlayCircleOutlined />}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Upload New Course Video"
+            name="videoFile"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e && e.fileList;
+            }}
+            rules={editingCourse ? [] : [{ required: true, message: 'Please upload a video!' }]}
+          >
+            <Upload
+              name="video"
+              listType="picture"
+              beforeUpload={() => false} // Prevent auto-upload
+              onChange={(info) => setVideoFile(info.fileList[0]?.originFileObj)}
+              maxCount={1}
+              accept="video/*"
+            >
+              <Button icon={<UploadOutlined />} disabled={isUploadingVideo}>Click to Upload Video</Button>
+            </Upload>
           </Form.Item>
         </Form>
       </Modal>

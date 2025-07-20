@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import Hls from 'hls.js';
 import { 
   Play, 
   Pause, 
@@ -47,10 +48,29 @@ const VideoPlayer = ({
     const video = videoRef.current;
     if (!video) return;
 
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
-      setIsLoading(false);
+    let hls;
+
+    const initializePlayer = () => {
+      if (Hls.isSupported() && src && src.includes('.m3u8')) {
+        hls = new Hls();
+        hls.loadSource(src);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          setDuration(video.duration);
+          setIsLoading(false);
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src;
+        video.addEventListener('loadedmetadata', () => {
+          setDuration(video.duration);
+          setIsLoading(false);
+        });
+      } else {
+        setIsLoading(false);
+      }
     };
+
+    initializePlayer();
 
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
@@ -79,20 +99,21 @@ const VideoPlayer = ({
       setIsLoading(false);
     };
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('progress', handleProgress);
     video.addEventListener('ended', handleEnded);
     video.addEventListener('error', handleError);
 
     return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      if (hls) {
+        hls.destroy();
+      }
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('progress', handleProgress);
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('error', handleError);
     };
-  }, [onProgress, onComplete]);
+  }, [src, onProgress, onComplete]);
 
   const togglePlay = () => {
     const video = videoRef.current;

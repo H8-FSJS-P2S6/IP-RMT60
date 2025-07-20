@@ -1,4 +1,8 @@
 const { Lecture, Category, User, Transaction, TransactionDetail } = require("../models");
+const Mux = require('@mux/mux-node');
+
+const { MUX_TOKEN_ID, MUX_TOKEN_SECRET } = process.env;
+const mux = new Mux(MUX_TOKEN_ID, MUX_TOKEN_SECRET);
 
 class LectureController {
   static async getAllLectures(req, res, next) {
@@ -100,13 +104,21 @@ class LectureController {
         description,
         price,
         availability,
-        image
+        image,
+        videoUrl // Include videoUrl in the destructuring
       } = req.body;
       
       const lecture = await Lecture.findByPk(id);
       
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
+      }
+
+      // If a new videoUrl is provided and it's different from the old one,
+      // and the old one exists, delete the old Mux asset.
+      if (videoUrl && lecture.videoUrl && videoUrl !== lecture.videoUrl) {
+        const oldAssetId = lecture.videoUrl.split('/').pop().replace('.m3u8', '');
+        await mux.video.assets.delete(oldAssetId);
       }
       
       await lecture.update({
@@ -119,7 +131,8 @@ class LectureController {
         description,
         price,
         availability,
-        image
+        image,
+        videoUrl // Update videoUrl
       });
       
       res.status(200).json(lecture);
@@ -135,6 +148,12 @@ class LectureController {
       
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
+      }
+
+      // If the lecture has a videoUrl, delete the Mux asset
+      if (lecture.videoUrl) {
+        const assetId = lecture.videoUrl.split('/').pop().replace('.m3u8', '');
+        await mux.video.assets.delete(assetId);
       }
       
       await lecture.destroy();

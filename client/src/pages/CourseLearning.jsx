@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ArrowLeft, BookOpen, Users, Star, Clock } from 'lucide-react';
-import VideoPlayer from '../components/VideoPlayer';
+import VideoPlayerModern from '../components/VideoPlayerModern';
 import CourseCurriculum from '../components/CourseCurriculum';
 import api from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
@@ -147,7 +147,7 @@ const CourseLearning = () => {
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               {currentLesson ? (
                 <>
-                  <VideoPlayer
+                  <VideoPlayerModern
                     src={currentLesson.videoUrl}
                     title={currentLesson.title}
                     onProgress={handleVideoProgress}

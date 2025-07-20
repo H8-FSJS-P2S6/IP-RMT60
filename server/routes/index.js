@@ -10,6 +10,7 @@ const transactionRoutes = require("./transactionRoutes"); // Add this
 const paymentRoutes = require("./paymentRoutes"); // Add this
 const chatbotRoutes = require("./chatbotRoutes"); // Add this
 const lessonRoutes = require("./lessonRoutes"); // Add this
+const videoRoutes = require("./videoRoutes");
 
 // Public routes - do not require authentication
 router.use("/public", publicRoutes);
@@ -24,5 +25,6 @@ router.use("/transactions", transactionRoutes); // Add this
 router.use("/payments", paymentRoutes); // Add this
 router.use("/chatbot", chatbotRoutes); // Add this
 router.use("/lessons", lessonRoutes); // Add this
+router.use("/videos", videoRoutes);
 
 module.exports = router;

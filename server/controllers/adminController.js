@@ -1,5 +1,9 @@
 const { User, Category, Lecture, Transaction, TransactionDetail, sequelize } = require("../models");
 const { Op } = require("sequelize");
+const Mux = require('@mux/mux-node');
+
+const { MUX_TOKEN_ID, MUX_TOKEN_SECRET } = process.env;
+const mux = new Mux(MUX_TOKEN_ID, MUX_TOKEN_SECRET);
 
 class AdminController {
   // Transaction Management Methods
@@ -766,6 +770,29 @@ class AdminController {
       }
     } catch (err) {
       next(err);
+    }
+  }
+
+  static async deleteLecture(req, res, next) {
+    try {
+      const { id } = req.params;
+      const lecture = await Lecture.findByPk(id);
+
+      if (!lecture) {
+        return res.status(404).json({ message: "Lecture not found" });
+      }
+
+      // If the lecture has a videoUrl, delete the Mux asset
+      if (lecture.videoUrl) {
+        const assetId = lecture.videoUrl.split('/').pop().replace('.m3u8', '');
+        await mux.video.assets.delete(assetId);
+      }
+
+      await lecture.destroy();
+
+      res.json({ message: "Lecture deleted successfully" });
+    } catch (error) {
+      next(error);
     }
   }
 }

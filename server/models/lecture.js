@@ -101,6 +101,13 @@ module.exports = (sequelize, DataTypes) => {
           isUrl: { msg: "Invalid image URL format" },
         },
       },
+      videoUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          isUrl: { msg: "Invalid video URL format" },
+        },
+      },
       UserId: {
         type: DataTypes.INTEGER,
         allowNull: true,
