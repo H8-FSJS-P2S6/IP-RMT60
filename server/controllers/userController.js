@@ -25,24 +25,24 @@ class UserController {
         return res.status(400).json({ message: "Email not found in Google token" });
       }
 
-      // Cari user berdasarkan email dari Google
+      // Find user by email from Google
       let user = await User.findOne({ where: { email: payload.email } });
       if (!user) {
-        // Buat user baru jika belum ada
+        // Create new user if not exists
         user = await User.create({
           username: payload.name || payload.email.split('@')[0],
           email: payload.email,
-          password: Math.random().toString(), // Buat password random
-          role: "User", // Selalu set role User untuk login Google
+          password: Math.random().toString(), // Generate random password
+          role: "User", // Always set role as User for Google login
           phoneNumber: "0808080808",
           address: "Not specified",
         });
       }
       
-      // Buat token yang berisi ID user
+      // Create token containing user ID
       const access_token = generateToken({ id: user.id });
       
-      // Refresh data user dari database untuk memastikan data terbaru
+      // Refresh user data from database to ensure latest data
       user = await User.findByPk(user.id);
       
       res.status(200).json({

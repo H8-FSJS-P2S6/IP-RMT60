@@ -54,8 +54,8 @@ export default function ChatbotManagement() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manajemen Chatbot</h1>
-          <p className="text-gray-600 mt-2">Monitor dan kelola SNS Assistant AI Chatbot</p>
+          <h1 className="text-3xl font-bold text-gray-900">Chatbot Management</h1>
+          <p className="text-gray-600 mt-2">Monitor and manage SNS Assistant AI Chatbot</p>
         </div>
         <Button onClick={checkChatbotHealth} disabled={loading} className="flex items-center gap-2">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -67,7 +67,7 @@ export default function ChatbotManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status Chatbot</CardTitle>
+            <CardTitle className="text-sm font-medium">Chatbot Status</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -78,7 +78,7 @@ export default function ChatbotManagement() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {lastChecked ? `Terakhir diperiksa: ${lastChecked.toLocaleTimeString('id-ID')}` : 'Belum diperiksa'}
+              {lastChecked ? `Last checked: ${lastChecked.toLocaleTimeString('en-US')}` : 'Not checked yet'}
             </p>
           </CardContent>
         </Card>

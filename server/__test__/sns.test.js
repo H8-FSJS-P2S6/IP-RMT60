@@ -436,7 +436,7 @@ describe("Category Routes (GET/POST/PUT/DELETE /api/categories)", () => {
     expect(response.body).toHaveProperty("description", updatedCategory.description);
   });
 
-  test("Gagal update kategori karena validasi", async () => {
+  test("Failed to update category due to validation", async () => {
     const catResponse = await request(app).get("/api/categories");
     const categoryId = catResponse.body[0].id;
 
@@ -558,7 +558,7 @@ describe("Lecture Routes (GET/POST/PUT/DELETE /api/lectures)", () => {
     expect(response.body).toHaveProperty("price", updatedLecture.price);
   });
 
-  test("Gagal update lecture karena ID tidak ditemukan", async () => {
+  test("Failed to update lecture due to ID not found", async () => {
     const updatedLecture = {
       title: "Updated Title",
       price: 150000,
@@ -663,7 +663,7 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
     }
   });
 
-  test("Gagal menambah lecture ke cart karena sudah ada", async () => {
+  test("Failed to add lecture to cart because already exists", async () => {
     try {
       // First, get available lectures
       const lectureRes = await request(app).get("/api/lectures");
@@ -700,13 +700,13 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
     }
   });
 
-  test("Berhasil menghapus item dari cart", async () => {
+  test("Successfully delete cart item", async () => {
     const cartRes = await request(app)
       .get("/api/carts")
       .set("Authorization", `Bearer ${userToken}`);
 
     if (!cartRes.body || cartRes.body.length === 0) {
-      console.log("Cart kosong, melewati test hapus cart");
+      console.log("Cart is empty, skipping cart deletion test");
       return;
     }
 
@@ -718,13 +718,13 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
     // Perbarui ekspektasi status code - terima 500 juga jika memang API mengembalikan itu
     expect([200, 204, 500]).toContain(response.status);
 
-    // Jika response sukses, periksa formatnya
+    // If response is successful, check its format
     if (response.status === 200) {
       expect(response.body).toHaveProperty("message");
     }
   });
 
-  test("Gagal menambah ke cart karena belum login", async () => {
+  test("Failed to add to cart because not logged in", async () => {
     const cartItem = { LectureId: 1 };
     const response = await request(app).post("/api/carts").send(cartItem);
     expect(response.status).toBe(401);
@@ -734,7 +734,7 @@ describe("Cart Routes (GET/POST/DELETE /api/carts)", () => {
 
 // Remaining tests unchanged
 describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
-  test("Berhasil mendapatkan transaksi user", async () => {
+  test("Successfully get user transactions", async () => {
     const response = await request(app)
       .get("/api/transactions/user")
       .set("Authorization", `Bearer ${userToken}`);
@@ -742,11 +742,11 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
     expect(response.body).toBeInstanceOf(Array);
   });
 
-  test("Berhasil membuat transaksi baru", async () => {
+  test("Successfully create new transaction", async () => {
     const lectureRes = await request(app).get("/api/lectures");
 
     if (!lectureRes.body || lectureRes.body.length === 0) {
-      console.log("Tidak ada lecture untuk transaksi, melewati test");
+      console.log("No lecture for transaction, skipping test");
       return;
     }
 
@@ -766,7 +766,7 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
       .set("Authorization", `Bearer ${userToken}`)
       .send(newTransaction1);
 
-    // Jika gagal, coba format lain
+    // If failed, try another format
     if (response.status === 500) {
       // Percobaan 2: Format dengan LectureIds
       const newTransaction2 = {
@@ -780,7 +780,7 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
         .send(newTransaction2);
     }
 
-    // Jika masih gagal, coba format lain
+    // If still failed, try another format
     if (response.status === 500) {
       // Percobaan 3: Format dengan body yang berbeda
       const newTransaction3 = {
@@ -802,7 +802,7 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
     }
   });
 
-  test("Gagal membuat transaksi karena tidak ada lecture", async () => {
+  test("Failed to create transaction because no lecture", async () => {
     const response = await request(app)
       .post("/api/transactions")
       .set("Authorization", `Bearer ${userToken}`)
@@ -812,11 +812,11 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
     expect(response.body).toHaveProperty("message");
   });
 
-  test("Berhasil update status transaksi (admin)", async () => {
+  test("Successfully update transaction status (admin)", async () => {
     const statusUpdate = { status: "Completed" };
 
     if (!transactionId) {
-      console.log("Tidak ada transaksi untuk diupdate, melewati test");
+      console.log("No transaction to update, skipping test");
       return;
     }
 
@@ -828,9 +828,9 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
     expect(response.body).toHaveProperty("status", statusUpdate.status);
   });
 
-  test("Gagal update status transaksi karena bukan admin", async () => {
+  test("Failed to update transaction status because not admin", async () => {
     if (!transactionId) {
-      console.log("Tidak ada transaksi untuk diupdate, melewati test");
+      console.log("No transaction to update, skipping test");
       return;
     }
 
@@ -866,16 +866,16 @@ describe("Transaction Routes (GET/POST/PUT /api/transactions)", () => {
 
 // Remaining tests unchanged
 describe("Public Routes (GET /api/public)", () => {
-  test("Berhasil mendapatkan homepage bundle", async () => {
+  test("Successfully get homepage bundle", async () => {
     const response = await request(app).get("/api/public/homepage-bundle");
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("popularCategories");
     expect(response.body).toHaveProperty("latestLectures");
   });
 
-  test("Berhasil mendapatkan lecture berdasarkan ID", async () => {
+  test("Successfully get lecture by ID", async () => {
     if (!lectureId) {
-      console.log("Tidak ada lecture untuk diambil, melewati test");
+      console.log("No lecture to retrieve, skipping test");
       return;
     }
 
@@ -885,13 +885,13 @@ describe("Public Routes (GET /api/public)", () => {
     expect(response.body).toHaveProperty("title");
   });
 
-  test("Gagal mendapatkan lecture karena ID tidak ditemukan", async () => {
+  test("Failed to get lecture because ID not found", async () => {
     const response = await request(app).get("/api/public/lectures/999");
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty("message", expect.any(String));
   });
 
-  test("Berhasil mendapatkan lecture berdasarkan kategori", async () => {
+  test("Successfully get lectures by category", async () => {
     try {
       const response = await request(app).get(`/api/public/lectures/by-category/${categoryId}`);
       expect(response.status).toBe(200);
@@ -904,7 +904,7 @@ describe("Public Routes (GET /api/public)", () => {
     }
   });
 
-  test("Berhasil mencari lectures", async () => {
+  test("Successfully search lectures", async () => {
     try {
       const response = await request(app).get(`/api/public/lectures/search?q=AI`);
       expect(response.status).toBe(200);
@@ -942,7 +942,7 @@ describe("Public Routes (GET /api/public)", () => {
 
 // Remaining tests unchanged
 describe("Admin Routes (GET /api/admin)", () => {
-  test("Berhasil mendapatkan statistik dashboard (admin)", async () => {
+  test("Successfully get dashboard statistics (admin)", async () => {
     const response = await request(app)
       .get("/api/admin/statistics")
       .set("Authorization", `Bearer ${adminToken}`);
@@ -952,7 +952,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     expect(response.body).toHaveProperty("totalOrders");
   });
 
-  test("Berhasil mendapatkan daftar users (admin)", async () => {
+  test("Successfully get users list (admin)", async () => {
     try {
       const response = await request(app)
         .get("/api/admin/users")
@@ -968,7 +968,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     }
   });
 
-  test("Berhasil mendapatkan daftar transaksi (admin)", async () => {
+  test("Successfully get transactions list (admin)", async () => {
     try {
       const response = await request(app)
         .get("/api/admin/transactions")
@@ -984,7 +984,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     }
   });
 
-  test("Berhasil generate laporan penjualan (admin)", async () => {
+  test("Successfully generate sales report (admin)", async () => {
     try {
       const response = await request(app)
         .get("/api/admin/reports/sales")
@@ -1004,7 +1004,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     }
   });
 
-  test("Gagal akses admin route karena bukan admin", async () => {
+  test("Failed to access admin route because not admin", async () => {
     const response = await request(app)
       .get("/api/admin/statistics")
       .set("Authorization", `Bearer ${userToken}`);
@@ -1012,7 +1012,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     expect(response.body).toHaveProperty("message", "Admin access required");
   });
 
-  test("Berhasil get dashboard metrics (admin)", async () => {
+  test("Successfully get dashboard metrics (admin)", async () => {
     const response = await request(app)
       .get("/api/admin/dashboard-metrics")
       .set("Authorization", `Bearer ${adminToken}`);
@@ -1021,7 +1021,7 @@ describe("Admin Routes (GET /api/admin)", () => {
     expect([200, 404]).toContain(response.status);
   });
 
-  test("Berhasil mendapatkan user by ID (admin)", async () => {
+  test("Successfully get user by ID (admin)", async () => {
     const userListResponse = await request(app)
       .get("/api/admin/users")
       .set("Authorization", `Bearer ${adminToken}`);
@@ -1040,7 +1040,7 @@ describe("Admin Routes (GET /api/admin)", () => {
 
 // Remaining tests unchanged
 describe("User Profile Routes (GET /api/users/profile)", () => {
-  test("Berhasil mendapatkan profile user", async () => {
+  test("Successfully get user profile", async () => {
     const response = await request(app)
       .get("/api/users/profile")
       .set("Authorization", `Bearer ${userToken}`);
@@ -1050,7 +1050,7 @@ describe("User Profile Routes (GET /api/users/profile)", () => {
     expect(response.body).toHaveProperty("role");
   });
 
-  test("Gagal mendapatkan profile karena tidak login", async () => {
+  test("Failed to get profile because not logged in", async () => {
     const response = await request(app).get("/api/users/profile");
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("message", "Authentication token required");
