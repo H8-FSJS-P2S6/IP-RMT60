@@ -14,6 +14,13 @@ import {
   selectCoursesLoading
 } from "../store/slices/courseSlice";
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 export default function CategoryDetail() {
   const { id } = useParams();
   const dispatch = useAppDispatch();
@@ -42,14 +49,6 @@ export default function CategoryDetail() {
     dispatch(setSort(value));
   };
   
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
-
   if (categoryLoading || coursesLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">

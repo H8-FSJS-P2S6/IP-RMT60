@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -15,10 +15,20 @@ import {
   selectPaymentRedirect,
   resetPaymentStatus,
 } from '../store/slices/transactionSlice';
+import { initializeMidtransPayment, waitForMidtrans } from '../utils/midtrans';
+
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(price);
+};
 
 export default function Checkout() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [midtransReady, setMidtransReady] = useState(false);
   const cartItems = useAppSelector(selectCartItems);
   const cartLoading = useAppSelector(selectCartLoading);
   const cartError = useAppSelector(selectCartError);
@@ -32,31 +42,39 @@ export default function Checkout() {
   }, [dispatch]);
 
   useEffect(() => {
+    // Check if Midtrans is available
+    const checkMidtrans = async () => {
+      try {
+        await waitForMidtrans();
+        setMidtransReady(true);
+      } catch (error) {
+        console.error('Midtrans not available:', error);
+        setMidtransReady(false);
+      }
+    };
+    checkMidtrans();
+  }, []);
+
+  useEffect(() => {
     if (paymentRedirect) {
       window.location.href = paymentRedirect;
       dispatch(resetPaymentStatus());
     }
   }, [paymentRedirect, dispatch]);
 
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   const handlePayment = async () => {
     try {
       const response = await dispatch(createPayment()).unwrap();
       if (response.payment.token) {
-        window.snap.pay(response.payment.token, {
-          onSuccess: (result) =>
+        await initializeMidtransPayment(response.payment.token, {
+          onSuccess: () =>
             navigate(`/payment/success?order_id=${response.transaction.invoice_number}`),
-          onPending: (result) =>
+          onPending: () =>
             navigate(`/payment/pending?order_id=${response.transaction.invoice_number}`),
-          onError: (result) =>
-            navigate(`/payment/failed?order_id=${response.transaction.invoice_number}`),
+          onError: (error) => {
+            console.error('Payment error:', error);
+            navigate(`/payment/failed?order_id=${response.transaction.invoice_number}`);
+          },
           onClose: () => {
             alert('You closed the payment window. Please complete your payment to access the courses.');
           },
@@ -126,7 +144,7 @@ export default function Checkout() {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr>
+                  <tr key="total-row">
                     <th>Total</th>
                     <th className="text-end">{formatToIDR(totalAmount)}</th>
                   </tr>
@@ -147,22 +165,29 @@ export default function Checkout() {
                 <button
                   className="btn btn-primary btn-lg"
                   onClick={handlePayment}
-                  disabled={transactionLoading}
+                  disabled={transactionLoading || !midtransReady}
                 >
                   {transactionLoading ? (
-                    <>
+                    <span>
                       <span
                         className="spinner-border spinner-border-sm me-2"
                         role="status"
                         aria-hidden="true"
                       ></span>
                       Processing...
-                    </>
+                    </span>
+                  ) : !midtransReady ? (
+                    'Loading Payment System...'
                   ) : (
                     'Pay Now'
                   )}
                 </button>
               </div>
+              {!midtransReady && (
+                <div className="alert alert-warning mt-3">
+                  <small>Loading payment system, please wait...</small>
+                </div>
+              )}
               {(cartError || transactionError) && (
                 <div className="alert alert-danger mt-3">
                   {cartError || transactionError}
@@ -179,11 +204,11 @@ export default function Checkout() {
             <div className="card-body">
               <h6>Accepted Payment Methods</h6>
               <div className="d-flex flex-wrap gap-2 mt-2">
-                <img src="https://midtrans.com/assets/images/logo-bca.svg" alt="BCA" height="24" />
-                <img src="https://midtrans.com/assets/images/logo-mandiri.svg" alt="Mandiri" height="24" />
-                <img src="https://midtrans.com/assets/images/logo-bni.svg" alt="BNI" height="24" />
-                <img src="https://midtrans.com/assets/images/logo-bri.svg" alt="BRI" height="24" />
-                <img src="https://midtrans.com/assets/images/logo-gopay.svg" alt="GoPay" height="24" />
+                <img key="bca" src="https://midtrans.com/assets/images/logo-bca.svg" alt="BCA" height="24" />
+                <img key="mandiri" src="https://midtrans.com/assets/images/logo-mandiri.svg" alt="Mandiri" height="24" />
+                <img key="bni" src="https://midtrans.com/assets/images/logo-bni.svg" alt="BNI" height="24" />
+                <img key="bri" src="https://midtrans.com/assets/images/logo-bri.svg" alt="BRI" height="24" />
+                <img key="gopay" src="https://midtrans.com/assets/images/logo-gopay.svg" alt="GoPay" height="24" />
               </div>
             </div>
           </div>

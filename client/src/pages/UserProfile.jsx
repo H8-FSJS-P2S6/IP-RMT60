@@ -1,10 +1,59 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 import api from "../utils/api";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  User,
+  Lock,
+  Mail,
+  Phone,
+  MapPin,
+  BookOpen,
+  CreditCard,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+  ChevronRight,
+  LogOut,
+  LayoutDashboard,
+  ShoppingCart,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Textarea } from "@/components/ui/Textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
+import { Progress } from "@/components/ui/Progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+
+const fetchOrders = async () => {
+  const { data } = await api.get("/orders");
+  return data;
+};
+
+const fetchEnrolledCourses = async () => {
+  const { data } = await api.get("/enrollments");
+  return data;
+};
+
+const updateProfile = async (profileData) => {
+  const { data } = await api.put("/users/profile", profileData);
+  return data;
+};
+
+const updatePassword = async (passwordData) => {
+  const { data } = await api.put("/users/password", passwordData);
+  return data;
+};
 
 export default function UserProfile() {
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("profile");
   const [profileData, setProfileData] = useState({
     username: user?.username || "",
@@ -17,121 +66,75 @@ export default function UserProfile() {
     newPassword: "",
     confirmPassword: ""
   });
-  const [orders, setOrders] = useState([]);
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [loading, setLoading] = useState({
-    profile: false,
-    password: false,
-    orders: true,
-    courses: true
-  });
-  const [error, setError] = useState({
-    profile: "",
-    password: "",
-    orders: "",
-    courses: ""
-  });
-  const [success, setSuccess] = useState({
-    profile: "",
-    password: ""
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { data: orders, isLoading: ordersLoading, isError: ordersError } = useQuery({
+    queryKey: ["orders"],
+    queryFn: fetchOrders,
   });
 
-  useEffect(() => {
-    // Fetch user's orders
-    const fetchOrders = async () => {
-      try {
-        const { data } = await api.get("/orders");
-        setOrders(data);
-      } catch (err) {
-        setError({...err, orders: "Failed to fetch order history"});
-      } finally {
-        setLoading({...loading, orders: false});
-      }
-    };
+  const { data: enrolledCourses, isLoading: coursesLoading, isError: coursesError } = useQuery({
+    queryKey: ["enrolledCourses"],
+    queryFn: fetchEnrolledCourses,
+  });
 
-    // Fetch user's enrolled courses
-    const fetchEnrolledCourses = async () => {
-      try {
-        const { data } = await api.get("/enrollments");
-        setEnrolledCourses(data);
-      } catch (err) {
-        setError({...err, courses: "Failed to fetch enrolled courses"});
-      } finally {
-        setLoading({...loading, courses: false});
-      }
-    };
+  const profileMutation = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["profile"]);
+      // Optionally update local user state if necessary
+      // This part depends on how your useAuth hook manages user state
+      console.log("Profile updated:", data);
+      alert("Profile updated successfully!");
+    },
+    onError: (error) => {
+      console.error("Profile update failed:", error);
+      alert("Failed to update profile: " + (error.response?.data?.message || error.message));
+    },
+  });
 
-    fetchOrders();
-    fetchEnrolledCourses();
-  }, []);
-
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData({...profileData, [name]: value});
-  };
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData({...passwordData, [name]: value});
-  };
-
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    setLoading({...loading, profile: true});
-    setError({...error, profile: ""});
-    setSuccess({...success, profile: ""});
-    
-    try {
-      await api.put("/users/profile", profileData);
-      setSuccess({...success, profile: "Profile updated successfully!"});
-      
-      // Update local storage user data
-      const userData = JSON.parse(localStorage.getItem("user")) || {};
-      localStorage.setItem("user", JSON.stringify({
-        ...userData,
-        username: profileData.username,
-        phoneNumber: profileData.phoneNumber,
-        address: profileData.address
-      }));
-      
-    } catch (err) {
-      setError({...error, profile: err.response?.data?.message || "Failed to update profile"});
-    } finally {
-      setLoading({...loading, profile: false});
-    }
-  };
-
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Password validation
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError({...error, password: "Passwords don't match"});
-      return;
-    }
-    
-    setLoading({...loading, password: true});
-    setError({...error, password: ""});
-    setSuccess({...success, password: ""});
-    
-    try {
-      await api.put("/users/password", {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      
-      setSuccess({...success, password: "Password updated successfully!"});
+  const passwordMutation = useMutation({
+    mutationFn: updatePassword,
+    onSuccess: () => {
+      alert("Password updated successfully!");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: ""
       });
-      
-    } catch (err) {
-      setError({...error, password: err.response?.data?.message || "Failed to update password"});
-    } finally {
-      setLoading({...loading, password: false});
+    },
+    onError: (error) => {
+      console.error("Password update failed:", error);
+      alert("Failed to update password: " + (error.response?.data?.message || error.message));
+    },
+  });
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfileSubmit = (e) => {
+    e.preventDefault();
+    profileMutation.mutate(profileData);
+  };
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("New password and confirm password do not match.");
+      return;
     }
+    passwordMutation.mutate({
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword,
+    });
   };
 
   const formatDate = (dateString) => {
@@ -152,364 +155,327 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="container py-5">
-      <h1 className="mb-4">My Account</h1>
-      
-      <div className="row">
-        <div className="col-md-3 mb-4">
-          <div className="card">
-            <div className="card-body">
-              <div className="d-flex align-items-center mb-4">
-                <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: "50px", height: "50px" }}>
-                  <span className="fw-bold">{user?.username?.charAt(0).toUpperCase() || "U"}</span>
-                </div>
-                <div>
-                  <h5 className="card-title mb-0">{user?.username}</h5>
-                  <small className="text-muted">{user?.email}</small>
-                </div>
-              </div>
-              
-              <div className="list-group list-group-flush">
-                <button 
-                  className={`list-group-item list-group-item-action ${activeTab === "profile" ? "active" : ""}`}
-                  onClick={() => setActiveTab("profile")}
-                >
-                  <i className="bi bi-person me-2"></i> Profile
-                </button>
-                <button 
-                  className={`list-group-item list-group-item-action ${activeTab === "password" ? "active" : ""}`}
-                  onClick={() => setActiveTab("password")}
-                >
-                  <i className="bi bi-shield-lock me-2"></i> Change Password
-                </button>
-                <button 
-                  className={`list-group-item list-group-item-action ${activeTab === "orders" ? "active" : ""}`}
-                  onClick={() => setActiveTab("orders")}
-                >
-                  <i className="bi bi-bag me-2"></i> Order History
-                </button>
-                <button 
-                  className={`list-group-item list-group-item-action ${activeTab === "courses" ? "active" : ""}`}
-                  onClick={() => setActiveTab("courses")}
-                >
-                  <i className="bi bi-journal-richtext me-2"></i> My Courses
-                </button>
-                <button 
-                  className="list-group-item list-group-item-action text-danger"
-                  onClick={logout}
-                >
-                  <i className="bi bi-box-arrow-right me-2"></i> Logout
-                </button>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6">My Account</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="md:col-span-1">
+          <CardContent className="p-4">
+            <div className="flex items-center mb-4">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={user?.avatar || ""} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {user?.username?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="ml-3">
+                <CardTitle className="text-lg">{user?.username}</CardTitle>
+                <CardDescription className="text-sm">{user?.email}</CardDescription>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="col-md-9">
-          {/* Profile Tab */}
-          {activeTab === "profile" && (
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title mb-0">Profile Information</h5>
-              </div>
-              <div className="card-body">
-                {success.profile && (
-                  <div className="alert alert-success" role="alert">
-                    {success.profile}
-                  </div>
+
+            <Tabs defaultValue="profile" orientation="vertical" className="space-y-2">
+              <TabsList className="flex flex-col items-start h-auto p-0">
+                <TabsTrigger value="profile" className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:text-primary">
+                  <User className="mr-2 h-4 w-4" /> Profile
+                </TabsTrigger>
+                <TabsTrigger value="password" className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:text-primary">
+                  <Lock className="mr-2 h-4 w-4" /> Change Password
+                </TabsTrigger>
+                <TabsTrigger value="orders" className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:text-primary">
+                  <ShoppingCart className="mr-2 h-4 w-4" /> Order History
+                </TabsTrigger>
+                <TabsTrigger value="courses" className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:text-primary">
+                  <BookOpen className="mr-2 h-4 w-4" /> My Courses
+                </TabsTrigger>
+                {user?.role === "Admin" && (
+                  <Link to="/admin/dashboard" className="w-full">
+                    <Button variant="ghost" className="w-full justify-start">
+                      <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                    </Button>
+                  </Link>
                 )}
-                
-                {error.profile && (
-                  <div className="alert alert-danger" role="alert">
-                    {error.profile}
-                  </div>
-                )}
-                
-                <form onSubmit={handleProfileSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Username</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="username"
-                      name="username"
-                      value={profileData.username}
-                      onChange={handleProfileChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="email"
-                      name="email"
-                      value={profileData.email}
-                      disabled
-                      aria-describedby="emailHelp"
-                    />
-                    <div id="emailHelp" className="form-text">Email cannot be changed.</div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="phoneNumber" className="form-label">Phone Number</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={profileData.phoneNumber}
-                      onChange={handleProfileChange}
-                    />
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="address" className="form-label">Address</label>
-                    <textarea
-                      className="form-control"
-                      id="address"
-                      name="address"
-                      rows="3"
-                      value={profileData.address}
-                      onChange={handleProfileChange}
-                    ></textarea>
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                    disabled={loading.profile}
-                  >
-                    {loading.profile ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Saving...
-                      </>
-                    ) : "Save Changes"}
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-          
-          {/* Password Tab */}
-          {activeTab === "password" && (
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title mb-0">Change Password</h5>
-              </div>
-              <div className="card-body">
-                {success.password && (
-                  <div className="alert alert-success" role="alert">
-                    {success.password}
-                  </div>
-                )}
-                
-                {error.password && (
-                  <div className="alert alert-danger" role="alert">
-                    {error.password}
-                  </div>
-                )}
-                
-                <form onSubmit={handlePasswordSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">Current Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="currentPassword"
-                      name="currentPassword"
-                      value={passwordData.currentPassword}
-                      onChange={handlePasswordChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="newPassword" className="form-label">New Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="newPassword"
-                      name="newPassword"
-                      value={passwordData.newPassword}
-                      onChange={handlePasswordChange}
-                      required
-                      minLength="6"
-                    />
-                    <div className="form-text">Password must be at least 6 characters long.</div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={passwordData.confirmPassword}
-                      onChange={handlePasswordChange}
-                      required
-                    />
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                    disabled={loading.password}
-                  >
-                    {loading.password ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Updating...
-                      </>
-                    ) : "Update Password"}
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-          
-          {/* Orders Tab */}
-          {activeTab === "orders" && (
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title mb-0">Order History</h5>
-              </div>
-              <div className="card-body">
-                {loading.orders ? (
-                  <div className="text-center py-4">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+                <Button variant="ghost" onClick={logout} className="w-full justify-start text-destructive hover:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" /> Logout
+                </Button>
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <div className="md:col-span-3">
+          <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab}>
+            <TabsContent value="profile">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Update your account's profile information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {profileMutation.isSuccess && (
+                    <div className="bg-green-100 text-green-700 p-3 rounded-md mb-4">
+                      Profile updated successfully!
                     </div>
-                    <p className="mt-2">Loading orders...</p>
-                  </div>
-                ) : error.orders ? (
-                  <div className="alert alert-danger" role="alert">
-                    {error.orders}
-                  </div>
-                ) : orders.length === 0 ? (
-                  <div className="text-center py-4">
-                    <i className="bi bi-bag-x fs-1 text-secondary mb-3"></i>
-                    <h5>No Orders Yet</h5>
-                    <p className="text-muted">You haven't placed any orders yet.</p>
-                  </div>
-                ) : (
-                  <div className="table-responsive">
-                    <table className="table table-hover">
-                      <thead>
-                        <tr>
-                          <th>Order ID</th>
-                          <th>Date</th>
-                          <th>Items</th>
-                          <th>Total</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {orders.map(order => (
-                          <tr key={order.id}>
-                            <td>#{order.id}</td>
-                            <td>{formatDate(order.createdAt)}</td>
-                            <td>{order.items?.length || 0}</td>
-                            <td>{formatToIDR(order.totalAmount)}</td>
-                            <td>
-                              <span className={`badge ${
-                                order.status === 'completed' ? 'bg-success' : 
-                                order.status === 'processing' ? 'bg-warning' : 
-                                order.status === 'cancelled' ? 'bg-danger' : 'bg-secondary'
-                              }`}>
-                                {order.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Courses Tab */}
-          {activeTab === "courses" && (
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title mb-0">My Courses</h5>
-              </div>
-              <div className="card-body">
-                {loading.courses ? (
-                  <div className="text-center py-4">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+                  )}
+                  {profileMutation.isError && (
+                    <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
+                      Failed to update profile: {profileMutation.error.response?.data?.message || profileMutation.error.message}
                     </div>
-                    <p className="mt-2">Loading courses...</p>
-                  </div>
-                ) : error.courses ? (
-                  <div className="alert alert-danger" role="alert">
-                    {error.courses}
-                  </div>
-                ) : enrolledCourses.length === 0 ? (
-                  <div className="text-center py-4">
-                    <i className="bi bi-journal-x fs-1 text-secondary mb-3"></i>
-                    <h5>No Enrolled Courses</h5>
-                    <p className="text-muted">You haven't enrolled in any courses yet.</p>
-                  </div>
-                ) : (
-                  <div className="row g-4">
-                    {enrolledCourses.map(enrollment => (
-                      <div key={enrollment.id} className="col-md-6">
-                        <div className="card h-100 shadow-sm hover-shadow">
-                          <div className="card-body d-flex flex-column">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                              <span className="badge bg-success">Enrolled</span>
-                              <small className="text-muted">Enrolled on {formatDate(enrollment.createdAt)}</small>
-                            </div>
-                            <h5 className="card-title">{enrollment.Lecture.name}</h5>
-                            <p className="card-text text-muted">
-                              {enrollment.Lecture.technique}
-                            </p>
-                            <p className="card-text mb-4">
-                              <small className="text-muted">
-                                Progress: {enrollment.progress || 0}% complete
-                              </small>
-                              <div className="progress mt-2" style={{ height: "5px" }}>
-                                <div 
-                                  className="progress-bar" 
-                                  role="progressbar" 
-                                  style={{ width: `${enrollment.progress || 0}%` }}
-                                  aria-valuenow={enrollment.progress || 0} 
-                                  aria-valuemin="0" 
-                                  aria-valuemax="100"
-                                ></div>
-                              </div>
-                            </p>
-                            <div className="mt-auto">
-                              <Link 
-                                to={`/courses/${enrollment.LectureId}`} 
-                                className="btn btn-primary d-block"
-                              >
-                                Continue Learning
-                              </Link>
-                              <Link 
-                                to="/support" 
-                                className="text-decoration-none"
-                              >
-                                Contact instructor
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
+                  )}
+                  <form onSubmit={handleProfileSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                          id="username"
+                          name="username"
+                          value={profileData.username}
+                          onChange={handleProfileChange}
+                          required
+                        />
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={profileData.email}
+                          disabled
+                        />
+                        <p className="text-sm text-muted-foreground">Email cannot be changed.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={profileData.phoneNumber}
+                          onChange={handleProfileChange}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Textarea
+                          id="address"
+                          name="address"
+                          rows="3"
+                          value={profileData.address}
+                          onChange={handleProfileChange}
+                        ></Textarea>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={profileMutation.isLoading}>
+                      {profileMutation.isLoading ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="password">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>Update your account's password.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {passwordMutation.isSuccess && (
+                    <div className="bg-green-100 text-green-700 p-3 rounded-md mb-4">
+                      Password updated successfully!
+                    </div>
+                  )}
+                  {passwordMutation.isError && (
+                    <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
+                      Failed to update password: {passwordMutation.error.response?.data?.message || passwordMutation.error.message}
+                    </div>
+                  )}
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Input
+                        id="currentPassword"
+                        name="currentPassword"
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="newPassword"
+                          name="newPassword"
+                          type={showNewPassword ? "text" : "password"}
+                          value={passwordData.newPassword}
+                          onChange={handlePasswordChange}
+                          required
+                          minLength="6"
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-1"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                        >
+                          {showNewPassword ? <Eye className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Password must be at least 6 characters long.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordChange}
+                          required
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-1"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <Eye className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={passwordMutation.isLoading}>
+                      {passwordMutation.isLoading ? "Updating..." : "Update Password"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="orders">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order History</CardTitle>
+                  <CardDescription>View your past orders.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {ordersLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading orders...</p>
+                    </div>
+                  ) : ordersError ? (
+                    <div className="bg-red-100 text-red-700 p-3 rounded-md">
+                      Failed to fetch order history: {ordersError.message}
+                    </div>
+                  ) : orders?.length === 0 ? (
+                    <div className="text-center py-4">
+                      <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No Orders Yet</h3>
+                      <p className="text-muted-foreground">You haven't placed any orders yet.</p>
+                      <Button asChild className="mt-4">
+                        <Link to="/courses">Browse Courses</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Order ID</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Items</TableHead>
+                          <TableHead>Total</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orders?.map((order) => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">#{order.id}</TableCell>
+                            <TableCell>{formatDate(order.createdAt)}</TableCell>
+                            <TableCell>{order.items?.length || 0}</TableCell>
+                            <TableCell>{formatToIDR(order.totalAmount)}</TableCell>
+                            <TableCell>
+                              <Badge variant={order.status === "completed" ? "default" : "secondary"}>
+                                {order.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="courses">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Courses</CardTitle>
+                  <CardDescription>View your enrolled courses.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {coursesLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading courses...</p>
+                    </div>
+                  ) : coursesError ? (
+                    <div className="bg-red-100 text-red-700 p-3 rounded-md">
+                      Failed to fetch enrolled courses: {coursesError.message}
+                    </div>
+                  ) : enrolledCourses?.length === 0 ? (
+                    <div className="text-center py-4">
+                      <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No Enrolled Courses</h3>
+                      <p className="text-muted-foreground">You haven't enrolled in any courses yet.</p>
+                      <Button asChild className="mt-4">
+                        <Link to="/courses">Browse Courses</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {enrolledCourses?.map((enrollment) => (
+                        <Card key={enrollment.id}>
+                          <CardHeader>
+                            <CardTitle className="text-lg">{enrollment.Lecture.name}</CardTitle>
+                            <CardDescription>{enrollment.Lecture.technique}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
+                              <span>Enrolled on {formatDate(enrollment.createdAt)}</span>
+                              <Badge variant="secondary">Enrolled</Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              Progress: {enrollment.progress || 0}% complete
+                            </div>
+                            <Progress value={enrollment.progress || 0} className="w-full" />
+                          </CardContent>
+                          <CardFooter className="flex flex-col gap-2">
+                            <Button asChild className="w-full">
+                              <Link to={`/courses/${enrollment.LectureId}`}>Continue Learning</Link>
+                            </Button>
+                            <Button variant="outline" className="w-full">
+                              Contact Instructor
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/carts");
-      return response.data || []; 
+      return response.data || [];
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch cart items"
@@ -23,7 +23,7 @@ export const addToCart = createAsyncThunk(
       if (!lectureId || isNaN(lectureId)) {
         return rejectWithValue("Invalid lecture ID");
       }
-      
+
       // Verify this matches your backend endpoint
       const response = await api.post("/carts/add", { lectureId });
       console.log("Add to cart response:", response.data);
@@ -45,11 +45,11 @@ export const removeFromCart = createAsyncThunk(
         console.error("Invalid cart item ID:", cartItemId);
         return rejectWithValue("Invalid cart item ID");
       }
-      
+
       console.log(`Sending DELETE request to /carts/${cartItemId}`);
       const response = await api.delete(`/carts/${cartItemId}`);
       console.log("Remove from cart response:", response.data);
-      
+
       // Return the ID for the reducer to use
       return cartItemId;
     } catch (error) {
@@ -114,7 +114,9 @@ const cartSlice = createSlice({
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = state.items.filter((item) => item.id !== parseInt(action.payload));
+        state.items = state.items.filter(
+          (item) => item.id !== parseInt(action.payload)
+        );
         state.isEmpty = state.items.length === 0;
       })
       .addCase(removeFromCart.rejected, (state, action) => {

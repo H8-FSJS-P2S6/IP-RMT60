@@ -30,16 +30,16 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await api.post('/users/login', credentials);
-      const { access_token, ...userData } = response.data;
+      const { access_token, user } = response.data;
       
       // Save to localStorage
       localStorage.setItem('access_token', access_token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(user));
       
       // Set authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
       
-      return { user: userData, token: access_token };
+      return { user, token: access_token };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -132,22 +132,21 @@ export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
   async ({ id_token }, { rejectWithValue }) => {
     try {
-      // Change the endpoint to match your backend route
+      // Send token instead of id_token to match server expectations
       const response = await api.post('/users/login/google', { 
-        id_token,
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID 
+        token: id_token
       });
       
-      const { access_token, ...userData } = response.data;
+      const { access_token, user } = response.data;
       
       // Save to localStorage
       localStorage.setItem('access_token', access_token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(user));
       
       // Set default authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
-      return { user: userData, token: access_token };
+      return { user, token: access_token };
     } catch (error) {
       console.error('Google login error:', error);
       return rejectWithValue(error.response?.data?.message || 'Google login failed');

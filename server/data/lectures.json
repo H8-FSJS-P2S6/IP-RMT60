@@ -2,11 +2,14 @@
   {
     "id": 1,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Ultrasonic Testing (UT)",
     "technique": "Ultrasonic Testing (UT)",
     "CategoryId": 1,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 510"],
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
     "description": "Expert in ultrasonic testing for weld imperfections and material thickness evaluation.",
     "price": 7990000,
     "availability": "Available",
@@ -16,11 +19,14 @@
   {
     "id": 2,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Phased Array Ultrasonic Testing (PAUT)",
     "technique": "Phased Array Ultrasonic Testing (PAUT)",
     "CategoryId": 1,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 510"],
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
     "description": "Specializes in phased array ultrasonic testing for advanced inspections.",
     "price": 8500000,
     "availability": "Available",
@@ -30,11 +36,14 @@
   {
     "id": 3,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Radiographic Testing (RT)",
     "technique": "Radiographic Testing (RT)",
     "CategoryId": 2,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 653"],
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
     "description": "Provides comprehensive radiographic testing training for pipelines.",
     "price": 8990000,
     "availability": "Limited",
@@ -44,11 +53,14 @@
   {
     "id": 4,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Eddy Current Testing (ECT)",
     "technique": "Eddy Current Testing (ECT)",
     "CategoryId": 2,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 653"],
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
     "description": "Expert in eddy current testing for conductive materials.",
     "price": 7500000,
     "availability": "Available",
@@ -58,11 +70,14 @@
   {
     "id": 5,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Magnetic Particle Testing (MT)",
     "technique": "Magnetic Particle Testing (MT)",
     "CategoryId": 3,
     "experience_years": 20,
-    "certifications": ["ASNT Level II", "API 570"],
+    "certifications": [
+      "ASNT Level II",
+      "API 570"
+    ],
     "description": "Specializes in magnetic particle testing for surface defect detection.",
     "price": 5990000,
     "availability": "Available",
@@ -72,11 +87,14 @@
   {
     "id": 6,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Penetrant Testing (PT)",
     "technique": "Penetrant Testing (PT)",
     "CategoryId": 3,
     "experience_years": 20,
-    "certifications": ["ASNT Level II", "AWS CWI"],
+    "certifications": [
+      "ASNT Level II",
+      "AWS CWI"
+    ],
     "description": "Experienced in penetrant testing for non-porous materials.",
     "price": 4990000,
     "availability": "Available",
@@ -86,11 +104,14 @@
   {
     "id": 7,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Visual Testing (VT)",
     "technique": "Visual Testing (VT)",
     "CategoryId": 3,
     "experience_years": 20,
-    "certifications": ["ASNT Level II", "API 1169"],
+    "certifications": [
+      "ASNT Level II",
+      "API 1169"
+    ],
     "description": "Delivers visual testing courses for surface inspections.",
     "price": 5490000,
     "availability": "Available",
@@ -100,11 +121,14 @@
   {
     "id": 8,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Acoustic Emission Testing (AET)",
     "technique": "Acoustic Emission Testing (AET)",
     "CategoryId": 4,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 510"],
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
     "description": "Expert in acoustic emission testing for structural health monitoring.",
     "price": 8200000,
     "availability": "Limited",
@@ -114,11 +138,14 @@
   {
     "id": 9,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Infrared Thermography (IRT)",
     "technique": "Infrared Thermography (IRT)",
     "CategoryId": 4,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 510"],
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
     "description": "Specializes in infrared thermography for heat leak detection.",
     "price": 7800000,
     "availability": "Available",
@@ -128,11 +155,14 @@
   {
     "id": 10,
     "name": "Saenal Aladin Rapi",
-    "title": "Lead NDT Instructor",
+    "title": "Digital Radiography (DR)",
     "technique": "Digital Radiography (DR)",
     "CategoryId": 5,
     "experience_years": 20,
-    "certifications": ["ASNT Level III", "API 653"],
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
     "description": "Provides digital radiography training for enhanced imaging.",
     "price": 9200000,
     "availability": "Available",

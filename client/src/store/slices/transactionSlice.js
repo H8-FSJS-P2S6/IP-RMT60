@@ -2,35 +2,31 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
 
 // Async thunks
-export const fetchTransactionStatus = createAsyncThunk(
-  'transactions/fetchTransactionStatus',
-  async (orderId, { rejectWithValue }) => {
+export const createTransaction = createAsyncThunk(
+  'transactions/createTransaction',
+  async (transactionData, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/payments/status/${orderId}`);
+      const response = await api.post('/transactions', transactionData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch transaction status');
+      return rejectWithValue(error.response?.data?.message || 'Failed to create transaction');
     }
   }
 );
 
-export const createPayment = createAsyncThunk(
-  'transactions/createPayment',
-  async (_, { rejectWithValue }) => {
+export const fetchTransactions = createAsyncThunk(
+  'transactions/fetchTransactions',
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await api.post('/payments/create');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create payment');
-    }
-  }
-);
-
-export const fetchUserTransactions = createAsyncThunk(
-  'transactions/fetchUserTransactions',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get('/orders');
+      const queryParams = new URLSearchParams();
+      
+      if (params.page) queryParams.append('page', params.page);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.startDate) queryParams.append('startDate', params.startDate);
+      if (params.endDate) queryParams.append('endDate', params.endDate);
+      
+      // Use user-specific endpoint for regular users
+      const response = await api.get(`/transactions/user?${queryParams.toString()}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
@@ -38,56 +34,118 @@ export const fetchUserTransactions = createAsyncThunk(
   }
 );
 
-// Fetch payments
-export const fetchPayments = createAsyncThunk(
-  'transactions/fetchPayments',
-  async ({ page = 1, status = '' }, { rejectWithValue }) => {
+export const fetchTransactionById = createAsyncThunk(
+  'transactions/fetchTransactionById',
+  async (id, { rejectWithValue }) => {
     try {
-      const params = new URLSearchParams();
-      params.append('page', page);
-      if (status) params.append('status', status);
+      const response = await api.get(`/transactions/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch transaction');
+    }
+  }
+);
+
+// Alias for payment status checking
+export const fetchTransactionStatus = fetchTransactionById;
+
+export const processPayment = createAsyncThunk(
+  'transactions/processPayment',
+  async (paymentData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/payments/create', paymentData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Payment processing failed');
+    }
+  }
+);
+
+// Manual payment processing
+export const processManualPayment = createAsyncThunk(
+  'transactions/processManualPayment',
+  async (paymentData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/payments/manual/create', paymentData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Manual payment processing failed');
+    }
+  }
+);
+
+// Alias for backward compatibility
+export { processPayment as createPayment };
+export { processManualPayment as createManualPayment };
+
+// Admin thunks
+export const fetchAllTransactions = createAsyncThunk(
+  'transactions/fetchAllTransactions',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const queryParams = new URLSearchParams();
       
-      const response = await api.get(`/admin/payments?${params}`);
+      if (params.page) queryParams.append('page', params.page);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.search) queryParams.append('search', params.search);
+      
+      const response = await api.get(`/admin/transactions?${queryParams.toString()}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch payments');
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
     }
   }
 );
 
-// Update payment status
-export const updatePaymentStatus = createAsyncThunk(
-  'transactions/updateStatus',
-  async ({ paymentId, status }, { rejectWithValue }) => {
+export const updateTransactionStatus = createAsyncThunk(
+  'transactions/updateTransactionStatus',
+  async ({ id, status }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/admin/payments/${paymentId}/status`, { status });
+      const response = await api.patch(`/admin/transactions/${id}/status`, { status });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update payment status');
+      return rejectWithValue(error.response?.data?.message || 'Failed to update transaction status');
     }
   }
 );
 
-// Transaction slice
+const initialState = {
+  list: [],
+  currentTransaction: null,
+  loading: false,
+  error: null,
+  success: false,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  },
+  paymentRedirect: null,
+  paymentStatus: null,
+  filters: {
+    status: '',
+    startDate: '',
+    endDate: '',
+    search: '',
+  },
+};
+
 const transactionSlice = createSlice({
   name: 'transactions',
-  initialState: {
-    transactions: [],
-    currentTransaction: null,
-    loading: false,
-    error: null,
-    paymentStatus: null,
-    paymentRedirect: null,
-    payments: [],
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: 0
-    }
-  },
+  initialState,
   reducers: {
     clearTransactionError: (state) => {
       state.error = null;
+    },
+    clearTransactionSuccess: (state) => {
+      state.success = false;
+    },
+    setTransactionFilters: (state, action) => {
+      state.filters = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setTransactionPage: (state, action) => {
+      state.pagination.currentPage = action.payload;
     },
     resetPaymentStatus: (state) => {
       state.paymentStatus = null;
@@ -96,88 +154,157 @@ const transactionSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Transaction Status
-      .addCase(fetchTransactionStatus.pending, (state) => {
+      // Create Transaction
+      .addCase(createTransaction.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchTransactionStatus.fulfilled, (state, action) => {
+      .addCase(createTransaction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentTransaction = action.payload;
+        state.success = true;
+      })
+      .addCase(createTransaction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch Transactions
+      .addCase(fetchTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload.transactions || action.payload;
+        if (action.payload.pagination) {
+          state.pagination = {
+            currentPage: action.payload.currentPage || 1,
+            totalPages: action.payload.totalPages || 1,
+            totalItems: action.payload.totalItems || action.payload.transactions?.length || 0,
+          };
+        }
+      })
+      .addCase(fetchTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch Transaction By ID
+      .addCase(fetchTransactionById.pending, (state) => {
+        state.loading = true;
+        state.currentTransaction = null;
+        state.error = null;
+      })
+      .addCase(fetchTransactionById.fulfilled, (state, action) => {
         state.loading = false;
         state.currentTransaction = action.payload;
       })
-      .addCase(fetchTransactionStatus.rejected, (state, action) => {
+      .addCase(fetchTransactionById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Create Payment
-      .addCase(createPayment.pending, (state) => {
+      
+      // Process Payment / Create Payment (both names for same action)
+      .addCase(processPayment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createPayment.fulfilled, (state, action) => {
+      .addCase(processPayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.paymentStatus = action.payload.payment;
-        state.paymentRedirect = action.payload.payment.redirect_url || null;
+        state.paymentRedirect = action.payload.redirectUrl;
+        state.paymentStatus = 'success';
+        state.success = true;
       })
-      .addCase(createPayment.rejected, (state, action) => {
+      .addCase(processPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.paymentStatus = 'failed';
       })
-
-      // Fetch User Transactions
-      .addCase(fetchUserTransactions.pending, (state) => {
+      
+      // Process Manual Payment
+      .addCase(processManualPayment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserTransactions.fulfilled, (state, action) => {
+      .addCase(processManualPayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = action.payload;
+        state.currentTransaction = action.payload.transaction;
+        state.paymentStatus = 'manual_success';
+        state.success = true;
       })
-      .addCase(fetchUserTransactions.rejected, (state, action) => {
+      .addCase(processManualPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.paymentStatus = 'failed';
       })
-
-      // Fetch Payments
-      .addCase(fetchPayments.pending, (state) => {
+      
+      // Admin: Fetch All Transactions
+      .addCase(fetchAllTransactions.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPayments.fulfilled, (state, action) => {
+      .addCase(fetchAllTransactions.fulfilled, (state, action) => {
         state.loading = false;
-        state.payments = action.payload.payments;
-        state.pagination = {
-          currentPage: action.payload.currentPage,
-          totalPages: action.payload.totalPages,
-          totalItems: action.payload.totalItems
-        };
+        state.list = action.payload.transactions || action.payload;
+        if (action.payload.pagination) {
+          state.pagination = {
+            currentPage: action.payload.currentPage || 1,
+            totalPages: action.payload.totalPages || 1,
+            totalItems: action.payload.totalItems || action.payload.transactions?.length || 0,
+          };
+        }
       })
-      .addCase(fetchPayments.rejected, (state, action) => {
+      .addCase(fetchAllTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Update Payment Status
-      .addCase(updatePaymentStatus.fulfilled, (state, action) => {
-        const updatedPayment = action.payload;
-        state.payments = state.payments.map(payment => 
-          payment.id === updatedPayment.id ? updatedPayment : payment
-        );
+      
+      // Update Transaction Status
+      .addCase(updateTransactionStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTransactionStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update the transaction in the list
+        const index = state.list.findIndex(t => t.id === action.payload.id);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
+        // Update current transaction if it's the same
+        if (state.currentTransaction?.id === action.payload.id) {
+          state.currentTransaction = action.payload;
+        }
+      })
+      .addCase(updateTransactionStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
-  },
+  }
 });
 
-export const { clearTransactionError, resetPaymentStatus } = transactionSlice.actions;
+export const {
+  clearTransactionError,
+  clearTransactionSuccess,
+  setTransactionFilters,
+  setTransactionPage,
+  resetPaymentStatus
+} = transactionSlice.actions;
 
 export default transactionSlice.reducer;
 
 // Selectors
-export const selectTransactions = (state) => state.transactions.transactions;
+export const selectTransactions = (state) => state.transactions.list;
 export const selectCurrentTransaction = (state) => state.transactions.currentTransaction;
 export const selectTransactionLoading = (state) => state.transactions.loading;
 export const selectTransactionError = (state) => state.transactions.error;
-export const selectPaymentStatus = (state) => state.transactions.paymentStatus;
+export const selectTransactionSuccess = (state) => state.transactions.success;
+export const selectTransactionPagination = (state) => state.transactions.pagination;
+export const selectTransactionFilters = (state) => state.transactions.filters;
 export const selectPaymentRedirect = (state) => state.transactions.paymentRedirect;
-export const selectPayments = (state) => state.transactions.payments;
-export const selectPagination = (state) => state.transactions.pagination;
+export const selectPaymentStatus = (state) => state.transactions.paymentStatus;
+
+// Export fetchAllTransactions as fetchTransactions for admin pages
+export { fetchAllTransactions as fetchAdminTransactions };

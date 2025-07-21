@@ -6,14 +6,14 @@ const {
   Lecture,
   sequelize,
 } = require("../models");
-const {
-  createPaymentToken,
-  handleNotification,
-} = require("../helpers/midtrans");
+// const {
+//   createPaymentToken,
+//   handleNotification,
+// } = require("../helpers/midtrans");
 
 class PaymentController {
-  // Create payment for a transaction
-  static async createPayment(req, res, next) {
+  // Create manual payment (WhatsApp + Bank Transfer)
+  static async createManualPayment(req, res, next) {
     const t = await sequelize.transaction();
 
     try {
@@ -48,12 +48,12 @@ class PaymentController {
       const random = Math.floor(10000 + Math.random() * 90000); // 5 digit random
       const invoice_number = `INV-${dateStr}-${random}`;
 
-      // Create new transaction
+      // Create new transaction for manual payment
       const transaction = await Transaction.create(
         {
           UserId,
           total_amount,
-          payment_method: "Midtrans",
+          payment_method: "Manual_Transfer",
           status: "Pending",
           invoice_number,
         },
@@ -77,26 +77,63 @@ class PaymentController {
         transaction: t,
       });
 
-      // Create Midtrans payment token
-      const transactionWithUser = {
-        ...transaction.toJSON(),
-        User: user,
-      };
-
-      const paymentToken = await createPaymentToken(transactionWithUser);
-
       await t.commit();
+
+      // Generate WhatsApp payment instructions
+      const coursesList = cartItems.map(item => `• ${item.Lecture.name} - Rp ${item.Lecture.price.toLocaleString()}`).join('\n');
+      
+      const whatsappMessage = `🎓 *PEMBAYARAN KURSUS ONLINE*
+
+📝 *Invoice:* ${invoice_number}
+👤 *Nama:* ${user.username}
+📧 *Email:* ${user.email}
+
+📚 *Kursus yang dibeli:*
+${coursesList}
+
+💰 *Total Pembayaran:* Rp ${total_amount.toLocaleString()}
+
+🏦 *Transfer ke rekening:*
+*Bank BCA*
+No. Rekening: 1234567890
+Atas Nama: PT SAR NDT SERVICES
+
+📋 *Cara Pembayaran:*
+1. Transfer sesuai nominal di atas
+2. Screenshot bukti transfer
+3. Kirim screenshot ke chat ini
+4. Sertakan invoice number: ${invoice_number}
+
+⏰ *Batas Pembayaran:* 24 jam dari sekarang
+
+Terima kasih! 🙏`;
+
+      const whatsappUrl = `https://wa.me/6281296953557?text=${encodeURIComponent(whatsappMessage)}`;
 
       // Return payment details
       res.status(201).json({
-        message: "Payment initiated successfully",
+        message: "Manual payment order created successfully",
         transaction: {
           id: transaction.id,
           invoice_number: transaction.invoice_number,
           total_amount: transaction.total_amount,
           status: transaction.status,
+          payment_method: transaction.payment_method,
         },
-        payment: paymentToken,
+        payment: {
+          whatsapp_url: whatsappUrl,
+          bank_details: {
+            bank_name: "BCA",
+            account_number: "1234567890",
+            account_name: "PT SAR NDT SERVICES"
+          },
+          instructions: [
+            "Transfer sesuai nominal yang tertera",
+            "Screenshot bukti transfer",
+            "Kirim via WhatsApp dengan menyertakan invoice number",
+            "Pembayaran akan diverifikasi dalam 1x24 jam"
+          ]
+        },
       });
     } catch (error) {
       await t.rollback();
@@ -104,53 +141,35 @@ class PaymentController {
     }
   }
 
-  // Handle notification from Midtrans
-  static async handleNotification(req, res, next) {
+  // Confirm manual payment (admin use)
+  static async confirmManualPayment(req, res, next) {
     try {
-      const notificationJson = req.body;
+      const { invoice_number } = req.params;
+      const { status } = req.body; // "Completed" or "Rejected"
 
-      const { orderId, transactionStatus, fraudStatus } =
-        await handleNotification(notificationJson);
-
-      // Find our transaction by invoice number (order_id in Midtrans)
       const transaction = await Transaction.findOne({
-        where: { invoice_number: orderId },
+        where: { 
+          invoice_number,
+          payment_method: "Manual_Transfer"
+        },
       });
 
       if (!transaction) {
-        throw { name: "NotFound", message: "Transaction not found" };
+        throw { name: "NotFound", message: "Manual transaction not found" };
       }
 
-      // Update transaction status based on Midtrans status
-      let newStatus;
+      await transaction.update({ 
+        status: status === "Completed" ? "Completed" : "Cancelled" 
+      });
 
-      if (transactionStatus == "capture") {
-        if (fraudStatus == "accept") {
-          newStatus = "Completed";
-        } else if (fraudStatus == "challenge") {
-          newStatus = "Processing";
+      res.status(200).json({
+        message: `Payment ${status.toLowerCase()} successfully`,
+        transaction: {
+          invoice_number: transaction.invoice_number,
+          status: transaction.status
         }
-      } else if (transactionStatus == "settlement") {
-        newStatus = "Completed";
-      } else if (transactionStatus == "pending") {
-        newStatus = "Pending";
-      } else if (
-        transactionStatus == "deny" ||
-        transactionStatus == "cancel" ||
-        transactionStatus == "expire"
-      ) {
-        newStatus = "Cancelled";
-      } else if (transactionStatus == "refund") {
-        newStatus = "Refunded";
-      }
-
-      if (newStatus) {
-        await transaction.update({ status: newStatus });
-      }
-
-      res.status(200).json({ message: "Notification processed" });
+      });
     } catch (error) {
-      console.error("Error processing notification:", error);
       next(error);
     }
   }
@@ -191,6 +210,21 @@ class PaymentController {
       next(error);
     }
   }
+
+  // ====== PAYMENT GATEWAY FEATURES (COMMENTED FOR FUTURE USE) ======
+  // TODO: Uncomment these methods when ready to implement Midtrans payment gateway
+  
+  // static async createPayment(req, res, next) {
+  //   // Midtrans payment implementation here
+  //   // Will be uncommented when payment gateway is ready
+  // }
+
+  // static async handleNotification(req, res, next) {
+  //   // Midtrans webhook notification handler
+  //   // Will be uncommented when payment gateway is ready
+  // }
+  
+  // ====== END OF COMMENTED PAYMENT GATEWAY FEATURES ======
 }
 
 module.exports = PaymentController;

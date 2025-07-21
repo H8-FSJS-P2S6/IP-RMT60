@@ -1,221 +1,191 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
-import '../styles/chatbot.css'; // Kita akan buat file CSS ini
+import '../styles/chatbot.css';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { AnimatePresence, motion } from 'framer-motion';
+import { MessageSquare, Send, X, Loader2, Bot, User, Clock, HelpCircle, DollarSign, BookOpen, Phone, ChevronDown } from "lucide-react";
 
-export default function Chatbot() {
+const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      sender: 'bot',
-      text: 'Halo! Saya SNS Assistant. Ada yang bisa saya bantu tentang kursus NDT?',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState('');
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    setSessionId(`user-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
-  }, []);
+  const quickReplies = [
+    { text: "View course list", icon: <BookOpen className="w-4 h-4" /> },
+    { text: "Ask course price", icon: <DollarSign className="w-4 h-4" /> },
+    { text: "Registration info", icon: <HelpCircle className="w-4 h-4" /> },
+    { text: "Contact admin", icon: <Phone className="w-4 h-4" /> }
+  ];
 
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length === 0) {
+      const timer = setTimeout(() => {
+        setMessages([
+          {
+            sender: 'bot',
+            text: 'Hello! I am SNS Assistant 🤖\n\nI am ready to help you with information about:\n• NDT courses and prices\n• Training schedules\n• ASNT certifications\n• Registration process\n\nHow can I help you today?',
+            timestamp: new Date(),
+          }
+        ]);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [messages, isOpen]);
+  }, [messages.length]);
 
-  const handleToggleChat = () => {
-    setIsOpen(!isOpen);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const handleToggleChat = () => setIsOpen(!isOpen);
+
+  const handleQuickReply = (text) => {
+    sendMessage(text);
   };
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value);
-  };
+  const sendMessage = async (messageText) => {
+    if (!messageText.trim()) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!input.trim()) return;
-    
-    const userMessage = {
-      sender: 'user',
-      text: input,
-      timestamp: new Date()
-    };
-    
+    const userMessage = { sender: 'user', text: messageText, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
-    
+
     try {
-      const response = await api.post('/chatbot/send', {
-        message: userMessage.text,
-        sessionId
-      });
-      
-      setMessages(prev => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: response.data.text,
-          courses: response.data.courses, // Jika ada data kursus
-          timestamp: new Date()
-        }
-      ]);
+      const response = await api.post('/chatbot/send', { message: messageText });
+      const botMessage = { sender: 'bot', text: response.data.text, timestamp: new Date() };
+      setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      console.error('Error sending message to chatbot:', error);
-      setMessages(prev => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: 'Maaf, saya mengalami kendala teknis. Silakan coba lagi nanti.',
-          timestamp: new Date()
-        }
-      ]);
+      const errorMessage = {
+        sender: 'bot',
+        text: 'Maaf, saya sedang mengalami gangguan teknis. Silakan coba lagi nanti.',
+        timestamp: new Date(),
+        isError: true
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    sendMessage(input);
   };
 
   return (
-    <div className="chatbot-container">
-      {/* Enhanced toggle button */}
-      <div className="chatbot-toggle-wrapper">
-        {!isOpen && (
-          <div className="chat-bubble-animation">
-            <div className="chat-bubble bubble-1"></div>
-            <div className="chat-bubble bubble-2"></div>
-            <div className="chat-bubble bubble-3"></div>
-          </div>
-        )}
-        <button 
-          className={`chatbot-toggle ${isOpen ? 'active' : ''}`}
-          onClick={handleToggleChat}
-          aria-label={isOpen ? "Close chat" : "Open chat"}
-        >
-          <div className="toggle-content">
-            {isOpen ? (
-              <i className="bi bi-x-lg"></i>
-            ) : (
-              <>
-                <i className="bi bi-chat-dots-fill"></i>
-                <span className="chat-notification"></span>
-              </>
-            )}
-          </div>
-          <div className="toggle-text">{isOpen ? 'Close' : 'Chat'}</div>
-          <div className="toggle-ripple"></div>
-        </button>
-      </div>
-      
-      {/* Chat window */}
-      <div className={`chatbot-box ${isOpen ? 'open' : ''}`}>
-        <div className="chatbot-header">
-          <div className="chatbot-title">
-            <img 
-              src="/technical-support.png" 
-              alt="SNS NDT" 
-              className="chatbot-avatar"
-            />
-            <div>
-              <h5>SNS Assistant</h5>
-              <span className="chatbot-status">Online</span>
-            </div>
-          </div>
-          <button 
-            className="chatbot-close" 
-            onClick={handleToggleChat}
-          >
-            <i className="bi bi-x"></i>
-          </button>
-        </div>
-        
-        <div className="chatbot-messages">
-          {messages.map((msg, index) => (
-            <div 
-              key={index} 
-              className={`message-container ${msg.sender === 'user' ? 'user-message' : 'bot-message'}`}
+    <>
+      <div className="chatbot-container">
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="chat-window"
             >
-              {msg.sender === 'bot' && (
-                <div className="bot-avatar">
-                  <img src="/technical-support.png" alt="Bot" />
+              <header className="chat-header">
+                <div className="flex items-center gap-3">
+                  <div className="avatar-container">
+                    <img src="/technical-support.png" alt="SNS NDT" className="avatar-img" />
+                    <span className="status-indicator" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-gray-800">SNS Assistant</h3>
+                    <p className="text-xs text-gray-500">Online</p>
+                  </div>
                 </div>
-              )}
-              
-              <div className="message-content">
-                <div className="message-bubble">
-                  <p>{msg.text}</p>
-                  <span className="message-time">{formatTime(msg.timestamp)}</span>
-                </div>
-                
-                {/* Tampilkan course cards jika ada */}
-                {msg.courses && msg.courses.length > 0 && (
-                  <div className="course-cards">
-                    {msg.courses.map(course => (
-                      <div key={course.id} className="course-card">
-                        <h6>{course.technique}</h6>
-                        <p>{course.name}</p>
-                        <p className="course-price">
-                          {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            maximumFractionDigits: 0
-                          }).format(course.price)}
-                        </p>
-                        <a 
-                          href={`/courses/${course.id}`}
-                          className="btn btn-sm btn-primary"
-                        >
-                          Lihat Detail
-                        </a>
-                      </div>
-                    ))}
+                <button onClick={handleToggleChat} className="close-button">
+                  <ChevronDown className="w-5 h-5" />
+                </button>
+              </header>
+
+              <main className="chat-body">
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`message-container ${msg.sender === 'user' ? 'user-message' : 'bot-message'}`}
+                  >
+                    <div className={`message-bubble ${msg.isError ? 'error-bubble' : ''}`}>
+                      <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                    </div>
+                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </motion.div>
+                ))}
+                {loading && (
+                  <div className="message-container bot-message">
+                    <div className="message-bubble typing-indicator">
+                      <div /><div /><div />
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-          
-          {/* Loading indicator */}
-          {loading && (
-            <div className="message-container bot-message">
-              <div className="bot-avatar">
-                <img src="/technical-support.png" alt="Bot" />
-              </div>
-              <div className="message-content">
-                <div className="message-bubble typing">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            </div>
+                <div ref={messagesEndRef} />
+              </main>
+
+              {messages.length <= 1 && !loading && (
+                <section className="quick-replies-section">
+                  <div className="quick-replies-container">
+                    {quickReplies.map((reply) => (
+                      <button key={reply.text} onClick={() => handleQuickReply(reply.text)} className="quick-reply-chip">
+                        {reply.icon}
+                        <span>{reply.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <footer className="chat-footer">
+                <form onSubmit={handleSubmit} className="input-form">
+                  <Input
+                    type="text"
+                    placeholder="Ketik pesan Anda..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={loading}
+                    className="chat-input"
+                    autoComplete="off"
+                  />
+                  <Button type="submit" disabled={!input.trim() || loading} className="send-button">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </Button>
+                </form>
+                <p className="footer-text">
+                  Powered by SNS NDT Academy
+                </p>
+              </footer>
+            </motion.div>
           )}
-        </div>
-        
-        <form className="chatbot-input-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Tulis pesan..."
-            value={input}
-            onChange={handleInputChange}
-            disabled={loading}
-          />
-          <button 
-            type="submit" 
-            disabled={!input.trim() || loading}
-          >
-            <i className="bi bi-send-fill"></i>
-          </button>
-        </form>
+        </AnimatePresence>
+
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.5, type: 'spring', stiffness: 500, damping: 30 }}
+        >
+          <Button onClick={handleToggleChat} className="chat-toggle-button">
+            <AnimatePresence>
+              {isOpen ? (
+                <motion.div key="close" initial={{ rotate: 45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -45, opacity: 0 }}>
+                  <X className="w-6 h-6" />
+                </motion.div>
+              ) : (
+                <motion.div key="open" initial={{ rotate: -45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 45, opacity: 0 }}>
+                  <MessageSquare className="w-6 h-6" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Button>
+        </motion.div>
       </div>
-    </div>
+    </>
   );
-}
+};
+
+export default Chatbot;

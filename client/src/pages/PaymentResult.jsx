@@ -8,6 +8,13 @@ import {
   selectTransactionError,
 } from '../store/slices/transactionSlice';
 
+const formatToIDR = (price) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+  }).format(price);
+};
+
 export default function PaymentResult() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,14 +35,6 @@ export default function PaymentResult() {
     }
     dispatch(fetchTransactionStatus(orderId));
   }, [orderId, navigate, dispatch]);
-
-  const formatToIDR = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
   const getStatusDetails = () => {
     switch (status) {

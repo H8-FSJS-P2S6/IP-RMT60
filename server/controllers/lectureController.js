@@ -1,4 +1,8 @@
-const { Lecture, Category, User } = require("../models");
+const { Lecture, Category, User, Transaction, TransactionDetail } = require("../models");
+const Mux = require('@mux/mux-node');
+
+const { MUX_TOKEN_ID, MUX_TOKEN_SECRET } = process.env;
+const mux = new Mux(MUX_TOKEN_ID, MUX_TOKEN_SECRET);
 
 class LectureController {
   static async getAllLectures(req, res, next) {
@@ -100,13 +104,21 @@ class LectureController {
         description,
         price,
         availability,
-        image
+        image,
+        videoUrl // Include videoUrl in the destructuring
       } = req.body;
       
       const lecture = await Lecture.findByPk(id);
       
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
+      }
+
+      // If a new videoUrl is provided and it's different from the old one,
+      // and the old one exists, delete the old Mux asset.
+      if (videoUrl && lecture.videoUrl && videoUrl !== lecture.videoUrl) {
+        const oldAssetId = lecture.videoUrl.split('/').pop().replace('.m3u8', '');
+        await mux.video.assets.delete(oldAssetId);
       }
       
       await lecture.update({
@@ -119,7 +131,8 @@ class LectureController {
         description,
         price,
         availability,
-        image
+        image,
+        videoUrl // Update videoUrl
       });
       
       res.status(200).json(lecture);
@@ -136,12 +149,161 @@ class LectureController {
       if (!lecture) {
         throw { name: "NotFound", message: "Lecture not found" };
       }
+
+      // If the lecture has a videoUrl, delete the Mux asset
+      if (lecture.videoUrl) {
+        const assetId = lecture.videoUrl.split('/').pop().replace('.m3u8', '');
+        await mux.video.assets.delete(assetId);
+      }
       
       await lecture.destroy();
       
       res.status(200).json({ message: "Lecture deleted successfully" });
     } catch (err) {
       next(err);
+    }
+  }
+
+  // Get course content for paid users only
+  static async getCourseContent(req, res, next) {
+    try {
+      const { id } = req.params;
+      const UserId = req.user.id;
+
+      // Double check access (middleware should handle this, but extra security)
+      const transaction = await Transaction.findOne({
+        where: { 
+          UserId,
+          status: 'Completed'
+        },
+        include: [{
+          model: TransactionDetail,
+          where: { LectureId: id }
+        }]
+      });
+
+      if (!transaction) {
+        throw { name: "Forbidden", message: "Please complete payment to access this course" };
+      }
+
+      const lecture = await Lecture.findByPk(id, {
+        include: [
+          {
+            model: Category,
+            as: "category"
+          },
+          {
+            model: User,
+            attributes: ["username", "email"]
+          }
+        ]
+      });
+
+      if (!lecture) {
+        throw { name: "NotFound", message: "Lecture not found" };
+      }
+      
+      res.json({
+        message: "Course content accessed successfully",
+        lecture,
+        access_granted: true,
+        transaction_info: {
+          invoice_number: transaction.invoice_number,
+          purchase_date: transaction.createdAt,
+          payment_method: transaction.payment_method
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Get user's purchased courses
+  static async getUserCourses(req, res, next) {
+    try {
+      const UserId = req.user.id;
+
+      console.log('Getting courses for user:', UserId);
+
+      // First, let's check if user has any transactions at all
+      const allTransactions = await Transaction.findAll({
+        where: { UserId },
+        attributes: ['id', 'status', 'total_amount', 'payment_method']
+      });
+
+      console.log('All user transactions:', allTransactions.length);
+
+      const transactions = await Transaction.findAll({
+        where: { 
+          UserId,
+          status: 'Completed'
+        },
+        include: [{
+          model: TransactionDetail,
+          include: [{
+            model: Lecture,
+            include: [{
+              model: Category,
+              as: "category"
+            }]
+          }]
+        }],
+        order: [['createdAt', 'DESC']]
+      });
+
+      console.log('Found completed transactions:', transactions.length);
+
+      // If no completed transactions, return empty but successful response
+      if (transactions.length === 0) {
+        return res.json({
+          message: "No completed purchases found",
+          courses: [],
+          total_courses: 0,
+          debug: {
+            userId: UserId,
+            totalTransactions: allTransactions.length,
+            completedTransactions: 0
+          }
+        });
+      }
+
+      // Flatten the data structure for easier frontend consumption
+      const courses = [];
+      transactions.forEach(transaction => {
+        if (transaction.TransactionDetails && transaction.TransactionDetails.length > 0) {
+          transaction.TransactionDetails.forEach(detail => {
+            if (detail.Lecture) {
+              courses.push({
+                id: detail.Lecture.id,
+                name: detail.Lecture.name,
+                description: detail.Lecture.description,
+                technique: detail.Lecture.technique,
+                imgUrl: detail.Lecture.imgUrl,
+                category: detail.Lecture.category,
+                purchase_date: transaction.createdAt,
+                invoice_number: transaction.invoice_number,
+                payment_method: transaction.payment_method,
+                access_granted: true
+              });
+            }
+          });
+        }
+      });
+
+      console.log('Processed courses:', courses.length);
+
+      res.json({
+        message: "User courses retrieved successfully",
+        courses,
+        total_courses: courses.length
+      });
+    } catch (error) {
+      console.error('Error in getUserCourses:', error);
+      res.status(500).json({ 
+        message: "Internal server error",
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   }
 }

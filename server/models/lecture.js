@@ -17,6 +17,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "LectureId",
         otherKey: "TransactionId",
       });
+      Lecture.hasMany(models.Lesson, {
+        foreignKey: "LectureId",
+        as: "lessons"
+      });
+      Lecture.hasMany(models.UserProgress, {
+        foreignKey: "LectureId",
+        as: "userProgresses"
+      });
     }
   }
   Lecture.init(
@@ -91,6 +99,13 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           notEmpty: { msg: "Image URL cannot be empty" },
           isUrl: { msg: "Invalid image URL format" },
+        },
+      },
+      videoUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          isUrl: { msg: "Invalid video URL format" },
         },
       },
       UserId: {
