@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "name": "Advanced NDT",
+    "description": "Advanced non-destructive testing methods like Ultrasonic Testing, designed for complex inspections in oil, gas, and petrochemical industries.",
+    "techniques": [
+      "Ultrasonic Testing (UT)",
+      "Phased Array Ultrasonic Testing (PAUT)"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Conventional NDT",
+    "description": "Traditional NDT methods such as Radiographic Testing, widely used for structural and pipeline integrity assessments.",
+    "techniques": ["Radiographic Testing (RT)", "Eddy Current Testing (ECT)"]
+  },
+  {
+    "id": 3,
+    "name": "Surface NDT",
+    "description": "Surface inspection techniques like Magnetic Particle Testing, Penetrant Testing, and Visual Testing for detecting surface discontinuities.",
+    "techniques": [
+      "Magnetic Particle Testing (MT)",
+      "Penetrant Testing (PT)",
+      "Visual Testing (VT)"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Specialized NDT",
+    "description": "Specialized NDT techniques for specific applications in aerospace and automotive industries.",
+    "techniques": [
+      "Acoustic Emission Testing (AET)",
+      "Infrared Thermography (IRT)"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Digital NDT",
+    "description": "Modern NDT methods using digital technologies for enhanced accuracy and reporting.",
+    "techniques": ["Digital Radiography (DR)", "Computed Tomography (CT)"]
+  }
+]

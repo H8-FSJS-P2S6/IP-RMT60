@@ -1,0 +1,172 @@
+[
+  {
+    "id": 1,
+    "name": "Saenal Aladin Rapi",
+    "title": "Ultrasonic Testing (UT)",
+    "technique": "Ultrasonic Testing (UT)",
+    "CategoryId": 1,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
+    "description": "Expert in ultrasonic testing for weld imperfections and material thickness evaluation.",
+    "price": 7990000,
+    "availability": "Available",
+    "image": "https://gammabuana.com/wp-content/uploads/2024/10/ultrasonic-testing-non-destructive-test.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 2,
+    "name": "Saenal Aladin Rapi",
+    "title": "Phased Array Ultrasonic Testing (PAUT)",
+    "technique": "Phased Array Ultrasonic Testing (PAUT)",
+    "CategoryId": 1,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
+    "description": "Specializes in phased array ultrasonic testing for advanced inspections.",
+    "price": 8500000,
+    "availability": "Available",
+    "image": "https://www.lavender-ndt.com/wp-content/uploads/2015/01/Lavender-Alex-Wilkinson-Media-22-of-175.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 3,
+    "name": "Saenal Aladin Rapi",
+    "title": "Radiographic Testing (RT)",
+    "technique": "Radiographic Testing (RT)",
+    "CategoryId": 2,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
+    "description": "Provides comprehensive radiographic testing training for pipelines.",
+    "price": 8990000,
+    "availability": "Limited",
+    "image": "https://www.mme-group.com/fileadmin/_processed_/8/4/csm_MME_RT_Heerenveen-4_533d4bb7aa.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 4,
+    "name": "Saenal Aladin Rapi",
+    "title": "Eddy Current Testing (ECT)",
+    "technique": "Eddy Current Testing (ECT)",
+    "CategoryId": 2,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
+    "description": "Expert in eddy current testing for conductive materials.",
+    "price": 7500000,
+    "availability": "Available",
+    "image": "https://www.qualitymag.com/ext/resources/Issues/2016/November/eddy/QM1116-FT7-EddyCurrent-p5FT_conductivity.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 5,
+    "name": "Saenal Aladin Rapi",
+    "title": "Magnetic Particle Testing (MT)",
+    "technique": "Magnetic Particle Testing (MT)",
+    "CategoryId": 3,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level II",
+      "API 570"
+    ],
+    "description": "Specializes in magnetic particle testing for surface defect detection.",
+    "price": 5990000,
+    "availability": "Available",
+    "image": "https://hsseworld.com/wp-content/uploads/2021/08/magnetic-particle-testing.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 6,
+    "name": "Saenal Aladin Rapi",
+    "title": "Penetrant Testing (PT)",
+    "technique": "Penetrant Testing (PT)",
+    "CategoryId": 3,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level II",
+      "AWS CWI"
+    ],
+    "description": "Experienced in penetrant testing for non-porous materials.",
+    "price": 4990000,
+    "availability": "Available",
+    "image": "https://3.imimg.com/data3/BK/MH/MY-9211796/liquid-penetrant-testing-500x500.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 7,
+    "name": "Saenal Aladin Rapi",
+    "title": "Visual Testing (VT)",
+    "technique": "Visual Testing (VT)",
+    "CategoryId": 3,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level II",
+      "API 1169"
+    ],
+    "description": "Delivers visual testing courses for surface inspections.",
+    "price": 5490000,
+    "availability": "Available",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzQacV6P7E4WvUnFoW-pMsRRil0pmlj4Yrgg&s",
+    "UserId": 1
+  },
+  {
+    "id": 8,
+    "name": "Saenal Aladin Rapi",
+    "title": "Acoustic Emission Testing (AET)",
+    "technique": "Acoustic Emission Testing (AET)",
+    "CategoryId": 4,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
+    "description": "Expert in acoustic emission testing for structural health monitoring.",
+    "price": 8200000,
+    "availability": "Limited",
+    "image": "https://www.twi-global.com/image-library/hero/acoustic-emission-testing.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 9,
+    "name": "Saenal Aladin Rapi",
+    "title": "Infrared Thermography (IRT)",
+    "technique": "Infrared Thermography (IRT)",
+    "CategoryId": 4,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 510"
+    ],
+    "description": "Specializes in infrared thermography for heat leak detection.",
+    "price": 7800000,
+    "availability": "Available",
+    "image": "https://www.advancedtech.com/wp-content/uploads/2022/04/thermography-header.jpg",
+    "UserId": 1
+  },
+  {
+    "id": 10,
+    "name": "Saenal Aladin Rapi",
+    "title": "Digital Radiography (DR)",
+    "technique": "Digital Radiography (DR)",
+    "CategoryId": 5,
+    "experience_years": 20,
+    "certifications": [
+      "ASNT Level III",
+      "API 653"
+    ],
+    "description": "Provides digital radiography training for enhanced imaging.",
+    "price": 9200000,
+    "availability": "Available",
+    "image": "https://www.applus.com/.imaging/focalpoint/753x530/dam/jcr:f5fe1422-c43a-409b-b637-55b1d617748e/1340262324830-Subsheet_Radiographic_Testing_%28RT%29_EN_desktop.jpg",
+    "UserId": 1
+  }
+]

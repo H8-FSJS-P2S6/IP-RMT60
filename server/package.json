@@ -1,0 +1,36 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx jest --verbose --detectOpenHandles --forceExit --runInBand",
+    "test:coverage": "jest --coverage",
+    "dev": "npx nodemon app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google-cloud/dialogflow": "^7.0.1",
+    "@google/generative-ai": "^0.24.1",
+    "@mux/mux-node": "^12.2.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dialogflow": "^1.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "midtrans-client": "^1.4.2",
+    "pg": "^8.15.6",
+    "sequelize": "^6.37.7",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^7.1.0"
+  }
+}
